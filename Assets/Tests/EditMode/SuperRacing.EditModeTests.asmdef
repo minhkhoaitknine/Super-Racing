@@ -1,0 +1,13 @@
+{
+  "name": "SuperRacing.EditModeTests",
+  "rootNamespace": "SuperRacing.Tests",
+  "references": [
+    "SuperRacing"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
