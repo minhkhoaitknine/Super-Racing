@@ -1,4 +1,7 @@
 {
   "name": "SuperRacing",
-  "rootNamespace": "SuperRacing"
+  "rootNamespace": "SuperRacing",
+  "references": [
+    "Unity.InputSystem"
+  ]
 }
