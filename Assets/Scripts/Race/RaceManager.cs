@@ -60,6 +60,8 @@ namespace SuperRacing.Race
 
         private void Awake()
         {
+            track ??= GameSelection.SelectedTrack;
+            car ??= GameSelection.SelectedCar;
             vehicle = vehicleController as IVehicleController;
             if (!ValidateConfiguration())
             {
