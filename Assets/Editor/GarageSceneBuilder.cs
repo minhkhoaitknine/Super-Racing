@@ -471,7 +471,7 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("mainMenuSceneName").stringValue = "MainMenu";
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
-            UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ConfirmSelection);
+            UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ReturnToMainMenu);
             UnityEventTools.AddIntPersistentListener(car1Btn.onClick, garage.SelectCar, 0);
         }
 

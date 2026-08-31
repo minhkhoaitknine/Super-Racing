@@ -5296,7 +5296,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 763207213}
         m_TargetAssemblyTypeName: SuperRacing.UI.GarageUI, SuperRacing
-        m_MethodName: ConfirmSelection
+        m_MethodName: ReturnToMainMenu
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

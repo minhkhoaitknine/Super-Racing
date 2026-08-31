@@ -122,7 +122,7 @@ namespace SuperRacing.EditorTools
             var cameraObject = new GameObject("Lobby Preview Camera");
             Camera previewCamera = cameraObject.AddComponent<Camera>();
             cameraObject.transform.position = new Vector3(0f, 1.45f, 7.2f);
-            cameraObject.transform.LookAt(new Vector3(0f, 0.35f, 0f));
+            cameraObject.transform.LookAt(new Vector3(0f, 1.45f, 0f));
             previewCamera.fieldOfView = 34f;
             previewCamera.clearFlags = CameraClearFlags.SolidColor;
             previewCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
@@ -160,7 +160,7 @@ namespace SuperRacing.EditorTools
             contactShadow.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ShadowPath);
             contactShadow.preserveAspect = false;
             contactShadow.raycastTarget = false;
-            SetRect(contactShadow.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -165f), new Vector2(540f, 130f), new Vector2(0.5f, 0.5f));
+            SetRect(contactShadow.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -430f), new Vector2(540f, 130f), new Vector2(0.5f, 0.5f));
 
             RawImage preview = CreateUIObject("Vehicle Preview", canvas.transform).AddComponent<RawImage>();
             preview.texture = previewTexture;
@@ -190,16 +190,13 @@ namespace SuperRacing.EditorTools
             MainMenuUI menu = controllerObject.AddComponent<MainMenuUI>();
 
             Image vehicleHitArea = CreateImage("Vehicle Interaction Area", canvas.transform, new Color(1f, 1f, 1f, 0.001f));
-            SetRect(vehicleHitArea.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(820f, 690f), new Vector2(0.5f, 0.5f));
+            SetRect(vehicleHitArea.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -220f), new Vector2(820f, 620f), new Vector2(0.5f, 0.5f));
             LobbyVehicleInteractor interactor = vehicleHitArea.gameObject.AddComponent<LobbyVehicleInteractor>();
             interactor.Configure(carRoot, menu);
 
             Button play = CreateButton("Play", "PLAY   ▶", new Vector2(1f, 0f), new Vector2(-225f, 86f), new Vector2(390f, 82f));
             UnityEventTools.AddPersistentListener(play.onClick, menu.OpenTrackSelection);
 
-            Text garageLabel = CreateText("Garage Prompt", canvas.transform, "CLICK VEHICLE TO OPEN GARAGE", 18, TextAnchor.MiddleCenter, new Color(0.7f, 0.94f, 1f, 0.9f));
-            garageLabel.fontStyle = FontStyle.Bold;
-            SetRect(garageLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 95f), new Vector2(520f, 40f), new Vector2(0.5f, 0.5f));
         }
 
         private static Image CreatePanel(string name, Transform parent, Vector2 anchor, Vector2 position, Vector2 size)
