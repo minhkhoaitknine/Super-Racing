@@ -24,7 +24,7 @@ namespace SuperRacing.UI
         [SerializeField] private Transform vehiclePreviewRoot;
         [SerializeField, Min(0f)] private float previewRotationSpeed = 0f;
         [SerializeField, Min(0.1f)] private float previewTargetSize = 3.25f;
-        [SerializeField] private Vector3 vehiclePositionOffset = new Vector3(0f, -0.78f, 0f);
+        [SerializeField] private Vector3 vehiclePositionOffset = new Vector3(0f, -0.96f, 0f);
         [SerializeField] private Vector3 vehicleRotationEuler = new Vector3(0f, 5f, 0f);
         [SerializeField] private string trackSelectionSceneName = "Test_Race";
         [SerializeField] private string mainMenuSceneName = "MainMenu";

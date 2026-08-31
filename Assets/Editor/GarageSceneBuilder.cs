@@ -465,7 +465,7 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("vehiclePreviewRoot").objectReferenceValue = previewRoot;
             serialized.FindProperty("previewRotationSpeed").floatValue = 0f;
             serialized.FindProperty("previewTargetSize").floatValue = 3.25f;
-            serialized.FindProperty("vehiclePositionOffset").vector3Value = new Vector3(0f, -0.78f, 0f);
+            serialized.FindProperty("vehiclePositionOffset").vector3Value = new Vector3(0f, -0.96f, 0f);
             serialized.FindProperty("vehicleRotationEuler").vector3Value = new Vector3(0f, 5f, 0f);
             serialized.FindProperty("trackSelectionSceneName").stringValue = "Test_Race";
             serialized.FindProperty("mainMenuSceneName").stringValue = "MainMenu";
