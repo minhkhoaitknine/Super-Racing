@@ -1,3 +1,5 @@
+using SuperRacing.Contracts;
+using SuperRacing.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,7 +7,7 @@ namespace SuperRacing.Vehicle
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
-    public sealed class VehicleController : MonoBehaviour
+    public sealed class VehicleController : MonoBehaviour, IVehicleController
     {
         [Header("Wheel Colliders")]
         [SerializeField] private WheelCollider frontLeftWheel;
@@ -17,6 +19,7 @@ namespace SuperRacing.Vehicle
         [SerializeField, Min(0f)] private float motorTorque = 1400f;
         [SerializeField, Min(0f)] private float brakeTorque = 3000f;
         [SerializeField, Min(1f)] private float maxSpeedKmh = 120f;
+        [SerializeField, Min(0f)] private float driveAssistAcceleration = 18f;
         [SerializeField, Range(0f, 60f)] private float maxSteerAngle = 30f;
         [SerializeField, Range(0f, 60f)] private float minSteerAngleAtTopSpeed = 12f;
         [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.45f;
@@ -30,6 +33,9 @@ namespace SuperRacing.Vehicle
         [Header("Optional Shared Input Actions")]
         [SerializeField] private InputActionReference driveActionReference;
         [SerializeField] private InputActionReference brakeActionReference;
+
+        [Header("Debug")]
+        [SerializeField] private bool showInputDebug;
 
         public float SpeedKmh => vehicleBody != null ? vehicleBody.linearVelocity.magnitude * 3.6f : 0f;
         public bool CanDrive { get; set; } = true;
@@ -45,6 +51,7 @@ namespace SuperRacing.Vehicle
         private Quaternion initialRotation;
         private float flippedTimer;
         private bool hasCachedFriction;
+        private string lastInputSource = "None";
         private WheelFrictionCurve frontLeftSidewaysFriction;
         private WheelFrictionCurve frontRightSidewaysFriction;
         private WheelFrictionCurve rearLeftSidewaysFriction;
@@ -86,6 +93,10 @@ namespace SuperRacing.Vehicle
 
             driveInput = driveAction != null ? driveAction.ReadValue<Vector2>() : Vector2.zero;
             brakeInput = brakeAction != null && brakeAction.IsPressed();
+            lastInputSource = driveInput.sqrMagnitude > 0f || brakeInput ? "InputAction" : "None";
+
+            ApplyDirectKeyboardFallback();
+            ApplyLegacyInputFallback();
         }
 
         private void FixedUpdate()
@@ -114,6 +125,8 @@ namespace SuperRacing.Vehicle
             frontRightWheel.brakeTorque = appliedBrakeTorque;
             rearLeftWheel.brakeTorque = appliedBrakeTorque;
             rearRightWheel.brakeTorque = appliedBrakeTorque;
+
+            ApplyDriveAssist(appliedMotorTorque, overForwardSpeedLimit);
         }
 
         public void ResetVehicle(Vector3 position, Quaternion rotation)
@@ -122,6 +135,26 @@ namespace SuperRacing.Vehicle
             vehicleBody.linearVelocity = Vector3.zero;
             vehicleBody.angularVelocity = Vector3.zero;
             flippedTimer = 0f;
+        }
+
+        public void ApplyStats(CarDefinition stats)
+        {
+            if (stats == null)
+            {
+                return;
+            }
+
+            maxSpeedKmh = stats.MaxSpeedKmh;
+            motorTorque = stats.MotorTorque;
+            brakeTorque = stats.BrakeTorque;
+            maxSteerAngle = stats.SteeringAngle;
+            driveAssistAcceleration = Mathf.Clamp(stats.MotorTorque * 0.01f, 8f, 28f);
+
+            float grip = Mathf.Max(0.1f, stats.Grip);
+            lowSpeedSidewaysGrip = Mathf.Clamp(grip * 1.45f, 0.1f, 3f);
+            highSpeedSidewaysGrip = Mathf.Clamp(grip * 0.85f, 0.1f, 3f);
+            minSteerAngleAtTopSpeed = Mathf.Clamp(stats.SteeringAngle * 0.4f, 1f, stats.SteeringAngle);
+            CacheWheelFriction();
         }
 
         private void SetupInputActions()
@@ -190,12 +223,92 @@ namespace SuperRacing.Vehicle
             return true;
         }
 
+        private void ApplyDirectKeyboardFallback()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            float horizontal = 0f;
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
+            {
+                horizontal -= 1f;
+            }
+
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed)
+            {
+                horizontal += 1f;
+            }
+
+            float vertical = 0f;
+            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)
+            {
+                vertical -= 1f;
+            }
+
+            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)
+            {
+                vertical += 1f;
+            }
+
+            Vector2 keyboardInput = new Vector2(horizontal, vertical);
+            if (keyboardInput.sqrMagnitude > driveInput.sqrMagnitude)
+            {
+                driveInput = Vector2.ClampMagnitude(keyboardInput, 1f);
+                lastInputSource = "Keyboard.current";
+            }
+
+            if (keyboard.spaceKey.isPressed)
+            {
+                brakeInput = true;
+                lastInputSource = "Keyboard.current";
+            }
+        }
+
+        private void ApplyLegacyInputFallback()
+        {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Vector2 legacyInput = new Vector2(
+                UnityEngine.Input.GetAxisRaw("Horizontal"),
+                UnityEngine.Input.GetAxisRaw("Vertical"));
+
+            if (legacyInput.sqrMagnitude > driveInput.sqrMagnitude)
+            {
+                driveInput = Vector2.ClampMagnitude(legacyInput, 1f);
+                lastInputSource = "Legacy Input";
+            }
+
+            if (UnityEngine.Input.GetKey(KeyCode.Space))
+            {
+                brakeInput = true;
+                lastInputSource = "Legacy Input";
+            }
+#endif
+        }
+
         private void ResolveWheelReferences()
         {
-            frontLeftWheel ??= FindWheel("WheelColliders/WheelCollider_FL");
-            frontRightWheel ??= FindWheel("WheelColliders/WheelCollider_FR");
-            rearLeftWheel ??= FindWheel("WheelColliders/WheelCollider_RL");
-            rearRightWheel ??= FindWheel("WheelColliders/WheelCollider_RR");
+            if (frontLeftWheel == null)
+            {
+                frontLeftWheel = FindWheel("WheelColliders/WheelCollider_FL");
+            }
+
+            if (frontRightWheel == null)
+            {
+                frontRightWheel = FindWheel("WheelColliders/WheelCollider_FR");
+            }
+
+            if (rearLeftWheel == null)
+            {
+                rearLeftWheel = FindWheel("WheelColliders/WheelCollider_RL");
+            }
+
+            if (rearRightWheel == null)
+            {
+                rearRightWheel = FindWheel("WheelColliders/WheelCollider_RR");
+            }
         }
 
         private WheelCollider FindWheel(string relativePath)
@@ -206,6 +319,8 @@ namespace SuperRacing.Vehicle
 
         private bool HasAllWheels()
         {
+            ResolveWheelReferences();
+
             return frontLeftWheel != null &&
                    frontRightWheel != null &&
                    rearLeftWheel != null &&
@@ -256,6 +371,62 @@ namespace SuperRacing.Vehicle
             ApplySidewaysGrip(frontRightWheel, frontRightSidewaysFriction, stiffness);
             ApplySidewaysGrip(rearLeftWheel, rearLeftSidewaysFriction, stiffness);
             ApplySidewaysGrip(rearRightWheel, rearRightSidewaysFriction, stiffness);
+        }
+
+        private void ApplyDriveAssist(float appliedMotorTorque, bool overForwardSpeedLimit)
+        {
+            if (vehicleBody == null || driveAssistAcceleration <= 0f || !CanDrive)
+            {
+                return;
+            }
+
+            Vector3 planarVelocity = Vector3.ProjectOnPlane(vehicleBody.linearVelocity, Vector3.up);
+
+            if (brakeInput)
+            {
+                Vector3 dampedPlanarVelocity = Vector3.MoveTowards(
+                    planarVelocity,
+                    Vector3.zero,
+                    driveAssistAcceleration * 1.8f * Time.fixedDeltaTime);
+                vehicleBody.linearVelocity = dampedPlanarVelocity + Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
+                return;
+            }
+
+            bool hasThrottleInput = Mathf.Abs(driveInput.y) > 0.01f;
+            if (!hasThrottleInput || Mathf.Approximately(appliedMotorTorque, 0f) || overForwardSpeedLimit)
+            {
+                return;
+            }
+
+            float maxSpeedMetersPerSecond = maxSpeedKmh / 3.6f;
+            Vector3 targetPlanarVelocity = transform.forward * (driveInput.y * maxSpeedMetersPerSecond);
+            Vector3 assistedPlanarVelocity = Vector3.MoveTowards(
+                planarVelocity,
+                targetPlanarVelocity,
+                driveAssistAcceleration * Time.fixedDeltaTime);
+
+            vehicleBody.linearVelocity = assistedPlanarVelocity + Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
+
+            float speedForSteer = planarVelocity.magnitude;
+            float steerResponse = Mathf.Clamp01(speedForSteer / 8f);
+            float yawDegrees = driveInput.x * maxSteerAngle * steerResponse * Time.fixedDeltaTime;
+            if (Mathf.Abs(yawDegrees) > 0.001f)
+            {
+                vehicleBody.MoveRotation(vehicleBody.rotation * Quaternion.Euler(0f, yawDegrees, 0f));
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (!showInputDebug)
+            {
+                return;
+            }
+
+            string text = $"Vehicle: {name}\n" +
+                          $"Input: {driveInput} Brake: {brakeInput} Source: {lastInputSource}\n" +
+                          $"CanDrive: {CanDrive} Speed: {SpeedKmh:0.0} km/h";
+            GUI.Label(new Rect(12f, 12f, 420f, 72f), text);
         }
 
         private static void ApplySidewaysGrip(WheelCollider wheel, WheelFrictionCurve baseFriction, float stiffness)

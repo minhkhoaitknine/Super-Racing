@@ -1424,13 +1424,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b3b8bd9aec61d34693d34599aed434b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Vehicle.VehicleController
-  frontLeftWheel: {fileID: 0}
-  frontRightWheel: {fileID: 0}
-  rearLeftWheel: {fileID: 0}
-  rearRightWheel: {fileID: 0}
+  frontLeftWheel: {fileID: 599240972}
+  frontRightWheel: {fileID: 1044837308}
+  rearLeftWheel: {fileID: 1224490121}
+  rearRightWheel: {fileID: 379901396}
   motorTorque: 1400
   brakeTorque: 3000
   maxSpeedKmh: 120
+  driveAssistAcceleration: 18
   maxSteerAngle: 30
   minSteerAngleAtTopSpeed: 12
   lowSpeedSidewaysGrip: 1.45
@@ -1440,6 +1441,7 @@ MonoBehaviour:
   fallRespawnY: -10
   driveActionReference: {fileID: 0}
   brakeActionReference: {fileID: 0}
+  showInputDebug: 1
 --- !u!65 &1701936835
 BoxCollider:
   m_ObjectHideFlags: 0
