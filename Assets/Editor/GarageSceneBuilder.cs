@@ -150,7 +150,7 @@ namespace SuperRacing.EditorTools
             background.raycastTarget = false;
             Stretch(background.rectTransform);
 
-            Image shade = CreateImage("Readability Shade", canvas.transform, new Color(0.01f, 0.02f, 0.08f, 0.12f));
+            Image shade = CreateImage("Dark Garage Overlay", canvas.transform, new Color(0.005f, 0.015f, 0.045f, 0.78f));
             shade.raycastTarget = false;
             Stretch(shade.rectTransform);
 
@@ -158,49 +158,56 @@ namespace SuperRacing.EditorTools
             RawImage preview = previewObject.AddComponent<RawImage>();
             preview.texture = previewTexture;
             preview.raycastTarget = false;
-            SetAnchors(preview.rectTransform, new Vector2(0.18f, 0.12f), new Vector2(0.82f, 0.88f));
+            SetAnchors(preview.rectTransform, new Vector2(0.2f, 0.13f), new Vector2(0.75f, 0.88f));
 
-            Image topBar = CreateImage("Top Bar", canvas.transform, new Color(0.015f, 0.1f, 0.17f, 0.97f));
-            SetRect(topBar.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(1920f, 88f), new Vector2(0f, 1f));
-            Image topAccent = CreateImage("Top Accent", topBar.transform, new Color(1f, 0.55f, 0.08f, 1f));
-            topAccent.rectTransform.anchorMin = Vector2.zero;
-            topAccent.rectTransform.anchorMax = new Vector2(1f, 0f);
-            topAccent.rectTransform.pivot = new Vector2(0.5f, 0f);
-            topAccent.rectTransform.sizeDelta = new Vector2(0f, 5f);
-            Text title = CreateText("Garage Title", topBar.transform, "Garage", 42, TextAnchor.MiddleLeft, Color.white);
-            SetRect(title.rectTransform, new Vector2(0f, 0.5f), new Vector2(28f, 0f), new Vector2(460f, 72f), new Vector2(0f, 0.5f));
+            Image topStrip = CreateImage("Top Controls", canvas.transform, new Color(0.01f, 0.025f, 0.06f, 0.94f));
+            SetRect(topStrip.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(1920f, 86f), new Vector2(0f, 1f));
+            Button exitButton = CreateButton("Exit", "<<  EXIT", new Vector2(0f, 1f), new Vector2(105f, -43f), new Vector2(170f, 58f));
+            Text playerName = CreateText("Player Name", canvas.transform, "PLAYER", 27, TextAnchor.MiddleLeft, Color.white);
+            playerName.fontStyle = FontStyle.Bold;
+            SetRect(playerName.rectTransform, new Vector2(0f, 1f), new Vector2(220f, -43f), new Vector2(250f, 58f), new Vector2(0f, 0.5f));
+            Image adPanel = CreateImage("Ad Placeholder", canvas.transform, new Color(0.35f, 0.35f, 0.37f, 0.9f));
+            SetRect(adPanel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -43f), new Vector2(560f, 58f), new Vector2(0.5f, 0.5f));
+            Text adText = CreateText("Ad Label", adPanel.transform, "SELECT YOUR CAR", 24, TextAnchor.MiddleCenter, new Color(0.08f, 0.08f, 0.1f));
+            adText.fontStyle = FontStyle.Bold;
+            Stretch(adText.rectTransform);
+            Button settings = CreateButton("Settings", "*", new Vector2(1f, 1f), new Vector2(-285f, -43f), new Vector2(66f, 58f));
+            Image currency = CreateImage("Currency", canvas.transform, new Color(0.015f, 0.08f, 0.15f, 0.96f));
+            SetRect(currency.rectTransform, new Vector2(1f, 1f), new Vector2(-120f, -43f), new Vector2(200f, 58f), new Vector2(0.5f, 0.5f));
+            Text currencyText = CreateText("Currency Text", currency.transform, "1000   ●", 27, TextAnchor.MiddleCenter, Color.white);
+            currencyText.fontStyle = FontStyle.Bold;
+            Stretch(currencyText.rectTransform);
 
-            Text carName = CreateText("Car Name", canvas.transform, "SPORT GT", 52, TextAnchor.MiddleLeft, new Color(0.65f, 1f, 0.08f));
+            CreateCarThumbnail("CAR 1", previewTexture, new Vector2(48f, -155f), true);
+            CreateCarThumbnail("CAR 2", previewTexture, new Vector2(48f, -350f), false);
+            CreateCarThumbnail("CAR 3", previewTexture, new Vector2(48f, -545f), false);
+            CreateCarThumbnail("CAR 4", previewTexture, new Vector2(48f, -740f), false);
+
+            Text carName = CreateText("Car Name", canvas.transform, "SPORT GT", 31, TextAnchor.MiddleLeft, new Color(0.1f, 0.9f, 1f));
             carName.fontStyle = FontStyle.Bold;
-            SetRect(carName.rectTransform, new Vector2(0f, 0.5f), new Vector2(210f, 175f), new Vector2(520f, 82f), new Vector2(0f, 0.5f));
+            SetRect(carName.rectTransform, new Vector2(1f, 0.5f), new Vector2(-420f, 255f), new Vector2(310f, 54f), new Vector2(0f, 0.5f));
 
             Text powerValue;
             Text accelerationValue;
             Text handlingValue;
             Text gripValue;
-            Image powerFill = CreateStatBar("Power", new Vector2(0f, 0.5f), new Vector2(210f, 20f), out powerValue);
-            Image handlingFill = CreateStatBar("Handling", new Vector2(0f, 0.5f), new Vector2(210f, -135f), out handlingValue);
-            Image accelerationFill = CreateStatBar("Acceleration", new Vector2(1f, 0.5f), new Vector2(-640f, 20f), out accelerationValue);
-            Image gripFill = CreateStatBar("Road Grip", new Vector2(1f, 0.5f), new Vector2(-640f, -135f), out gripValue);
+            Image powerFill = CreateStatBar("TOP SPEED", new Vector2(1f, 0.5f), new Vector2(-420f, 160f), out powerValue);
+            Image accelerationFill = CreateStatBar("POWER", new Vector2(1f, 0.5f), new Vector2(-420f, 35f), out accelerationValue);
+            Image handlingFill = CreateStatBar("GRIP", new Vector2(1f, 0.5f), new Vector2(-420f, -90f), out handlingValue);
+            Image gripFill = CreateStatBar("DRIFT", new Vector2(1f, 0.5f), new Vector2(-420f, -215f), out gripValue);
 
-            Button previous = CreateButton("Previous Car", "<", new Vector2(0f, 0.5f), new Vector2(70f, 20f), new Vector2(76f, 76f));
-            Button next = CreateButton("Next Car", ">", new Vector2(1f, 0.5f), new Vector2(-70f, 20f), new Vector2(76f, 76f));
-
-            Image bottomBar = CreateImage("Bottom Bar", canvas.transform, new Color(0.025f, 0.12f, 0.2f, 0.98f));
-            SetRect(bottomBar.rectTransform, Vector2.zero, Vector2.zero, new Vector2(1920f, 132f), Vector2.zero);
-            Text bottomName = CreateText("Selected Car Name", bottomBar.transform, "SPORT GT", 30, TextAnchor.MiddleLeft, Color.white);
-            bottomName.fontStyle = FontStyle.Bold;
-            SetRect(bottomName.rectTransform, new Vector2(0f, 0.5f), new Vector2(30f, 20f), new Vector2(500f, 48f), new Vector2(0f, 0.5f));
-            Text rating = CreateText("Car Rating", bottomBar.transform, "★★★", 32, TextAnchor.MiddleLeft, new Color(1f, 0.78f, 0.08f));
-            SetRect(rating.rectTransform, new Vector2(0f, 0.5f), new Vector2(30f, -28f), new Vector2(300f, 46f), new Vector2(0f, 0.5f));
-            Button continueButton = CreateButton("Continue", "GO   >", new Vector2(1f, 0f), new Vector2(-145f, 66f), new Vector2(250f, 88f));
+            Button previous = CreateButton("Previous Car", "<", new Vector2(0f, 0.5f), new Vector2(440f, -10f), new Vector2(90f, 110f));
+            Button next = CreateButton("Next Car", ">", new Vector2(1f, 0.5f), new Vector2(-610f, -10f), new Vector2(90f, 110f));
+            Button continueButton = CreateButton("Continue", ">  PLAY", new Vector2(1f, 0f), new Vector2(-235f, 115f), new Vector2(390f, 135f));
+            SetButtonPalette(previous, new Color(1f, 0.82f, 0.02f, 1f));
+            SetButtonPalette(next, new Color(1f, 0.82f, 0.02f, 1f));
+            SetButtonPalette(continueButton, new Color(0.12f, 1f, 0.05f, 1f));
 
             var controllerObject = new GameObject("Garage Controller");
             GarageUI garage = controllerObject.AddComponent<GarageUI>();
             var serialized = new SerializedObject(garage);
             serialized.FindProperty("catalog").objectReferenceValue = catalog;
             serialized.FindProperty("carNameLabel").objectReferenceValue = carName;
-            serialized.FindProperty("secondaryCarNameLabel").objectReferenceValue = bottomName;
             serialized.FindProperty("powerFill").objectReferenceValue = powerFill;
             serialized.FindProperty("accelerationFill").objectReferenceValue = accelerationFill;
             serialized.FindProperty("handlingFill").objectReferenceValue = handlingFill;
@@ -210,7 +217,7 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("handlingValueLabel").objectReferenceValue = handlingValue;
             serialized.FindProperty("gripValueLabel").objectReferenceValue = gripValue;
             serialized.FindProperty("vehiclePreviewRoot").objectReferenceValue = previewRoot;
-            serialized.FindProperty("previewRotationSpeed").floatValue = 10f;
+            serialized.FindProperty("previewRotationSpeed").floatValue = 0f;
             serialized.FindProperty("previewTargetSize").floatValue = 4.7f;
             serialized.FindProperty("trackSelectionSceneName").stringValue = "Test_Race";
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -224,19 +231,19 @@ namespace SuperRacing.EditorTools
         {
             var group = CreateUIObject(label + " Stat", canvas.transform);
             RectTransform groupRect = group.GetComponent<RectTransform>();
-            SetRect(groupRect, anchor, position, new Vector2(430f, 100f), new Vector2(0f, 0.5f));
+            SetRect(groupRect, anchor, position, new Vector2(310f, 92f), new Vector2(0f, 0.5f));
 
-            Text title = CreateText("Label", group.transform, label, 27, TextAnchor.MiddleLeft, Color.white);
-            SetRect(title.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(280f, 42f), new Vector2(0f, 1f));
-            valueLabel = CreateText("Value", group.transform, "0 %", 22, TextAnchor.MiddleRight, new Color(0.88f, 0.9f, 0.92f));
-            SetRect(valueLabel.rectTransform, new Vector2(1f, 1f), Vector2.zero, new Vector2(130f, 42f), new Vector2(1f, 1f));
+            Text title = CreateText("Label", group.transform, label, 24, TextAnchor.MiddleLeft, Color.white);
+            SetRect(title.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(210f, 38f), new Vector2(0f, 1f));
+            valueLabel = CreateText("Value", group.transform, "0 %", 20, TextAnchor.MiddleRight, new Color(0.88f, 0.9f, 0.92f));
+            SetRect(valueLabel.rectTransform, new Vector2(1f, 1f), Vector2.zero, new Vector2(95f, 38f), new Vector2(1f, 1f));
 
             Image background = CreateImage("Bar Background", group.transform, new Color(0.15f, 0.19f, 0.22f, 0.94f));
             background.rectTransform.anchorMin = new Vector2(0f, 0f);
             background.rectTransform.anchorMax = new Vector2(1f, 0f);
             background.rectTransform.pivot = new Vector2(0.5f, 0f);
             background.rectTransform.anchoredPosition = new Vector2(0f, 8f);
-            background.rectTransform.sizeDelta = new Vector2(0f, 28f);
+            background.rectTransform.sizeDelta = new Vector2(0f, 22f);
 
             Image fill = CreateImage("Bar Fill", background.transform, new Color(0.58f, 1f, 0.05f, 1f));
             fill.type = Image.Type.Filled;
@@ -245,6 +252,25 @@ namespace SuperRacing.EditorTools
             fill.fillAmount = 0.5f;
             Stretch(fill.rectTransform);
             return fill;
+        }
+
+        private static void CreateCarThumbnail(string label, RenderTexture texture, Vector2 position, bool selected)
+        {
+            Image frame = CreateImage(label, canvas.transform,
+                selected ? new Color(0.05f, 0.75f, 1f, 0.98f) : new Color(0.02f, 0.18f, 0.3f, 0.95f));
+            SetRect(frame.rectTransform, new Vector2(0f, 1f), position, new Vector2(205f, 155f), new Vector2(0f, 1f));
+            Text title = CreateText("Label", frame.transform, label, 20, TextAnchor.MiddleLeft, Color.white);
+            SetRect(title.rectTransform, new Vector2(0f, 1f), new Vector2(8f, -5f), new Vector2(150f, 30f), new Vector2(0f, 1f));
+
+            var previewObject = CreateUIObject("Preview", frame.transform);
+            RawImage preview = previewObject.AddComponent<RawImage>();
+            preview.texture = texture;
+            preview.color = selected ? Color.white : new Color(0.35f, 0.42f, 0.5f, 0.75f);
+            preview.raycastTarget = false;
+            preview.rectTransform.anchorMin = Vector2.zero;
+            preview.rectTransform.anchorMax = Vector2.one;
+            preview.rectTransform.offsetMin = new Vector2(6f, 6f);
+            preview.rectTransform.offsetMax = new Vector2(-6f, -34f);
         }
 
         private static GameObject CreateUIObject(string name, Transform parent)
@@ -289,6 +315,17 @@ namespace SuperRacing.EditorTools
             text.fontStyle = FontStyle.Bold;
             Stretch(text.rectTransform);
             return button;
+        }
+
+        private static void SetButtonPalette(Button button, Color normal)
+        {
+            button.image.color = Color.white;
+            ColorBlock colors = button.colors;
+            colors.normalColor = normal;
+            colors.highlightedColor = Color.Lerp(normal, Color.white, 0.25f);
+            colors.pressedColor = Color.Lerp(normal, Color.black, 0.25f);
+            colors.selectedColor = colors.highlightedColor;
+            button.colors = colors;
         }
 
         private static void SetRect(RectTransform rect, Vector2 anchor, Vector2 position, Vector2 size, Vector2 pivot)

@@ -132,8 +132,8 @@ namespace SuperRacing.UI
 
             SetStat(powerFill, powerValueLabel, car.MaxSpeedKmh / 250f);
             SetStat(accelerationFill, accelerationValueLabel, car.MotorTorque / 3000f);
-            SetStat(handlingFill, handlingValueLabel, car.SteeringAngle / 45f);
-            SetStat(gripFill, gripValueLabel, car.Grip / 1.5f);
+            SetStat(handlingFill, handlingValueLabel, car.Grip / 1.5f);
+            SetStat(gripFill, gripValueLabel, car.SteeringAngle / 45f);
 
             if (previewImage != null)
             {
@@ -170,7 +170,7 @@ namespace SuperRacing.UI
                 return;
             }
 
-            vehiclePreviewRoot.rotation = Quaternion.Euler(0f, -25f, 0f);
+            vehiclePreviewRoot.rotation = Quaternion.identity;
             previewVehicle = Instantiate(car.VehiclePrefab, vehiclePreviewRoot, false);
             previewVehicle.name = $"{car.DisplayName} Preview";
             previewVehicle.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
