@@ -25,6 +25,14 @@ namespace SuperRacing.Vehicle
         [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.45f;
         [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 0.85f;
 
+        [Header("Drift / Handbrake")]
+        [SerializeField] private bool driftEnabled = true;
+        [SerializeField, Min(0f)] private float handbrakeTorque = 4000f;
+        [SerializeField, Range(0.05f, 2f)] private float rearDriftSidewaysGrip = 0.5f;
+        [SerializeField, Min(0.1f)] private float driftGripResponse = 16f;
+        [SerializeField, Min(0f)] private float minimumDriftSpeedKmh = 18f;
+        [SerializeField, Min(0f)] private float driftYawAssist = 0.5f;
+
         [Header("Respawn")]
         [SerializeField, Min(0.1f)] private float flippedRespawnDelay = 2f;
         [SerializeField, Range(0f, 1f)] private float flippedUpDotThreshold = 0.25f;
@@ -39,6 +47,7 @@ namespace SuperRacing.Vehicle
 
         public float SpeedKmh => vehicleBody != null ? vehicleBody.linearVelocity.magnitude * 3.6f : 0f;
         public bool CanDrive { get; set; } = true;
+        public bool IsDrifting { get; private set; }
 
         private Rigidbody vehicleBody;
         private InputAction fallbackDriveAction;
@@ -107,7 +116,8 @@ namespace SuperRacing.Vehicle
             }
 
             UpdateRespawnState();
-            UpdateGripForSpeed();
+            IsDrifting = driftEnabled && CanDrive && brakeInput && SpeedKmh >= minimumDriftSpeedKmh;
+            UpdateGripForSpeed(IsDrifting);
 
             float speed01 = Mathf.Clamp01(SpeedKmh / Mathf.Max(1f, maxSpeedKmh));
             float steerLimit = Mathf.Lerp(maxSteerAngle, minSteerAngleAtTopSpeed, speed01);
@@ -120,13 +130,17 @@ namespace SuperRacing.Vehicle
             rearLeftWheel.motorTorque = appliedMotorTorque;
             rearRightWheel.motorTorque = appliedMotorTorque;
 
-            float appliedBrakeTorque = brakeInput || !CanDrive ? brakeTorque : 0f;
-            frontLeftWheel.brakeTorque = appliedBrakeTorque;
-            frontRightWheel.brakeTorque = appliedBrakeTorque;
-            rearLeftWheel.brakeTorque = appliedBrakeTorque;
-            rearRightWheel.brakeTorque = appliedBrakeTorque;
+            float frontBrakeTorque = !CanDrive ? brakeTorque : 0f;
+            float rearBrakeTorque = !CanDrive
+                ? brakeTorque
+                : brakeInput ? handbrakeTorque : 0f;
+            frontLeftWheel.brakeTorque = frontBrakeTorque;
+            frontRightWheel.brakeTorque = frontBrakeTorque;
+            rearLeftWheel.brakeTorque = rearBrakeTorque;
+            rearRightWheel.brakeTorque = rearBrakeTorque;
 
             ApplyDriveAssist(appliedMotorTorque, overForwardSpeedLimit);
+            ApplyDriftYawAssist();
         }
 
         public void ResetVehicle(Vector3 position, Quaternion rotation)
@@ -358,7 +372,7 @@ namespace SuperRacing.Vehicle
             hasCachedFriction = true;
         }
 
-        private void UpdateGripForSpeed()
+        private void UpdateGripForSpeed(bool drifting)
         {
             if (!hasCachedFriction)
             {
@@ -369,8 +383,21 @@ namespace SuperRacing.Vehicle
             float stiffness = Mathf.Lerp(lowSpeedSidewaysGrip, highSpeedSidewaysGrip, speed01);
             ApplySidewaysGrip(frontLeftWheel, frontLeftSidewaysFriction, stiffness);
             ApplySidewaysGrip(frontRightWheel, frontRightSidewaysFriction, stiffness);
-            ApplySidewaysGrip(rearLeftWheel, rearLeftSidewaysFriction, stiffness);
-            ApplySidewaysGrip(rearRightWheel, rearRightSidewaysFriction, stiffness);
+            float targetRearGrip = drifting ? rearDriftSidewaysGrip : stiffness;
+            float rearLeftGrip = Mathf.MoveTowards(rearLeftWheel.sidewaysFriction.stiffness, targetRearGrip, driftGripResponse * Time.fixedDeltaTime);
+            float rearRightGrip = Mathf.MoveTowards(rearRightWheel.sidewaysFriction.stiffness, targetRearGrip, driftGripResponse * Time.fixedDeltaTime);
+            ApplySidewaysGrip(rearLeftWheel, rearLeftSidewaysFriction, rearLeftGrip);
+            ApplySidewaysGrip(rearRightWheel, rearRightSidewaysFriction, rearRightGrip);
+        }
+
+        private void ApplyDriftYawAssist()
+        {
+            if (!IsDrifting || vehicleBody == null || Mathf.Abs(driveInput.x) < 0.01f)
+            {
+                return;
+            }
+
+            vehicleBody.AddTorque(Vector3.up * (driveInput.x * driftYawAssist), ForceMode.Acceleration);
         }
 
         private void ApplyDriveAssist(float appliedMotorTorque, bool overForwardSpeedLimit)
@@ -384,6 +411,11 @@ namespace SuperRacing.Vehicle
 
             if (brakeInput)
             {
+                if (driftEnabled)
+                {
+                    return;
+                }
+
                 Vector3 dampedPlanarVelocity = Vector3.MoveTowards(
                     planarVelocity,
                     Vector3.zero,
