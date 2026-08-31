@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Project Path="SuperRacing.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="SuperRacing.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="SuperRacing.EditModeTests.csproj" />
 </Solution>

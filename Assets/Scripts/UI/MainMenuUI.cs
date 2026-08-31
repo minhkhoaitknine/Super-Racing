@@ -7,10 +7,22 @@ namespace SuperRacing.UI
     public sealed class MainMenuUI : MonoBehaviour
     {
         [SerializeField] private string garageSceneName = "Garage";
+        [SerializeField] private string trackSelectionSceneName = "TrackSelection";
 
         public void OpenGarage()
         {
             SceneManager.LoadScene(garageSceneName);
+        }
+
+        public void OpenTrackSelection()
+        {
+            if (Application.CanStreamedLevelBeLoaded(trackSelectionSceneName))
+            {
+                SceneManager.LoadScene(trackSelectionSceneName);
+                return;
+            }
+
+            Debug.LogWarning($"Track selection scene '{trackSelectionSceneName}' is not available yet.");
         }
 
         public void QuitGame()

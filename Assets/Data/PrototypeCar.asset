@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: PrototypeCar
   m_EditorClassIdentifier: SuperRacing::SuperRacing.Data.CarDefinition
   carId: prototype
-  displayName: Prototype
-  vehiclePrefab: {fileID: 0}
+  displayName: SPORT GT
+  vehiclePrefab: {fileID: 4541279223708551992, guid: fb8f58877e7b4b64cb0a23f0c268c8c8, type: 3}
   previewSprite: {fileID: 0}
-  maxSpeedKmh: 80
-  motorTorque: 1800
+  maxSpeedKmh: 180
+  motorTorque: 2200
   brakeTorque: 3000
-  steeringAngle: 30
-  grip: 1
+  steeringAngle: 32
+  grip: 1.15
