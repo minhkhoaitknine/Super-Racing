@@ -16,11 +16,11 @@ namespace SuperRacing.Vehicle
         [SerializeField] private WheelCollider rearRightWheel;
 
         [Header("Prototype Tuning")]
-        [SerializeField, Min(0f)] private float motorTorque = 1400f;
+        [SerializeField, Min(0f)] private float motorTorque = 1000f;
         [SerializeField, Min(0f)] private float brakeTorque = 3000f;
         [SerializeField, Min(1f)] private float maxSpeedKmh = 120f;
-        [SerializeField, Min(0f)] private float driveAssistAcceleration = 18f;
-        [SerializeField, Range(0f, 60f)] private float maxSteerAngle = 25f;
+        [SerializeField, Min(0f)] private float driveAssistAcceleration = 1f;
+        [SerializeField, Range(0f, 60f)] private float maxSteerAngle = 30f;
         [SerializeField, Range(0f, 60f)] private float minSteerAngleAtTopSpeed = 10f;
         [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.45f;
         [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 0.85f;
