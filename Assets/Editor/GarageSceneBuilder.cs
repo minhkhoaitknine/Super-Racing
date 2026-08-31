@@ -175,15 +175,17 @@ namespace SuperRacing.EditorTools
                 Object.DestroyImmediate(texture);
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 
-                TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (importer != null)
-                {
-                    importer.textureType = TextureImporterType.Sprite;
-                    importer.spriteBorder = spriteBorder;
-                    importer.alphaIsTransparency = true;
-                    importer.mipmapEnabled = false;
-                    importer.SaveAndReimport();
-                }
+            }
+
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.spriteBorder = spriteBorder;
+                importer.alphaIsTransparency = true;
+                importer.mipmapEnabled = false;
+                importer.SaveAndReimport();
             }
 
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
@@ -362,14 +364,6 @@ namespace SuperRacing.EditorTools
             GaragePreviewRotator rotator = previewObject.AddComponent<GaragePreviewRotator>();
             rotator.SetTarget(previewRoot);
 
-            Image rotateHintPanel = CreateImage("Rotate Hint", canvas.transform, Color.white);
-            rotateHintPanel.sprite = glassPanelBg;
-            rotateHintPanel.type = Image.Type.Sliced;
-            SetRect(rotateHintPanel.rectTransform, new Vector2(0.5f, 0f), new Vector2(-70f, 82f), new Vector2(260f, 42f), new Vector2(0.5f, 0.5f));
-            Text rotateHint = CreateText("Rotate Hint Label", rotateHintPanel.transform, "↔  DRAG TO ROTATE 360°", 15, TextAnchor.MiddleCenter, new Color(0.72f, 0.93f, 1f));
-            rotateHint.fontStyle = FontStyle.Bold;
-            Stretch(rotateHint.rectTransform);
-
             // 4. Top Navigation Bar (Translucent Glass Strip)
             Image topStrip = CreateImage("Top Controls", canvas.transform, new Color(0.025f, 0.06f, 0.12f, 0.65f));
             topStrip.sprite = glassPanelBg;
@@ -421,7 +415,7 @@ namespace SuperRacing.EditorTools
             Button car4Btn = CreateCarCard("CAR 4", previewTexture, new Vector2(36f, -535f), false, "PHANTOM");
 
             // 6. Right Vehicle Stats Panel (Glassmorphism)
-            Image statsPanel = CreateImage("Performance Panel", canvas.transform, new Color(0.035f, 0.075f, 0.15f, 0.70f));
+            Image statsPanel = CreateImage("Performance Panel", canvas.transform, new Color(0.32f, 0.48f, 0.68f, 1f));
             statsPanel.sprite = glassPanelBg;
             statsPanel.type = Image.Type.Sliced;
             SetRect(statsPanel.rectTransform, new Vector2(1f, 0.5f), new Vector2(-240f, 40f), new Vector2(410f, 580f), new Vector2(0.5f, 0.5f));
@@ -474,8 +468,8 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("vehiclePreviewRoot").objectReferenceValue = previewRoot;
             serialized.FindProperty("previewRotationSpeed").floatValue = 0f;
             serialized.FindProperty("previewTargetSize").floatValue = 3.25f;
-            serialized.FindProperty("vehiclePositionOffset").vector3Value = new Vector3(0f, -0.56f, 0f);
-            serialized.FindProperty("vehicleRotationEuler").vector3Value = new Vector3(0f, 12f, 0f);
+            serialized.FindProperty("vehiclePositionOffset").vector3Value = new Vector3(0f, -0.78f, 0f);
+            serialized.FindProperty("vehicleRotationEuler").vector3Value = new Vector3(0f, 5f, 0f);
             serialized.FindProperty("trackSelectionSceneName").stringValue = "Test_Race";
             serialized.FindProperty("mainMenuSceneName").stringValue = "MainMenu";
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -580,8 +574,8 @@ namespace SuperRacing.EditorTools
             Button button = image.gameObject.AddComponent<Button>();
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
-            colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+            colors.highlightedColor = new Color(0.90f, 1f, 1f, 1f);
+            colors.pressedColor = new Color(0.72f, 0.82f, 0.88f, 1f);
             colors.selectedColor = colors.normalColor;
             button.colors = colors;
 
