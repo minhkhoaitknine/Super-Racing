@@ -22,9 +22,11 @@ namespace SuperRacing.UI
         [SerializeField] private Text handlingValueLabel;
         [SerializeField] private Text gripValueLabel;
         [SerializeField] private Transform vehiclePreviewRoot;
-        [SerializeField, Min(0f)] private float previewRotationSpeed = 12f;
-        [SerializeField, Min(0.1f)] private float previewTargetSize = 4.5f;
-        [SerializeField] private string trackSelectionSceneName = "TrackSelection";
+        [SerializeField, Min(0f)] private float previewRotationSpeed = 0f;
+        [SerializeField, Min(0.1f)] private float previewTargetSize = 3.25f;
+        [SerializeField] private Vector3 vehiclePositionOffset = new Vector3(0f, -0.56f, 0f);
+        [SerializeField] private Vector3 vehicleRotationEuler = new Vector3(0f, 12f, 0f);
+        [SerializeField] private string trackSelectionSceneName = "Test_Race";
         [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         private int selectedIndex;
@@ -44,10 +46,21 @@ namespace SuperRacing.UI
 
         private void Update()
         {
-            if (vehiclePreviewRoot != null)
+            if (vehiclePreviewRoot != null && previewRotationSpeed > 0f)
             {
                 vehiclePreviewRoot.Rotate(0f, previewRotationSpeed * Time.deltaTime, 0f, Space.World);
             }
+        }
+
+        public void SelectCar(int index)
+        {
+            if (catalog == null || catalog.Cars.Count == 0)
+            {
+                return;
+            }
+
+            selectedIndex = WrapIndex(index, catalog.Cars.Count);
+            RefreshView();
         }
 
         public void SelectPrevious()
@@ -206,8 +219,15 @@ namespace SuperRacing.UI
                 bounds.Encapsulate(renderers[index].bounds);
             }
 
-            vehicle.transform.position -= bounds.center;
-            vehicle.transform.position += Vector3.down * (bounds.extents.y * 0.2f);
+            // Align horizontally to center, align bottom of wheels to ground level + offset
+            Vector3 targetPosition = vehiclePreviewRoot.position;
+            targetPosition.x -= bounds.center.x;
+            targetPosition.z -= bounds.center.z;
+            targetPosition.y -= bounds.min.y;
+            targetPosition += vehiclePositionOffset;
+
+            vehicle.transform.position = targetPosition;
+            vehicle.transform.localRotation = Quaternion.Euler(vehicleRotationEuler);
         }
 
         private static void DisableVehicleBehaviour(GameObject vehicle)
