@@ -27,11 +27,11 @@ namespace SuperRacing.Vehicle
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
-        [SerializeField, Min(0f)] private float handbrakeTorque = 4200f;
-        [SerializeField, Range(0.05f, 2f)] private float rearDriftSidewaysGrip = 0.42f;
-        [SerializeField, Min(0.1f)] private float driftGripResponse = 6f;
+        [SerializeField, Min(0f)] private float handbrakeTorque = 4000f;
+        [SerializeField, Range(0.05f, 2f)] private float rearDriftSidewaysGrip = 0.5f;
+        [SerializeField, Min(0.1f)] private float driftGripResponse = 16f;
         [SerializeField, Min(0f)] private float minimumDriftSpeedKmh = 18f;
-        [SerializeField, Min(0f)] private float driftYawAssist = 2.5f;
+        [SerializeField, Min(0f)] private float driftYawAssist = 0.5f;
 
         [Header("Respawn")]
         [SerializeField, Min(0.1f)] private float flippedRespawnDelay = 2f;
