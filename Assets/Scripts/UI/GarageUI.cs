@@ -10,8 +10,17 @@ namespace SuperRacing.UI
     {
         [SerializeField] private GameCatalog catalog;
         [SerializeField] private Text carNameLabel;
+        [SerializeField] private Text secondaryCarNameLabel;
         [SerializeField] private Text statsLabel;
         [SerializeField] private Image previewImage;
+        [SerializeField] private Image powerFill;
+        [SerializeField] private Image accelerationFill;
+        [SerializeField] private Image handlingFill;
+        [SerializeField] private Image gripFill;
+        [SerializeField] private Text powerValueLabel;
+        [SerializeField] private Text accelerationValueLabel;
+        [SerializeField] private Text handlingValueLabel;
+        [SerializeField] private Text gripValueLabel;
         [SerializeField] private Transform vehiclePreviewRoot;
         [SerializeField, Min(0f)] private float previewRotationSpeed = 12f;
         [SerializeField, Min(0.1f)] private float previewTargetSize = 4.5f;
@@ -66,9 +75,9 @@ namespace SuperRacing.UI
 
         public bool ValidateConfiguration()
         {
-            if (catalog == null || catalog.Cars.Count == 0 || carNameLabel == null || statsLabel == null)
+            if (catalog == null || catalog.Cars.Count == 0 || carNameLabel == null)
             {
-                Debug.LogError("GarageUI requires a catalog with at least one car and its text labels.", this);
+                Debug.LogError("GarageUI requires a catalog with at least one car and a car name label.", this);
                 return false;
             }
 
@@ -107,11 +116,24 @@ namespace SuperRacing.UI
         {
             CarDefinition car = catalog.Cars[selectedIndex];
             carNameLabel.text = car.DisplayName;
-            statsLabel.text =
-                $"Top Speed  {car.MaxSpeedKmh:0} km/h\n" +
-                $"Acceleration  {car.MotorTorque:0}\n" +
-                $"Steering  {car.SteeringAngle:0}\n" +
-                $"Grip  {car.Grip:0.0}";
+            if (secondaryCarNameLabel != null)
+            {
+                secondaryCarNameLabel.text = car.DisplayName;
+            }
+
+            if (statsLabel != null)
+            {
+                statsLabel.text =
+                    $"Top Speed  {car.MaxSpeedKmh:0} km/h\n" +
+                    $"Acceleration  {car.MotorTorque:0}\n" +
+                    $"Steering  {car.SteeringAngle:0}\n" +
+                    $"Grip  {car.Grip:0.0}";
+            }
+
+            SetStat(powerFill, powerValueLabel, car.MaxSpeedKmh / 250f);
+            SetStat(accelerationFill, accelerationValueLabel, car.MotorTorque / 3000f);
+            SetStat(handlingFill, handlingValueLabel, car.SteeringAngle / 45f);
+            SetStat(gripFill, gripValueLabel, car.Grip / 1.5f);
 
             if (previewImage != null)
             {
@@ -120,6 +142,20 @@ namespace SuperRacing.UI
             }
 
             RefreshVehiclePreview(car);
+        }
+
+        private static void SetStat(Image fill, Text valueLabel, float normalizedValue)
+        {
+            float value = Mathf.Clamp01(normalizedValue);
+            if (fill != null)
+            {
+                fill.fillAmount = value;
+            }
+
+            if (valueLabel != null)
+            {
+                valueLabel.text = $"{value * 100f:0} %";
+            }
         }
 
         private void RefreshVehiclePreview(CarDefinition car)
@@ -171,7 +207,7 @@ namespace SuperRacing.UI
             }
 
             vehicle.transform.position -= bounds.center;
-            vehicle.transform.position += Vector3.up * (bounds.extents.y * 0.35f);
+            vehicle.transform.position += Vector3.down * (bounds.extents.y * 0.2f);
         }
 
         private static void DisableVehicleBehaviour(GameObject vehicle)

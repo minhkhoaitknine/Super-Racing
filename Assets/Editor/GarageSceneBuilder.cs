@@ -150,7 +150,7 @@ namespace SuperRacing.EditorTools
             background.raycastTarget = false;
             Stretch(background.rectTransform);
 
-            Image shade = CreateImage("Readability Shade", canvas.transform, new Color(0.01f, 0.02f, 0.08f, 0.28f));
+            Image shade = CreateImage("Readability Shade", canvas.transform, new Color(0.01f, 0.02f, 0.08f, 0.12f));
             shade.raycastTarget = false;
             Stretch(shade.rectTransform);
 
@@ -158,42 +158,57 @@ namespace SuperRacing.EditorTools
             RawImage preview = previewObject.AddComponent<RawImage>();
             preview.texture = previewTexture;
             preview.raycastTarget = false;
-            SetAnchors(preview.rectTransform, new Vector2(0.16f, 0.12f), new Vector2(0.84f, 0.82f));
+            SetAnchors(preview.rectTransform, new Vector2(0.18f, 0.12f), new Vector2(0.82f, 0.88f));
 
-            Text title = CreateText("Garage Title", canvas.transform, "GARAGE", 42, TextAnchor.MiddleLeft, new Color(0.3f, 0.95f, 1f));
-            title.fontStyle = FontStyle.Bold;
-            SetRect(title.rectTransform, new Vector2(0f, 1f), new Vector2(58f, -42f), new Vector2(460f, 80f), new Vector2(0f, 1f));
+            Image topBar = CreateImage("Top Bar", canvas.transform, new Color(0.015f, 0.1f, 0.17f, 0.97f));
+            SetRect(topBar.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(1920f, 88f), new Vector2(0f, 1f));
+            Image topAccent = CreateImage("Top Accent", topBar.transform, new Color(1f, 0.55f, 0.08f, 1f));
+            topAccent.rectTransform.anchorMin = Vector2.zero;
+            topAccent.rectTransform.anchorMax = new Vector2(1f, 0f);
+            topAccent.rectTransform.pivot = new Vector2(0.5f, 0f);
+            topAccent.rectTransform.sizeDelta = new Vector2(0f, 5f);
+            Text title = CreateText("Garage Title", topBar.transform, "Garage", 42, TextAnchor.MiddleLeft, Color.white);
+            SetRect(title.rectTransform, new Vector2(0f, 0.5f), new Vector2(28f, 0f), new Vector2(460f, 72f), new Vector2(0f, 0.5f));
 
-            Text carName = CreateText("Car Name", canvas.transform, "SPORT GT", 52, TextAnchor.MiddleCenter, Color.white);
+            Text carName = CreateText("Car Name", canvas.transform, "SPORT GT", 52, TextAnchor.MiddleLeft, new Color(0.65f, 1f, 0.08f));
             carName.fontStyle = FontStyle.Bold;
-            SetRect(carName.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 58f), new Vector2(720f, 80f), new Vector2(0.5f, 0f));
+            SetRect(carName.rectTransform, new Vector2(0f, 0.5f), new Vector2(210f, 175f), new Vector2(520f, 82f), new Vector2(0f, 0.5f));
 
-            Image statsPanel = CreateImage("Stats Panel", canvas.transform, new Color(0.015f, 0.025f, 0.09f, 0.86f));
-            SetRect(statsPanel.rectTransform, Vector2.zero, new Vector2(48f, 48f), new Vector2(420f, 245f), Vector2.zero);
-            Text statsTitle = CreateText("Stats Title", statsPanel.transform, "PERFORMANCE", 24, TextAnchor.MiddleLeft, new Color(0.9f, 0.25f, 0.9f));
-            statsTitle.fontStyle = FontStyle.Bold;
-            statsTitle.rectTransform.anchorMin = new Vector2(0f, 1f);
-            statsTitle.rectTransform.anchorMax = Vector2.one;
-            statsTitle.rectTransform.pivot = new Vector2(0.5f, 1f);
-            statsTitle.rectTransform.anchoredPosition = new Vector2(0f, -16f);
-            statsTitle.rectTransform.sizeDelta = new Vector2(-40f, 42f);
-            Text stats = CreateText("Stats", statsPanel.transform, string.Empty, 23, TextAnchor.UpperLeft, Color.white);
-            stats.rectTransform.anchorMin = Vector2.zero;
-            stats.rectTransform.anchorMax = Vector2.one;
-            stats.rectTransform.offsetMin = new Vector2(24f, 18f);
-            stats.rectTransform.offsetMax = new Vector2(-24f, -64f);
-            stats.lineSpacing = 1.35f;
+            Text powerValue;
+            Text accelerationValue;
+            Text handlingValue;
+            Text gripValue;
+            Image powerFill = CreateStatBar("Power", new Vector2(0f, 0.5f), new Vector2(210f, 20f), out powerValue);
+            Image handlingFill = CreateStatBar("Handling", new Vector2(0f, 0.5f), new Vector2(210f, -135f), out handlingValue);
+            Image accelerationFill = CreateStatBar("Acceleration", new Vector2(1f, 0.5f), new Vector2(-640f, 20f), out accelerationValue);
+            Image gripFill = CreateStatBar("Road Grip", new Vector2(1f, 0.5f), new Vector2(-640f, -135f), out gripValue);
 
-            Button previous = CreateButton("Previous Car", "<", new Vector2(0f, 0.5f), new Vector2(90f, 0f), new Vector2(82f, 110f));
-            Button next = CreateButton("Next Car", ">", new Vector2(1f, 0.5f), new Vector2(-90f, 0f), new Vector2(82f, 110f));
-            Button continueButton = CreateButton("Continue", "CONTINUE", new Vector2(1f, 0f), new Vector2(-195f, 105f), new Vector2(300f, 92f));
+            Button previous = CreateButton("Previous Car", "<", new Vector2(0f, 0.5f), new Vector2(70f, 20f), new Vector2(76f, 76f));
+            Button next = CreateButton("Next Car", ">", new Vector2(1f, 0.5f), new Vector2(-70f, 20f), new Vector2(76f, 76f));
+
+            Image bottomBar = CreateImage("Bottom Bar", canvas.transform, new Color(0.025f, 0.12f, 0.2f, 0.98f));
+            SetRect(bottomBar.rectTransform, Vector2.zero, Vector2.zero, new Vector2(1920f, 132f), Vector2.zero);
+            Text bottomName = CreateText("Selected Car Name", bottomBar.transform, "SPORT GT", 30, TextAnchor.MiddleLeft, Color.white);
+            bottomName.fontStyle = FontStyle.Bold;
+            SetRect(bottomName.rectTransform, new Vector2(0f, 0.5f), new Vector2(30f, 20f), new Vector2(500f, 48f), new Vector2(0f, 0.5f));
+            Text rating = CreateText("Car Rating", bottomBar.transform, "★★★", 32, TextAnchor.MiddleLeft, new Color(1f, 0.78f, 0.08f));
+            SetRect(rating.rectTransform, new Vector2(0f, 0.5f), new Vector2(30f, -28f), new Vector2(300f, 46f), new Vector2(0f, 0.5f));
+            Button continueButton = CreateButton("Continue", "GO   >", new Vector2(1f, 0f), new Vector2(-145f, 66f), new Vector2(250f, 88f));
 
             var controllerObject = new GameObject("Garage Controller");
             GarageUI garage = controllerObject.AddComponent<GarageUI>();
             var serialized = new SerializedObject(garage);
             serialized.FindProperty("catalog").objectReferenceValue = catalog;
             serialized.FindProperty("carNameLabel").objectReferenceValue = carName;
-            serialized.FindProperty("statsLabel").objectReferenceValue = stats;
+            serialized.FindProperty("secondaryCarNameLabel").objectReferenceValue = bottomName;
+            serialized.FindProperty("powerFill").objectReferenceValue = powerFill;
+            serialized.FindProperty("accelerationFill").objectReferenceValue = accelerationFill;
+            serialized.FindProperty("handlingFill").objectReferenceValue = handlingFill;
+            serialized.FindProperty("gripFill").objectReferenceValue = gripFill;
+            serialized.FindProperty("powerValueLabel").objectReferenceValue = powerValue;
+            serialized.FindProperty("accelerationValueLabel").objectReferenceValue = accelerationValue;
+            serialized.FindProperty("handlingValueLabel").objectReferenceValue = handlingValue;
+            serialized.FindProperty("gripValueLabel").objectReferenceValue = gripValue;
             serialized.FindProperty("vehiclePreviewRoot").objectReferenceValue = previewRoot;
             serialized.FindProperty("previewRotationSpeed").floatValue = 10f;
             serialized.FindProperty("previewTargetSize").floatValue = 4.7f;
@@ -203,6 +218,33 @@ namespace SuperRacing.EditorTools
             UnityEventTools.AddPersistentListener(previous.onClick, garage.SelectPrevious);
             UnityEventTools.AddPersistentListener(next.onClick, garage.SelectNext);
             UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ConfirmSelection);
+        }
+
+        private static Image CreateStatBar(string label, Vector2 anchor, Vector2 position, out Text valueLabel)
+        {
+            var group = CreateUIObject(label + " Stat", canvas.transform);
+            RectTransform groupRect = group.GetComponent<RectTransform>();
+            SetRect(groupRect, anchor, position, new Vector2(430f, 100f), new Vector2(0f, 0.5f));
+
+            Text title = CreateText("Label", group.transform, label, 27, TextAnchor.MiddleLeft, Color.white);
+            SetRect(title.rectTransform, new Vector2(0f, 1f), Vector2.zero, new Vector2(280f, 42f), new Vector2(0f, 1f));
+            valueLabel = CreateText("Value", group.transform, "0 %", 22, TextAnchor.MiddleRight, new Color(0.88f, 0.9f, 0.92f));
+            SetRect(valueLabel.rectTransform, new Vector2(1f, 1f), Vector2.zero, new Vector2(130f, 42f), new Vector2(1f, 1f));
+
+            Image background = CreateImage("Bar Background", group.transform, new Color(0.15f, 0.19f, 0.22f, 0.94f));
+            background.rectTransform.anchorMin = new Vector2(0f, 0f);
+            background.rectTransform.anchorMax = new Vector2(1f, 0f);
+            background.rectTransform.pivot = new Vector2(0.5f, 0f);
+            background.rectTransform.anchoredPosition = new Vector2(0f, 8f);
+            background.rectTransform.sizeDelta = new Vector2(0f, 28f);
+
+            Image fill = CreateImage("Bar Fill", background.transform, new Color(0.58f, 1f, 0.05f, 1f));
+            fill.type = Image.Type.Filled;
+            fill.fillMethod = Image.FillMethod.Horizontal;
+            fill.fillOrigin = 0;
+            fill.fillAmount = 0.5f;
+            Stretch(fill.rectTransform);
+            return fill;
         }
 
         private static GameObject CreateUIObject(string name, Transform parent)
