@@ -104,14 +104,14 @@ namespace SuperRacing.EditorTools
 
             var cameraObject = new GameObject("Garage Preview Camera");
             cameraObject.tag = "MainCamera";
-            cameraObject.transform.position = new Vector3(0f, 2.2f, 7.5f);
+            cameraObject.transform.position = new Vector3(0f, 1.4f, 8.2f);
             cameraObject.transform.rotation = Quaternion.LookRotation(
-                new Vector3(0f, 0.65f, 0f) - cameraObject.transform.position);
+                new Vector3(0f, 0.52f, 0f) - cameraObject.transform.position);
             Camera previewCamera = cameraObject.AddComponent<Camera>();
             previewCamera.clearFlags = CameraClearFlags.SolidColor;
             previewCamera.backgroundColor = Color.clear;
             previewCamera.cullingMask = 1 << layer;
-            previewCamera.fieldOfView = 38f;
+            previewCamera.fieldOfView = 34f;
             previewCamera.nearClipPlane = 0.1f;
             previewCamera.farClipPlane = 50f;
             previewCamera.targetTexture = texture;
@@ -183,6 +183,12 @@ namespace SuperRacing.EditorTools
             CreateCarThumbnail("CAR 3", previewTexture, new Vector2(48f, -545f), false);
             CreateCarThumbnail("CAR 4", previewTexture, new Vector2(48f, -740f), false);
 
+            Image statsPanel = CreateImage("Performance Panel", canvas.transform, new Color(0.01f, 0.045f, 0.09f, 0.9f));
+            SetRect(statsPanel.rectTransform, new Vector2(1f, 0.5f), new Vector2(-450f, 8f), new Vector2(390f, 620f), new Vector2(0f, 0.5f));
+            Outline statsOutline = statsPanel.gameObject.AddComponent<Outline>();
+            statsOutline.effectColor = new Color(0.05f, 0.55f, 0.8f, 0.8f);
+            statsOutline.effectDistance = new Vector2(3f, -3f);
+
             Text carName = CreateText("Car Name", canvas.transform, "SPORT GT", 31, TextAnchor.MiddleLeft, new Color(0.1f, 0.9f, 1f));
             carName.fontStyle = FontStyle.Bold;
             SetRect(carName.rectTransform, new Vector2(1f, 0.5f), new Vector2(-420f, 255f), new Vector2(310f, 54f), new Vector2(0f, 0.5f));
@@ -196,11 +202,7 @@ namespace SuperRacing.EditorTools
             Image handlingFill = CreateStatBar("GRIP", new Vector2(1f, 0.5f), new Vector2(-420f, -90f), out handlingValue);
             Image gripFill = CreateStatBar("DRIFT", new Vector2(1f, 0.5f), new Vector2(-420f, -215f), out gripValue);
 
-            Button previous = CreateButton("Previous Car", "<", new Vector2(0f, 0.5f), new Vector2(440f, -10f), new Vector2(90f, 110f));
-            Button next = CreateButton("Next Car", ">", new Vector2(1f, 0.5f), new Vector2(-610f, -10f), new Vector2(90f, 110f));
             Button continueButton = CreateButton("Continue", ">  PLAY", new Vector2(1f, 0f), new Vector2(-235f, 115f), new Vector2(390f, 135f));
-            SetButtonPalette(previous, new Color(1f, 0.82f, 0.02f, 1f));
-            SetButtonPalette(next, new Color(1f, 0.82f, 0.02f, 1f));
             SetButtonPalette(continueButton, new Color(0.12f, 1f, 0.05f, 1f));
 
             var controllerObject = new GameObject("Garage Controller");
@@ -222,8 +224,6 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("trackSelectionSceneName").stringValue = "Test_Race";
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
-            UnityEventTools.AddPersistentListener(previous.onClick, garage.SelectPrevious);
-            UnityEventTools.AddPersistentListener(next.onClick, garage.SelectNext);
             UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ConfirmSelection);
         }
 
@@ -238,14 +238,17 @@ namespace SuperRacing.EditorTools
             valueLabel = CreateText("Value", group.transform, "0 %", 20, TextAnchor.MiddleRight, new Color(0.88f, 0.9f, 0.92f));
             SetRect(valueLabel.rectTransform, new Vector2(1f, 1f), Vector2.zero, new Vector2(95f, 38f), new Vector2(1f, 1f));
 
-            Image background = CreateImage("Bar Background", group.transform, new Color(0.15f, 0.19f, 0.22f, 0.94f));
+            Image background = CreateImage("Bar Background", group.transform, new Color(0.025f, 0.09f, 0.14f, 1f));
             background.rectTransform.anchorMin = new Vector2(0f, 0f);
             background.rectTransform.anchorMax = new Vector2(1f, 0f);
             background.rectTransform.pivot = new Vector2(0.5f, 0f);
             background.rectTransform.anchoredPosition = new Vector2(0f, 8f);
-            background.rectTransform.sizeDelta = new Vector2(0f, 22f);
+            background.rectTransform.sizeDelta = new Vector2(0f, 24f);
+            Outline barOutline = background.gameObject.AddComponent<Outline>();
+            barOutline.effectColor = new Color(0.15f, 0.62f, 0.78f, 0.9f);
+            barOutline.effectDistance = new Vector2(2f, -2f);
 
-            Image fill = CreateImage("Bar Fill", background.transform, new Color(0.58f, 1f, 0.05f, 1f));
+            Image fill = CreateImage("Bar Fill", background.transform, new Color(1f, 0.72f, 0.04f, 1f));
             fill.type = Image.Type.Filled;
             fill.fillMethod = Image.FillMethod.Horizontal;
             fill.fillOrigin = 0;
@@ -259,6 +262,10 @@ namespace SuperRacing.EditorTools
             Image frame = CreateImage(label, canvas.transform,
                 selected ? new Color(0.05f, 0.75f, 1f, 0.98f) : new Color(0.02f, 0.18f, 0.3f, 0.95f));
             SetRect(frame.rectTransform, new Vector2(0f, 1f), position, new Vector2(205f, 155f), new Vector2(0f, 1f));
+            frame.gameObject.AddComponent<Button>();
+            Outline frameOutline = frame.gameObject.AddComponent<Outline>();
+            frameOutline.effectColor = selected ? new Color(0.25f, 0.95f, 1f, 1f) : new Color(0.04f, 0.35f, 0.5f, 0.9f);
+            frameOutline.effectDistance = new Vector2(3f, -3f);
             Text title = CreateText("Label", frame.transform, label, 20, TextAnchor.MiddleLeft, Color.white);
             SetRect(title.rectTransform, new Vector2(0f, 1f), new Vector2(8f, -5f), new Vector2(150f, 30f), new Vector2(0f, 1f));
 
@@ -271,6 +278,13 @@ namespace SuperRacing.EditorTools
             preview.rectTransform.anchorMax = Vector2.one;
             preview.rectTransform.offsetMin = new Vector2(6f, 6f);
             preview.rectTransform.offsetMax = new Vector2(-6f, -34f);
+
+            if (!selected)
+            {
+                Text locked = CreateText("Locked", frame.transform, "LOCKED", 18, TextAnchor.MiddleCenter, new Color(0.75f, 0.82f, 0.88f));
+                locked.fontStyle = FontStyle.Bold;
+                Stretch(locked.rectTransform);
+            }
         }
 
         private static GameObject CreateUIObject(string name, Transform parent)
@@ -304,6 +318,12 @@ namespace SuperRacing.EditorTools
             Color normal = new Color(0.05f, 0.2f, 0.55f, 0.96f);
             Image image = CreateImage(name, canvas.transform, normal);
             Button button = image.gameObject.AddComponent<Button>();
+            Outline outline = image.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0.1f, 0.85f, 1f, 0.95f);
+            outline.effectDistance = new Vector2(3f, -3f);
+            Shadow shadow = image.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.65f);
+            shadow.effectDistance = new Vector2(6f, -6f);
             ColorBlock colors = button.colors;
             colors.normalColor = normal;
             colors.highlightedColor = new Color(0.15f, 0.95f, 1f, 1f);
@@ -313,6 +333,9 @@ namespace SuperRacing.EditorTools
             SetRect(image.rectTransform, anchor, position, size, new Vector2(0.5f, 0.5f));
             Text text = CreateText("Label", image.transform, label, label.Length <= 2 ? 52 : 28, TextAnchor.MiddleCenter, Color.white);
             text.fontStyle = FontStyle.Bold;
+            Shadow textShadow = text.gameObject.AddComponent<Shadow>();
+            textShadow.effectColor = new Color(0f, 0f, 0f, 0.75f);
+            textShadow.effectDistance = new Vector2(2f, -2f);
             Stretch(text.rectTransform);
             return button;
         }
