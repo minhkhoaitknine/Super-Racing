@@ -375,9 +375,6 @@ namespace SuperRacing.EditorTools
             topGlowLine.raycastTarget = false;
             SetRect(topGlowLine.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(1920f, 2f), new Vector2(0f, 0f));
 
-            // Exit Button
-            Button exitButton = CreateGlassButton("Exit", "⮜  EXIT", new Vector2(0f, 1f), new Vector2(110f, -38f), new Vector2(150f, 48f), 19, false);
-
             // Player Badge
             Image playerBadge = CreateImage("Player Badge", canvas.transform, new Color(0.04f, 0.09f, 0.18f, 0.65f));
             playerBadge.sprite = glassPanelBg;
@@ -449,7 +446,7 @@ namespace SuperRacing.EditorTools
             Image gripFill = CreateStatBarRow(statsPanel.transform, "DRIFT", new Vector2(28f, -435f), new Color(1.0f, 0.75f, 0.1f), out gripValue);
 
             // 7. Bottom-Right Action Button (Play / Race)
-            Button continueButton = CreateGlassButton("Continue", "START RACE   ▶", new Vector2(1f, 0f), new Vector2(-240f, 85f), new Vector2(410f, 74f), 24, true);
+            Button continueButton = CreateGlassButton("Continue", "SELECT   ▶", new Vector2(1f, 0f), new Vector2(-240f, 85f), new Vector2(410f, 74f), 24, true);
 
             // 8. Garage Controller setup
             var controllerObject = new GameObject("Garage Controller");
@@ -475,7 +472,6 @@ namespace SuperRacing.EditorTools
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ConfirmSelection);
-            UnityEventTools.AddPersistentListener(exitButton.onClick, garage.ReturnToMainMenu);
             UnityEventTools.AddIntPersistentListener(car1Btn.onClick, garage.SelectCar, 0);
         }
 
