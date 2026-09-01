@@ -1,0 +1,10 @@
+{
+  "name": "SuperRacing.Audio.Editor",
+  "rootNamespace": "SuperRacing.Audio.Editor",
+  "references": [
+    "SuperRacing",
+    "SuperRacing.Audio",
+    "Unity.ugui"
+  ],
+  "includePlatforms": ["Editor"]
+}

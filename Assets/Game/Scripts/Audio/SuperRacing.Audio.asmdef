@@ -1,0 +1,9 @@
+{
+  "name": "SuperRacing.Audio",
+  "rootNamespace": "SuperRacing.Audio",
+    "references": [
+        "SuperRacing",
+        "Unity.ugui",
+        "Unity.InputSystem"
+  ]
+}
