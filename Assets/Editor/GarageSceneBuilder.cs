@@ -442,8 +442,8 @@ namespace SuperRacing.EditorTools
             Text gripValue;
             Image powerFill = CreateStatBarRow(statsPanel.transform, "TOP SPEED", new Vector2(28f, -165f), new Color(0.0f, 0.90f, 1.0f), out powerValue);
             Image accelerationFill = CreateStatBarRow(statsPanel.transform, "POWER", new Vector2(28f, -255f), new Color(0.0f, 0.90f, 1.0f), out accelerationValue);
-            Image handlingFill = CreateStatBarRow(statsPanel.transform, "GRIP", new Vector2(28f, -345f), new Color(1.0f, 0.75f, 0.1f), out handlingValue);
-            Image gripFill = CreateStatBarRow(statsPanel.transform, "DRIFT", new Vector2(28f, -435f), new Color(1.0f, 0.75f, 0.1f), out gripValue);
+            Image handlingFill = CreateStatBarRow(statsPanel.transform, "HANDLING", new Vector2(28f, -345f), new Color(1.0f, 0.75f, 0.1f), out handlingValue);
+            Image gripFill = CreateStatBarRow(statsPanel.transform, "GRIP", new Vector2(28f, -435f), new Color(1.0f, 0.75f, 0.1f), out gripValue);
 
             // 7. Bottom-Right Action Button (Play / Race)
             Button continueButton = CreateGlassButton("Continue", "SELECT   ▶", new Vector2(1f, 0f), new Vector2(-240f, 85f), new Vector2(410f, 74f), 24, true);
@@ -463,11 +463,9 @@ namespace SuperRacing.EditorTools
             serialized.FindProperty("handlingValueLabel").objectReferenceValue = handlingValue;
             serialized.FindProperty("gripValueLabel").objectReferenceValue = gripValue;
             serialized.FindProperty("vehiclePreviewRoot").objectReferenceValue = previewRoot;
-            serialized.FindProperty("previewRotationSpeed").floatValue = 0f;
             serialized.FindProperty("previewTargetSize").floatValue = 3.25f;
             serialized.FindProperty("vehiclePositionOffset").vector3Value = new Vector3(0f, -0.96f, 0f);
-            serialized.FindProperty("vehicleRotationEuler").vector3Value = new Vector3(0f, 5f, 0f);
-            serialized.FindProperty("trackSelectionSceneName").stringValue = "Test_Race";
+            serialized.FindProperty("vehicleRotationEuler").vector3Value = new Vector3(0f, 8f, 0f);
             serialized.FindProperty("mainMenuSceneName").stringValue = "MainMenu";
             serialized.ApplyModifiedPropertiesWithoutUndo();
 

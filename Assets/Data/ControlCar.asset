@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Control
   vehiclePrefab: {fileID: 3738712422382999990, guid: 85751e0ade082f74c88f538f8a816cea, type: 3}
   previewSprite: {fileID: 0}
-  maxSpeedKmh: 110
-  motorTorque: 900
-  brakeTorque: 3000
-  steeringAngle: 35
-  grip: 1.2
+  maxSpeedKmh: 145
+  motorTorque: 1500
+  brakeTorque: 3500
+  steeringAngle: 38
+  grip: 1.25

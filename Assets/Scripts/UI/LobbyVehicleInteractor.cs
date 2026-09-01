@@ -9,9 +9,11 @@ namespace SuperRacing.UI
         [SerializeField] private Transform vehicleRoot;
         [SerializeField] private MainMenuUI menu;
         [SerializeField, Min(0.01f)] private float dragSensitivity = 0.35f;
+        [SerializeField, Min(0f)] private float autoRotationSpeed = 12f;
 
         private float yaw;
         private bool dragged;
+        private bool isDragging;
 
         public void Configure(Transform target, MainMenuUI targetMenu)
         {
@@ -27,6 +29,18 @@ namespace SuperRacing.UI
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            isDragging = true;
+        }
+
+        private void Update()
+        {
+            if (vehicleRoot == null || isDragging)
+            {
+                return;
+            }
+
+            yaw += autoRotationSpeed * Time.unscaledDeltaTime;
+            vehicleRoot.localRotation = Quaternion.Euler(0f, yaw, 0f);
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -45,7 +59,10 @@ namespace SuperRacing.UI
             vehicleRoot.localRotation = Quaternion.Euler(0f, yaw, 0f);
         }
 
-        public void OnEndDrag(PointerEventData eventData) { }
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            isDragging = false;
+        }
 
         public void OnPointerClick(PointerEventData eventData)
         {

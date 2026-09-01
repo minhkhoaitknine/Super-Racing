@@ -22,11 +22,9 @@ namespace SuperRacing.UI
         [SerializeField] private Text handlingValueLabel;
         [SerializeField] private Text gripValueLabel;
         [SerializeField] private Transform vehiclePreviewRoot;
-        [SerializeField, Min(0f)] private float previewRotationSpeed = 0f;
         [SerializeField, Min(0.1f)] private float previewTargetSize = 3.25f;
         [SerializeField] private Vector3 vehiclePositionOffset = new Vector3(0f, -0.96f, 0f);
-        [SerializeField] private Vector3 vehicleRotationEuler = new Vector3(0f, 5f, 0f);
-        [SerializeField] private string trackSelectionSceneName = "Test_Race";
+        [SerializeField] private Vector3 vehicleRotationEuler = new Vector3(0f, 8f, 0f);
         [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         private int selectedIndex;
@@ -42,14 +40,6 @@ namespace SuperRacing.UI
 
             selectedIndex = FindSelectedCarIndex();
             RefreshView();
-        }
-
-        private void Update()
-        {
-            if (vehiclePreviewRoot != null && previewRotationSpeed > 0f)
-            {
-                vehiclePreviewRoot.Rotate(0f, previewRotationSpeed * Time.deltaTime, 0f, Space.World);
-            }
         }
 
         public void SelectCar(int index)
@@ -149,8 +139,8 @@ namespace SuperRacing.UI
 
             SetStat(powerFill, powerValueLabel, car.MaxSpeedKmh / 250f);
             SetStat(accelerationFill, accelerationValueLabel, car.MotorTorque / 3000f);
-            SetStat(handlingFill, handlingValueLabel, car.Grip / 1.5f);
-            SetStat(gripFill, gripValueLabel, car.SteeringAngle / 45f);
+            SetStat(handlingFill, handlingValueLabel, car.SteeringAngle / 45f);
+            SetStat(gripFill, gripValueLabel, car.Grip / 1.5f);
 
             if (previewImage != null)
             {

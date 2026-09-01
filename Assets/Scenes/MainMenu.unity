@@ -1335,6 +1335,7 @@ MonoBehaviour:
   vehicleRoot: {fileID: 150934299}
   menu: {fileID: 251823656}
   dragSensitivity: 0.35
+  autoRotationSpeed: 12
 --- !u!114 &1614717297
 MonoBehaviour:
   m_ObjectHideFlags: 0

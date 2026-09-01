@@ -903,7 +903,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: DRIFT
+  m_Text: GRIP
 --- !u!222 &248519761
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1281,6 +1281,7 @@ MonoBehaviour:
   target: {fileID: 965194141}
   dragSensitivity: 0.35
   rotationSharpness: 18
+  autoRotationSpeed: 12
 --- !u!114 &471623734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4098,11 +4099,9 @@ MonoBehaviour:
   handlingValueLabel: {fileID: 160153443}
   gripValueLabel: {fileID: 750478148}
   vehiclePreviewRoot: {fileID: 965194141}
-  previewRotationSpeed: 30
   previewTargetSize: 3.25
   vehiclePositionOffset: {x: 0, y: -0.96, z: 0}
-  vehicleRotationEuler: {x: 0, y: 5, z: 0}
-  trackSelectionSceneName: TrackSelection
+  vehicleRotationEuler: {x: 0, y: 8, z: 0}
   mainMenuSceneName: MainMenu
 --- !u!4 &1463841102
 Transform:
@@ -4189,7 +4188,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: GRIP
+  m_Text: HANDLING
 --- !u!222 &1465363942
 CanvasRenderer:
   m_ObjectHideFlags: 0
