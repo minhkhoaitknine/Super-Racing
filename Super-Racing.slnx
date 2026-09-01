@@ -1,6 +1,9 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="SuperRacing.csproj" />
+  <Project Path="SuperRacing.Audio.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="SuperRacing.EditModeTests.csproj" />
+  <Project Path="SuperRacing.PlayModeTests.csproj" />
+  <Project Path="SuperRacing.Audio.Editor.csproj" />
 </Solution>
