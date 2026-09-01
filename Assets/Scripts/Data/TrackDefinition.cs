@@ -10,6 +10,7 @@ namespace SuperRacing.Data
         [SerializeField] private string displayName = "New Track";
         [SerializeField] private string sceneName;
         [SerializeField] private Sprite previewSprite;
+        [SerializeField] private GameObject previewPrefab;
 
         [Header("Race Rules")]
         [Min(1)] [SerializeField] private int lapCount = 2;
@@ -18,6 +19,7 @@ namespace SuperRacing.Data
         public string DisplayName => displayName;
         public string SceneName => sceneName;
         public Sprite PreviewSprite => previewSprite;
+        public GameObject PreviewPrefab => previewPrefab;
         public int LapCount => lapCount;
 
         private void OnValidate()
