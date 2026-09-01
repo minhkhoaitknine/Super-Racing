@@ -28,12 +28,12 @@ namespace SuperRacing.Audio
                 if (scene.name == "MainMenu" || scene.name == "Garage") manager.PlayMenuMusic();
                 else if (scene.name == "AudioSandbox" || scene.name == "Test_Vehicle" || scene.name == "Test_Race" || scene.name.Contains("Race")) manager.PlayRaceMusic();
             }
-            if (Object.FindFirstObjectByType<VehicleAudioMonitorOverlay>() == null)
-            {
-                new GameObject("Vehicle Audio Monitor").AddComponent<VehicleAudioMonitorOverlay>();
-            }
             if (scene.name == "AudioSandbox" && Object.FindFirstObjectByType<AudioSandboxDebugPanel>() == null)
             {
+                if (Object.FindFirstObjectByType<VehicleAudioMonitorOverlay>() == null)
+                {
+                    new GameObject("Vehicle Audio Monitor").AddComponent<VehicleAudioMonitorOverlay>();
+                }
                 new GameObject("Audio Sandbox Debug Panel").AddComponent<AudioSandboxDebugPanel>();
             }
         }

@@ -18,8 +18,19 @@ namespace SuperRacing.UI
         [SerializeField] private Text speedLabel;
         [SerializeField] private Text lapLabel;
         [SerializeField] private Text timeLabel;
+        [SerializeField] private Image speedFill;
 
         private IVehicleController vehicle;
+
+        public void SetSpeedFill(Image fill)
+        {
+            speedFill = fill;
+        }
+
+        public void SetSpeedLabel(Text label)
+        {
+            speedLabel = label;
+        }
 
         public void Configure(MonoBehaviour selectedVehicleController, LapTracker selectedLapTracker, RaceTimer selectedRaceTimer)
         {
@@ -102,7 +113,12 @@ namespace SuperRacing.UI
         {
             if (vehicle != null && speedLabel != null)
             {
-                speedLabel.text = $"{Mathf.RoundToInt(Mathf.Abs(vehicle.SpeedKmh))} km/h";
+                float speed = Mathf.Abs(vehicle.SpeedKmh);
+                speedLabel.text = $"{Mathf.RoundToInt(speed)}\n<size=22>KM/H</size>";
+                if (speedFill != null)
+                {
+                    speedFill.fillAmount = Mathf.Clamp01(speed / 120f);
+                }
             }
         }
 

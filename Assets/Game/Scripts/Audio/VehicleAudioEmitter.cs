@@ -56,8 +56,6 @@ namespace SuperRacing.Audio
         private void Awake()
         {
             body = GetComponent<Rigidbody>(); telemetrySource = FindTelemetrySource();
-            if (FindFirstObjectByType<VehicleAudioMonitorOverlay>() == null)
-                new GameObject("Vehicle Audio Monitor").AddComponent<VehicleAudioMonitorOverlay>();
             if (catalog == null) catalog = GameAudioManager.Instance != null ? GameAudioManager.Instance.Catalog : Resources.Load<AudioCatalog>("AudioCatalog");
             if (profile == null && catalog != null) profile = ProfileForVehicleName(catalog, gameObject.name);
             if (surfaces == null || surfaces.Length == 0 && catalog != null) surfaces = new[] { catalog.asphaltSurface, catalog.sandSurface, catalog.grassSurface };
