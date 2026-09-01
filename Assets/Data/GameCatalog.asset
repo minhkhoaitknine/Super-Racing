@@ -15,7 +15,6 @@ MonoBehaviour:
   cars:
   - {fileID: 11400000, guid: 6901dc142c133440f9b1cbeb065372ce, type: 2}
   - {fileID: 11400000, guid: a3bc4b35245384f009a7f2826fdc0d06, type: 2}
-  - {fileID: 11400000, guid: 6fbb846becc8d4382b2d41e873b6a93d, type: 2}
   - {fileID: 11400000, guid: e4b67a3c3dd2f6f40a5f245007e5e954, type: 2}
   tracks:
   - {fileID: 11400000, guid: 43d5db4cf006342abaa3e4d67ce8b4a5, type: 2}

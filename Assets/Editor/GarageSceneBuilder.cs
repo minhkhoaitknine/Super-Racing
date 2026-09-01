@@ -48,7 +48,8 @@ namespace SuperRacing.EditorTools
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Transform previewRoot = CreatePreviewStage(previewTexture, previewLayer);
-            CreateInterface(catalog, previewRoot, previewTexture);
+            List<RenderTexture> thumbnailTextures = CreateThumbnailStages(catalog, previewLayer);
+            CreateInterface(catalog, previewRoot, previewTexture, thumbnailTextures);
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -75,15 +76,15 @@ namespace SuperRacing.EditorTools
             glassPanelBg = CreateOrLoadRoundedSprite(
                 $"{TexturesFolder}/GlassPanel_Bg.png",
                 128, 128, 20, 2,
-                new Color(0.035f, 0.075f, 0.15f, 0.68f),
-                new Color(0.0f, 0.78f, 1.0f, 0.45f),
+                new Color(0.025f, 0.055f, 0.12f, 0.90f),
+                new Color(0.0f, 0.78f, 1.0f, 0.72f),
                 new Vector4(24f, 24f, 24f, 24f)
             );
 
             glassPanelSelected = CreateOrLoadRoundedSprite(
                 $"{TexturesFolder}/GlassPanel_Selected.png",
                 128, 128, 20, 3,
-                new Color(0.0f, 0.50f, 0.90f, 0.22f),
+                new Color(0.0f, 0.30f, 0.58f, 0.78f),
                 new Color(0.0f, 0.92f, 1.0f, 0.95f),
                 new Vector4(24f, 24f, 24f, 24f)
             );
@@ -262,40 +263,26 @@ namespace SuperRacing.EditorTools
 
             var serialized = new SerializedObject(catalog);
             SerializedProperty cars = serialized.FindProperty("cars");
-            var definitions = new List<CarDefinition>();
-            for (int index = 0; index < cars.arraySize; index++)
-            {
-                CarDefinition existing = cars.GetArrayElementAtIndex(index).objectReferenceValue as CarDefinition;
-                if (existing != null && !definitions.Contains(existing))
-                {
-                    definitions.Add(existing);
-                }
-            }
-
             string[] preferredCarPaths =
             {
                 "Assets/Data/ControlCar.asset",
                 "Assets/Data/BalancedCar.asset",
-                "Assets/Data/SpeedsterCar.asset",
-                "Assets/Data/PrototypeCar.asset"
+                "Assets/Data/PrototypeCar.asset",
+                "Assets/Data/SpeedsterCar.asset"
             };
 
+            var definitions = new List<CarDefinition>();
+            var visualSignatures = new HashSet<string>();
             foreach (string path in preferredCarPaths)
             {
                 CarDefinition definition = AssetDatabase.LoadAssetAtPath<CarDefinition>(path);
-                if (definition != null && !definitions.Contains(definition))
-                {
-                    definitions.Add(definition);
-                }
+                AddUniqueVisual(definitions, visualSignatures, definition);
             }
 
             foreach (string guid in AssetDatabase.FindAssets("t:CarDefinition", new[] { "Assets/Data" }))
             {
                 CarDefinition definition = AssetDatabase.LoadAssetAtPath<CarDefinition>(AssetDatabase.GUIDToAssetPath(guid));
-                if (definition != null && !definitions.Contains(definition))
-                {
-                    definitions.Add(definition);
-                }
+                AddUniqueVisual(definitions, visualSignatures, definition);
             }
 
             if (definitions.Count == 0 && car != null)
@@ -311,6 +298,45 @@ namespace SuperRacing.EditorTools
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(catalog);
             return catalog;
+        }
+
+        private static void AddUniqueVisual(List<CarDefinition> definitions, HashSet<string> signatures, CarDefinition definition)
+        {
+            if (definition == null || definition.VehiclePrefab == null || definitions.Contains(definition))
+            {
+                return;
+            }
+
+            string signature = GetVisualSignature(definition.VehiclePrefab);
+            if (signatures.Add(signature))
+            {
+                definitions.Add(definition);
+            }
+        }
+
+        private static string GetVisualSignature(GameObject prefab)
+        {
+            var meshIds = new List<string>();
+            foreach (MeshFilter filter in prefab.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh != null)
+                {
+                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(filter.sharedMesh, out string guid, out long localId);
+                    meshIds.Add($"{guid}:{localId}");
+                }
+            }
+
+            foreach (SkinnedMeshRenderer renderer in prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (renderer.sharedMesh != null)
+                {
+                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(renderer.sharedMesh, out string guid, out long localId);
+                    meshIds.Add($"{guid}:{localId}");
+                }
+            }
+
+            meshIds.Sort();
+            return meshIds.Count > 0 ? string.Join("|", meshIds) : AssetDatabase.GetAssetPath(prefab);
         }
 
         private static RenderTexture GetOrCreateRenderTexture()
@@ -376,7 +402,124 @@ namespace SuperRacing.EditorTools
             light.cullingMask = 1 << layer;
         }
 
-        private static void CreateInterface(GameCatalog catalog, Transform previewRoot, RenderTexture previewTexture)
+        private static List<RenderTexture> CreateThumbnailStages(GameCatalog catalog, int layer)
+        {
+            const string folder = "Assets/UI/Garage/Thumbnails";
+            if (!AssetDatabase.IsValidFolder(folder))
+            {
+                AssetDatabase.CreateFolder("Assets/UI/Garage", "Thumbnails");
+            }
+
+            var textures = new List<RenderTexture>();
+            for (int index = 0; index < catalog.Cars.Count; index++)
+            {
+                CarDefinition car = catalog.Cars[index];
+                string path = $"{folder}/{car.CarId}.renderTexture";
+                RenderTexture texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(path);
+                if (texture == null)
+                {
+                    texture = new RenderTexture(384, 216, 24, RenderTextureFormat.ARGB32)
+                    {
+                        name = $"{car.CarId}_Thumbnail",
+                        antiAliasing = 2,
+                        useMipMap = false
+                    };
+                    AssetDatabase.CreateAsset(texture, path);
+                }
+
+                textures.Add(texture);
+                CreateThumbnailStage(car, texture, layer, index);
+            }
+
+            return textures;
+        }
+
+        private static void CreateThumbnailStage(CarDefinition car, RenderTexture texture, int layer, int index)
+        {
+            Vector3 stagePosition = new Vector3(100f + index * 100f, 0f, 0f);
+            var root = new GameObject($"Thumbnail Stage - {car.DisplayName}");
+            root.layer = layer;
+            root.transform.position = stagePosition;
+
+            GameObject vehicle = (GameObject)PrefabUtility.InstantiatePrefab(car.VehiclePrefab);
+            vehicle.name = $"{car.DisplayName} Thumbnail Vehicle";
+            vehicle.transform.SetParent(root.transform, false);
+            SetLayerRecursively(vehicle, layer);
+            DisableVehicleBehaviour(vehicle);
+            FitThumbnailVehicle(vehicle, stagePosition, 3.2f);
+            vehicle.transform.rotation = Quaternion.Euler(0f, -28f, 0f);
+
+            var cameraObject = new GameObject($"Thumbnail Camera - {car.DisplayName}");
+            cameraObject.transform.position = stagePosition + new Vector3(0f, 1.15f, 3.8f);
+            cameraObject.transform.LookAt(stagePosition + new Vector3(0f, 0.8f, 0f));
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = Color.clear;
+            camera.cullingMask = 1 << layer;
+            camera.fieldOfView = 30f;
+            camera.nearClipPlane = 0.1f;
+            camera.farClipPlane = 30f;
+            camera.targetTexture = texture;
+        }
+
+        private static void FitThumbnailVehicle(GameObject vehicle, Vector3 stagePosition, float targetSize)
+        {
+            Renderer[] renderers = vehicle.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+            {
+                return;
+            }
+
+            Bounds bounds = renderers[0].bounds;
+            for (int index = 1; index < renderers.Length; index++)
+            {
+                bounds.Encapsulate(renderers[index].bounds);
+            }
+
+            float largestSize = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+            if (largestSize > 0.001f)
+            {
+                vehicle.transform.localScale *= targetSize / largestSize;
+            }
+
+            bounds = renderers[0].bounds;
+            for (int index = 1; index < renderers.Length; index++)
+            {
+                bounds.Encapsulate(renderers[index].bounds);
+            }
+
+            vehicle.transform.position += stagePosition + new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z);
+        }
+
+        private static void DisableVehicleBehaviour(GameObject vehicle)
+        {
+            foreach (MonoBehaviour behaviour in vehicle.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                behaviour.enabled = false;
+            }
+
+            foreach (Collider collider in vehicle.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+            }
+
+            foreach (Rigidbody body in vehicle.GetComponentsInChildren<Rigidbody>(true))
+            {
+                body.isKinematic = true;
+                body.useGravity = false;
+            }
+        }
+
+        private static void SetLayerRecursively(GameObject target, int layer)
+        {
+            target.layer = layer;
+            foreach (Transform child in target.transform)
+            {
+                SetLayerRecursively(child.gameObject, layer);
+            }
+        }
+
+        private static void CreateInterface(GameCatalog catalog, Transform previewRoot, RenderTexture previewTexture, IReadOnlyList<RenderTexture> thumbnailTextures)
         {
             var canvasObject = new GameObject("Garage Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas = canvasObject.GetComponent<Canvas>();
@@ -456,7 +599,7 @@ namespace SuperRacing.EditorTools
                 CarDefinition car = catalog.Cars[index];
                 carButtons.Add(CreateCarCard(
                     $"CAR {index + 1:00}",
-                    previewTexture,
+                    thumbnailTextures[index],
                     new Vector2(36f, -100f - index * 145f),
                     index == 0,
                     car.DisplayName));
@@ -467,6 +610,7 @@ namespace SuperRacing.EditorTools
             statsPanel.sprite = glassPanelBg;
             statsPanel.type = Image.Type.Sliced;
             SetRect(statsPanel.rectTransform, new Vector2(1f, 0.5f), new Vector2(-240f, 40f), new Vector2(410f, 580f), new Vector2(0.5f, 0.5f));
+            AddOpacityLayer(statsPanel.transform, "Performance Opaque Layer");
 
             // Tier/Category Tag
             Text tierTag = CreateText("Tier Tag", statsPanel.transform, "TIER S+  //  HYPERCAR", 14, TextAnchor.MiddleLeft, new Color(0.0f, 0.85f, 1.0f, 0.85f));
@@ -567,6 +711,7 @@ namespace SuperRacing.EditorTools
             card.type = Image.Type.Sliced;
             SetRect(card.rectTransform, new Vector2(0f, 1f), position, new Vector2(215f, 130f), new Vector2(0f, 1f));
             Button button = card.gameObject.AddComponent<Button>();
+            AddOpacityLayer(card.transform, "Card Opaque Layer");
 
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white;
@@ -591,7 +736,7 @@ namespace SuperRacing.EditorTools
             var previewObject = CreateUIObject("Preview", card.transform);
             RawImage preview = previewObject.AddComponent<RawImage>();
             preview.texture = texture;
-            preview.color = selected ? Color.white : new Color(0.35f, 0.40f, 0.50f, 0.60f);
+            preview.color = Color.white;
             preview.raycastTarget = false;
             preview.rectTransform.anchorMin = Vector2.zero;
             preview.rectTransform.anchorMax = Vector2.one;
@@ -603,6 +748,16 @@ namespace SuperRacing.EditorTools
             SetRect(subname.rectTransform, new Vector2(0f, 0f), new Vector2(14f, 8f), new Vector2(180f, 24f), new Vector2(0f, 0f));
 
             return button;
+        }
+
+        private static void AddOpacityLayer(Transform parent, string name)
+        {
+            Image layer = CreateImage(name, parent, new Color(0.035f, 0.075f, 0.15f, 0.82f));
+            layer.sprite = glassPanelBg;
+            layer.type = Image.Type.Sliced;
+            layer.raycastTarget = false;
+            Stretch(layer.rectTransform);
+            layer.transform.SetAsFirstSibling();
         }
 
         private static Button CreateGlassButton(string name, string label, Vector2 anchor, Vector2 position, Vector2 size, int fontSize, bool isPrimary)

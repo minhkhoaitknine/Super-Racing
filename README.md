@@ -7,7 +7,6 @@ Garage và Main Menu đọc xe từ `Assets/Data/GameCatalog.asset`. Mỗi xe c�
 | Xe | Tốc độ tối đa | Motor Torque | Brake Torque | Góc lái | Grip |
 |---|---:|---:|---:|---:|---:|
 | SPORT GT | 180 km/h | 2200 | 3000 | 32° | 1.15 |
-| Speedster | 220 km/h | 2400 | 3200 | 24° | 0.82 |
 | Balanced | 170 km/h | 1800 | 3200 | 32° | 1.05 |
 | Control | 145 km/h | 1500 | 3500 | 38° | 1.25 |
 
@@ -65,10 +64,11 @@ Bạn có thể duplicate một prefab xe hiện có để giữ đúng cấu tr
 
 Thứ tự trong mảng `Cars` cũng là thứ tự hiển thị trong Garage. Phần tử đầu tiên là xe mặc định khi người chơi chưa chọn xe.
 
+Garage chỉ đưa một đại diện của mỗi bộ mesh vào catalog. Hai `CarDefinition` dùng cùng toàn bộ mesh chỉ được xem là các biến thể material/thông số, không phải hai mẫu xe khác nhau.
+
 ## Preview xe
 
 - Xe trong Main Menu và Garage tự xoay khi không thao tác.
 - Kéo chuột ngang trên vùng xe để xoay thủ công 360°.
 - Khi thả chuột, xe tiếp tục tự xoay từ đúng góc hiện tại.
 - Góc nhìn ban đầu của Garage và Main Menu đều là `8°` quanh trục `Y`.
-
