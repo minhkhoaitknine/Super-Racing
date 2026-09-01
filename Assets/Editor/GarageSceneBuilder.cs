@@ -451,7 +451,7 @@ namespace SuperRacing.EditorTools
 
             var cameraObject = new GameObject($"Thumbnail Camera - {car.DisplayName}");
             cameraObject.transform.position = stagePosition + new Vector3(0f, 1.15f, 3.8f);
-            cameraObject.transform.LookAt(stagePosition + new Vector3(0f, 0.8f, 0f));
+            cameraObject.transform.LookAt(stagePosition + new Vector3(0f, 0.55f, 0f));
             Camera camera = cameraObject.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = Color.clear;
