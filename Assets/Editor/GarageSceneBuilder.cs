@@ -262,8 +262,52 @@ namespace SuperRacing.EditorTools
 
             var serialized = new SerializedObject(catalog);
             SerializedProperty cars = serialized.FindProperty("cars");
-            cars.arraySize = 1;
-            cars.GetArrayElementAtIndex(0).objectReferenceValue = car;
+            var definitions = new List<CarDefinition>();
+            for (int index = 0; index < cars.arraySize; index++)
+            {
+                CarDefinition existing = cars.GetArrayElementAtIndex(index).objectReferenceValue as CarDefinition;
+                if (existing != null && !definitions.Contains(existing))
+                {
+                    definitions.Add(existing);
+                }
+            }
+
+            string[] preferredCarPaths =
+            {
+                "Assets/Data/ControlCar.asset",
+                "Assets/Data/BalancedCar.asset",
+                "Assets/Data/SpeedsterCar.asset",
+                "Assets/Data/PrototypeCar.asset"
+            };
+
+            foreach (string path in preferredCarPaths)
+            {
+                CarDefinition definition = AssetDatabase.LoadAssetAtPath<CarDefinition>(path);
+                if (definition != null && !definitions.Contains(definition))
+                {
+                    definitions.Add(definition);
+                }
+            }
+
+            foreach (string guid in AssetDatabase.FindAssets("t:CarDefinition", new[] { "Assets/Data" }))
+            {
+                CarDefinition definition = AssetDatabase.LoadAssetAtPath<CarDefinition>(AssetDatabase.GUIDToAssetPath(guid));
+                if (definition != null && !definitions.Contains(definition))
+                {
+                    definitions.Add(definition);
+                }
+            }
+
+            if (definitions.Count == 0 && car != null)
+            {
+                definitions.Add(car);
+            }
+
+            cars.arraySize = definitions.Count;
+            for (int index = 0; index < definitions.Count; index++)
+            {
+                cars.GetArrayElementAtIndex(index).objectReferenceValue = definitions[index];
+            }
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(catalog);
             return catalog;
@@ -406,10 +450,17 @@ namespace SuperRacing.EditorTools
             Stretch(currencyText.rectTransform);
 
             // 5. Left Car Selection Cards
-            Button car1Btn = CreateCarCard("CAR 1", previewTexture, new Vector2(36f, -100f), true, "SPORT GT");
-            Button car2Btn = CreateCarCard("CAR 2", previewTexture, new Vector2(36f, -245f), false, "CYBER V");
-            Button car3Btn = CreateCarCard("CAR 3", previewTexture, new Vector2(36f, -390f), false, "NEO DRIFT");
-            Button car4Btn = CreateCarCard("CAR 4", previewTexture, new Vector2(36f, -535f), false, "PHANTOM");
+            var carButtons = new List<Button>();
+            for (int index = 0; index < catalog.Cars.Count; index++)
+            {
+                CarDefinition car = catalog.Cars[index];
+                carButtons.Add(CreateCarCard(
+                    $"CAR {index + 1:00}",
+                    previewTexture,
+                    new Vector2(36f, -100f - index * 145f),
+                    index == 0,
+                    car.DisplayName));
+            }
 
             // 6. Right Vehicle Stats Panel (Glassmorphism)
             Image statsPanel = CreateImage("Performance Panel", canvas.transform, new Color(0.32f, 0.48f, 0.68f, 1f));
@@ -470,7 +521,10 @@ namespace SuperRacing.EditorTools
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             UnityEventTools.AddPersistentListener(continueButton.onClick, garage.ReturnToMainMenu);
-            UnityEventTools.AddIntPersistentListener(car1Btn.onClick, garage.SelectCar, 0);
+            for (int index = 0; index < carButtons.Count; index++)
+            {
+                UnityEventTools.AddIntPersistentListener(carButtons[index].onClick, garage.SelectCar, index);
+            }
         }
 
         private static Image CreateStatBarRow(Transform parent, string label, Vector2 position, Color fillColor, out Text valueLabel)
@@ -544,16 +598,9 @@ namespace SuperRacing.EditorTools
             preview.rectTransform.offsetMin = new Vector2(10f, 10f);
             preview.rectTransform.offsetMax = new Vector2(-10f, -34f);
 
-            if (!selected)
-            {
-                Image lockOverlay = CreateImage("Lock Overlay", card.transform, new Color(0.02f, 0.05f, 0.1f, 0.65f));
-                lockOverlay.raycastTarget = false;
-                Stretch(lockOverlay.rectTransform);
-
-                Text locked = CreateText("Locked", card.transform, "🔒  LOCKED", 16, TextAnchor.MiddleCenter, new Color(0.8f, 0.85f, 0.92f));
-                locked.fontStyle = FontStyle.Bold;
-                Stretch(locked.rectTransform);
-            }
+            Text subname = CreateText("Car Name", card.transform, carSubname, 14, TextAnchor.LowerLeft, Color.white);
+            subname.fontStyle = FontStyle.Bold;
+            SetRect(subname.rectTransform, new Vector2(0f, 0f), new Vector2(14f, 8f), new Vector2(180f, 24f), new Vector2(0f, 0f));
 
             return button;
         }
