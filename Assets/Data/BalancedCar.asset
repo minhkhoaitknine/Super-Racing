@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Balanced
   vehiclePrefab: {fileID: 1462781222606649854, guid: 4cb66468e29f3f04696e63381cd86128, type: 3}
   previewSprite: {fileID: 0}
-  maxSpeedKmh: 170
-  motorTorque: 1800
-  brakeTorque: 3200
-  steeringAngle: 32
-  grip: 1.05
+  maxSpeedPercent: 92
+  accelerationPercent: 90
+  brakingPercent: 93
+  steeringPercent: 93
+  gripPercent: 95

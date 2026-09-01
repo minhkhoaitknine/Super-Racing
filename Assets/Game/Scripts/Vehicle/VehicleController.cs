@@ -10,6 +10,15 @@ namespace SuperRacing.Vehicle
     [RequireComponent(typeof(Rigidbody))]
     public sealed class VehicleController : MonoBehaviour, IVehicleController, IVehicleAudioTelemetrySource
     {
+        private const float DefaultMotorTorque = 1000f;
+        private const float DefaultBrakeTorque = 3000f;
+        private const float DefaultMaxSpeedKmh = 120f;
+        private const float DefaultDriveAssistAcceleration = 1f;
+        private const float DefaultMaxSteerAngle = 30f;
+        private const float DefaultMinSteerAngleAtTopSpeed = 10f;
+        private const float DefaultLowSpeedSidewaysGrip = 1.45f;
+        private const float DefaultHighSpeedSidewaysGrip = 0.85f;
+
         [Header("Wheel Colliders")]
         [SerializeField] private WheelCollider frontLeftWheel;
         [SerializeField] private WheelCollider frontRightWheel;
@@ -160,16 +169,20 @@ namespace SuperRacing.Vehicle
                 return;
             }
 
-            maxSpeedKmh = stats.MaxSpeedKmh;
-            motorTorque = stats.MotorTorque;
-            brakeTorque = stats.BrakeTorque;
-            maxSteerAngle = stats.SteeringAngle;
-            driveAssistAcceleration = Mathf.Clamp(stats.MotorTorque * 0.01f, 8f, 28f);
+            float speedScale = stats.MaxSpeedPercent * 0.01f;
+            float accelerationScale = stats.AccelerationPercent * 0.01f;
+            float brakingScale = stats.BrakingPercent * 0.01f;
+            float steeringScale = stats.SteeringPercent * 0.01f;
+            float gripScale = stats.GripPercent * 0.01f;
 
-            float grip = Mathf.Max(0.1f, stats.Grip);
-            lowSpeedSidewaysGrip = Mathf.Clamp(grip * 1.45f, 0.1f, 3f);
-            highSpeedSidewaysGrip = Mathf.Clamp(grip * 0.85f, 0.1f, 3f);
-            minSteerAngleAtTopSpeed = Mathf.Clamp(stats.SteeringAngle * 0.4f, 1f, stats.SteeringAngle);
+            maxSpeedKmh = DefaultMaxSpeedKmh * speedScale;
+            motorTorque = DefaultMotorTorque * accelerationScale;
+            brakeTorque = DefaultBrakeTorque * brakingScale;
+            driveAssistAcceleration = DefaultDriveAssistAcceleration * accelerationScale;
+            maxSteerAngle = DefaultMaxSteerAngle * steeringScale;
+            minSteerAngleAtTopSpeed = DefaultMinSteerAngleAtTopSpeed * steeringScale;
+            lowSpeedSidewaysGrip = DefaultLowSpeedSidewaysGrip * gripScale;
+            highSpeedSidewaysGrip = DefaultHighSpeedSidewaysGrip * gripScale;
             CacheWheelFriction();
         }
 

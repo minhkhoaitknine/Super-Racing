@@ -11,22 +11,22 @@ namespace SuperRacing.Data
         [SerializeField] private GameObject vehiclePrefab;
         [SerializeField] private Sprite previewSprite;
 
-        [Header("Driving Stats")]
-        [Min(1f)] [SerializeField] private float maxSpeedKmh = 140f;
-        [Min(0f)] [SerializeField] private float motorTorque = 1500f;
-        [Min(0f)] [SerializeField] private float brakeTorque = 3000f;
-        [Range(1f, 60f)] [SerializeField] private float steeringAngle = 30f;
-        [Min(0f)] [SerializeField] private float grip = 1f;
+        [Header("Driving Stats (% of VehicleController defaults)")]
+        [Range(0f, 100f)] [SerializeField] private float maxSpeedPercent = 100f;
+        [Range(0f, 100f)] [SerializeField] private float accelerationPercent = 100f;
+        [Range(0f, 100f)] [SerializeField] private float brakingPercent = 100f;
+        [Range(0f, 100f)] [SerializeField] private float steeringPercent = 100f;
+        [Range(0f, 100f)] [SerializeField] private float gripPercent = 100f;
 
         public string CarId => carId;
         public string DisplayName => displayName;
         public GameObject VehiclePrefab => vehiclePrefab;
         public Sprite PreviewSprite => previewSprite;
-        public float MaxSpeedKmh => maxSpeedKmh;
-        public float MotorTorque => motorTorque;
-        public float BrakeTorque => brakeTorque;
-        public float SteeringAngle => steeringAngle;
-        public float Grip => grip;
+        public float MaxSpeedPercent => maxSpeedPercent;
+        public float AccelerationPercent => accelerationPercent;
+        public float BrakingPercent => brakingPercent;
+        public float SteeringPercent => steeringPercent;
+        public float GripPercent => gripPercent;
 
         private void OnValidate()
         {

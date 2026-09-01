@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: SPORT GT
   vehiclePrefab: {fileID: 4541279223708551992, guid: fb8f58877e7b4b64cb0a23f0c268c8c8, type: 3}
   previewSprite: {fileID: 0}
-  maxSpeedKmh: 180
-  motorTorque: 2200
-  brakeTorque: 3000
-  steeringAngle: 32
-  grip: 1.15
+  maxSpeedPercent: 100
+  accelerationPercent: 100
+  brakingPercent: 93
+  steeringPercent: 93
+  gripPercent: 100

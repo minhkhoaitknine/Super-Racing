@@ -80,10 +80,10 @@ namespace SuperRacing.UI
                     record = $"\nBest  {RaceHUD.FormatTime(best)}";
 
                 statsLabel.text =
-                    $"Top Speed  {car.MaxSpeedKmh:0} km/h\n" +
-                    $"Motor      {car.MotorTorque:0}\n" +
-                    $"Steering   {car.SteeringAngle:0}\n" +
-                    $"Grip       {car.Grip:0.0}" +
+                    $"Top Speed  {car.MaxSpeedPercent:0}%\n" +
+                    $"Acceleration {car.AccelerationPercent:0}%\n" +
+                    $"Steering   {car.SteeringPercent:0}%\n" +
+                    $"Grip       {car.GripPercent:0}%" +
                     record;
             }
 

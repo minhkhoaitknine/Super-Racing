@@ -287,14 +287,14 @@ MonoBehaviour:
   frontRightWheel: {fileID: 1169934988498543521}
   rearLeftWheel: {fileID: 5913191725250890622}
   rearRightWheel: {fileID: 3444518423962859588}
-  motorTorque: 1700
-  brakeTorque: 3400
-  maxSpeedKmh: 115
-  driveAssistAcceleration: 16
-  maxSteerAngle: 38
-  minSteerAngleAtTopSpeed: 22
-  lowSpeedSidewaysGrip: 1.8
-  highSpeedSidewaysGrip: 1.25
+  motorTorque: 1000
+  brakeTorque: 3000
+  maxSpeedKmh: 120
+  driveAssistAcceleration: 1
+  maxSteerAngle: 30
+  minSteerAngleAtTopSpeed: 10
+  lowSpeedSidewaysGrip: 1.45
+  highSpeedSidewaysGrip: 0.85
   flippedRespawnDelay: 2
   flippedUpDotThreshold: 0.25
   fallRespawnY: -10

@@ -131,16 +131,16 @@ namespace SuperRacing.UI
             if (statsLabel != null)
             {
                 statsLabel.text =
-                    $"Top Speed  {car.MaxSpeedKmh:0} km/h\n" +
-                    $"Acceleration  {car.MotorTorque:0}\n" +
-                    $"Steering  {car.SteeringAngle:0}\n" +
-                    $"Grip  {car.Grip:0.0}";
+                    $"Top Speed  {car.MaxSpeedPercent:0}%\n" +
+                    $"Acceleration  {car.AccelerationPercent:0}%\n" +
+                    $"Steering  {car.SteeringPercent:0}%\n" +
+                    $"Grip  {car.GripPercent:0}%";
             }
 
-            SetStat(powerFill, powerValueLabel, car.MaxSpeedKmh / 250f);
-            SetStat(accelerationFill, accelerationValueLabel, car.MotorTorque / 3000f);
-            SetStat(handlingFill, handlingValueLabel, car.SteeringAngle / 45f);
-            SetStat(gripFill, gripValueLabel, car.Grip / 1.5f);
+            SetStat(powerFill, powerValueLabel, car.MaxSpeedPercent / 100f);
+            SetStat(accelerationFill, accelerationValueLabel, car.AccelerationPercent / 100f);
+            SetStat(handlingFill, handlingValueLabel, car.SteeringPercent / 100f);
+            SetStat(gripFill, gripValueLabel, car.GripPercent / 100f);
 
             if (previewImage != null)
             {

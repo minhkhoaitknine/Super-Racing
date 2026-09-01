@@ -54,9 +54,9 @@ namespace SuperRacing.Prototype
         public void ApplyStats(CarDefinition stats)
         {
             if (stats == null) return;
-            maxSpeedKmh = stats.MaxSpeedKmh;
-            acceleration = Mathf.Max(5f, stats.MotorTorque / 100f);
-            steeringSpeed = Mathf.Max(30f, stats.SteeringAngle * 3f);
+            maxSpeedKmh = 80f * stats.MaxSpeedPercent * 0.01f;
+            acceleration = 20f * stats.AccelerationPercent * 0.01f;
+            steeringSpeed = 90f * stats.SteeringPercent * 0.01f;
         }
 
         public void ResetVehicle(Vector3 position, Quaternion rotation)
