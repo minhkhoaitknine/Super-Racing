@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: SuperRacing::SuperRacing.Data.GameCatalog
   cars:
   - {fileID: 11400000, guid: e4b67a3c3dd2f6f40a5f245007e5e954, type: 2}
-  tracks: []
+  tracks:
+  - {fileID: 11400000, guid: 43d5db4cf006342abaa3e4d67ce8b4a5, type: 2}
+  - {fileID: 11400000, guid: bd00964b034014a9f894e56189992866, type: 2}

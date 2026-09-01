@@ -8,6 +8,12 @@ namespace SuperRacing.UI
     {
         [SerializeField] private string garageSceneName = "Garage";
         [SerializeField] private string trackSelectionSceneName = "TrackSelection";
+        [SerializeField] private string playGameSceneName = "Test_Vehicle";
+
+        public void PlayGame()
+        {
+            SceneManager.LoadScene(playGameSceneName);
+        }
 
         public void OpenGarage()
         {
