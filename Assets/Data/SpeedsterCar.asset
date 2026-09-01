@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f04516a6fb3cf448169552a35c89ba, type: 3}
+  m_Name: SpeedsterCar
+  m_EditorClassIdentifier: SuperRacing::SuperRacing.Data.CarDefinition
+  carId: speedster
+  displayName: Speedster
+  vehiclePrefab: {fileID: 5710546935665691335, guid: 764f0efda9b507540a06bfa9a1aa2115, type: 3}
+  previewSprite: {fileID: 0}
+  maxSpeedKmh: 200
+  motorTorque: 2000
+  brakeTorque: 2500
+  steeringAngle: 25
+  grip: 0.7
