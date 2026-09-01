@@ -14,15 +14,23 @@ namespace SuperRacing.Vehicle
 
         private void Awake()
         {
-            if (target == null)
-            {
-                GameObject player = GameObject.FindGameObjectWithTag("Player");
-                target = player != null ? player.transform : null;
-            }
+            ResolveDefaultTarget();
+        }
+
+        public void SetTarget(Transform followTarget)
+        {
+            target = followTarget;
+            SnapToTarget();
         }
 
         private void LateUpdate()
         {
+            if (target == null || !target.gameObject.activeInHierarchy)
+            {
+                ResolveDefaultTarget();
+                SnapToTarget();
+            }
+
             if (target == null)
             {
                 return;
@@ -36,6 +44,24 @@ namespace SuperRacing.Vehicle
             Quaternion desiredRotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
             float rotationT = 1f - Mathf.Exp(-rotationDamping * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, rotationT);
+        }
+
+        private void ResolveDefaultTarget()
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            target = player != null ? player.transform : null;
+        }
+
+        private void SnapToTarget()
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            transform.position = target.TransformPoint(localOffset);
+            Vector3 lookPoint = target.position + target.forward * lookAheadDistance;
+            transform.rotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
         }
     }
 }

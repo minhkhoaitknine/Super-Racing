@@ -295,6 +295,12 @@ MonoBehaviour:
   minSteerAngleAtTopSpeed: 10
   lowSpeedSidewaysGrip: 1.45
   highSpeedSidewaysGrip: 0.85
+  driftEnabled: 1
+  handbrakeTorque: 4000
+  rearDriftSidewaysGrip: 0.5
+  driftGripResponse: 16
+  minimumDriftSpeedKmh: 18
+  driftYawAssist: 0.5
   flippedRespawnDelay: 2
   flippedUpDotThreshold: 0.25
   fallRespawnY: -10
@@ -686,7 +692,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4886080689006353696}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.000000050977892, y: 0.7071068, z: 0.7071068, w: -0.000000050977892}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: -0.7071068}
   m_LocalPosition: {x: -0.00000039512855, y: 0, z: -0.07368282}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

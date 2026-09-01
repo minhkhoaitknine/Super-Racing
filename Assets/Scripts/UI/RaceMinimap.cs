@@ -14,8 +14,7 @@ namespace SuperRacing.UI
 
         private void Start()
         {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            target = player != null ? player.transform : null;
+            ResolveTarget();
 
             GameObject cameraObject = new("Runtime Minimap Camera");
             minimapCamera = cameraObject.AddComponent<Camera>();
@@ -37,6 +36,11 @@ namespace SuperRacing.UI
 
         private void LateUpdate()
         {
+            if (target == null)
+            {
+                ResolveTarget();
+            }
+
             if (target == null || minimapCamera == null)
             {
                 return;
@@ -45,6 +49,12 @@ namespace SuperRacing.UI
             Vector3 position = target.position;
             minimapCamera.transform.position = new Vector3(position.x, position.y + 100f, position.z);
             minimapCamera.transform.rotation = Quaternion.Euler(90f, target.eulerAngles.y, 0f);
+        }
+
+        private void ResolveTarget()
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            target = player != null ? player.transform : null;
         }
 
         private void OnDestroy()

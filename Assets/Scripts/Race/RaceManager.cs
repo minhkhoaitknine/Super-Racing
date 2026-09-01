@@ -27,6 +27,7 @@ namespace SuperRacing.Race
         public sealed class RaceFinishedEvent : UnityEvent<float, bool> { }
 
         [Header("Race Data")]
+        [SerializeField] private GameCatalog catalog;
         [SerializeField] private TrackDefinition track;
         [SerializeField] private CarDefinition car;
 
@@ -61,6 +62,7 @@ namespace SuperRacing.Race
 
         private void Awake()
         {
+            GameSelection.RestoreFromCatalog(catalog);
             track = GameSelection.SelectedTrack != null ? GameSelection.SelectedTrack : track;
             car = GameSelection.SelectedCar != null ? GameSelection.SelectedCar : car;
 
@@ -109,7 +111,7 @@ namespace SuperRacing.Race
             }
 
             MonoBehaviour previousController = vehicleController;
-            Transform spawn = previousController != null ? previousController.transform : null;
+            Transform spawn = ResolveSpawnTransform(previousController);
             Vector3 position = spawn != null ? spawn.position : Vector3.zero;
             Quaternion rotation = spawn != null ? spawn.rotation : Quaternion.identity;
 
@@ -141,6 +143,7 @@ namespace SuperRacing.Race
 
             vehicleController = selectedController;
             lapTracker = selectedLapTracker;
+            RetargetFollowCamera(selectedVehicle.transform);
 
             RaceSetup setup = FindFirstObjectByType<RaceSetup>(FindObjectsInactive.Include);
             setup?.Configure(track, selectedLapTracker);
@@ -154,6 +157,82 @@ namespace SuperRacing.Race
             {
                 previousController.gameObject.SetActive(false);
                 Destroy(previousController.gameObject);
+            }
+        }
+
+        private Transform ResolveSpawnTransform(MonoBehaviour fallbackController)
+        {
+            Transform selectedSpawn = FindSelectedTrackSpawn();
+            if (selectedSpawn != null)
+            {
+                return selectedSpawn;
+            }
+
+            return fallbackController != null ? fallbackController.transform : null;
+        }
+
+        private Transform FindSelectedTrackSpawn()
+        {
+            if (track == null || string.IsNullOrWhiteSpace(track.TrackId))
+            {
+                return null;
+            }
+
+            string spawnName = $"{track.TrackId.ToLowerInvariant()}_SpawnPoint";
+            foreach (GameObject rootObject in gameObject.scene.GetRootGameObjects())
+            {
+                Transform namedSpawn = FindChildRecursive(rootObject.transform, spawnName);
+                if (namedSpawn != null)
+                {
+                    return namedSpawn;
+                }
+
+                if (!rootObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                Transform mapSpawn = rootObject.transform.Find("Markers/SpawnPoint");
+                if (mapSpawn != null)
+                {
+                    return mapSpawn;
+                }
+            }
+
+            return null;
+        }
+
+        private static Transform FindChildRecursive(Transform parent, string childName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return child;
+                }
+
+                Transform result = FindChildRecursive(child, childName);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        private static void RetargetFollowCamera(Transform selectedVehicle)
+        {
+            foreach (MonoBehaviour behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (behaviour == null || behaviour.GetType().FullName != "SuperRacing.Vehicle.VehicleFollowCamera")
+                {
+                    continue;
+                }
+
+                behaviour.SendMessage("SetTarget", selectedVehicle, SendMessageOptions.DontRequireReceiver);
+                return;
             }
         }
 

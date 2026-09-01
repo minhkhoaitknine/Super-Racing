@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/TrackSelection.unity
     guid: e1135cd948e374c39a95e77bbcc27ac0
   - enabled: 1
+    path: Assets/Scenes/Race.unity
+    guid: c723027aabf95594f8d10861df8be793
+  - enabled: 1
     path: Assets/Game/Scenes/Test_Vehicle.unity
     guid: 9f41fb63df9ac394f8d8a8f179475a6a
   - enabled: 1
