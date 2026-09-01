@@ -118,6 +118,8 @@ namespace SuperRacing.EditorTools
             DisableVehicleBehaviour(vehicle);
             SetLayerRecursively(vehicle, layer);
             FitVehicle(vehicle, 4.2f, 0.02f);
+            LobbyVehicleDisplay vehicleDisplay = carRoot.gameObject.AddComponent<LobbyVehicleDisplay>();
+            vehicleDisplay.Configure(AssetDatabase.LoadAssetAtPath<GameCatalog>(CatalogPath), 4.2f, 0.02f);
 
             var cameraObject = new GameObject("Lobby Preview Camera");
             Camera previewCamera = cameraObject.AddComponent<Camera>();

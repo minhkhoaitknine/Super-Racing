@@ -83,6 +83,11 @@ namespace SuperRacing.UI
 
         public void ReturnToMainMenu()
         {
+            if (catalog != null && catalog.Cars.Count > 0)
+            {
+                GameSelection.SelectCar(catalog.Cars[selectedIndex]);
+            }
+
             SceneManager.LoadScene(mainMenuSceneName);
         }
 
