@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c38c982381c359c48a98e90bbfa5376d, type: 3}
+  m_Name: AudioCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.AudioCatalog
+  engineStart: {fileID: 8300000, guid: 82eeb647665b7f24b8f5f76b8c4dceb2, type: 3}
+  engineIdle: {fileID: 8300000, guid: b6a81d9e50ba62a42af4eca5e4ed1c84, type: 3}
+  engineDrive: {fileID: 8300000, guid: 89d30b563d6c3d14e838a827b9192300, type: 3}
+  accelerationLoad: {fileID: 8300000, guid: fb10381f1751b1f44b91cda4d6012cdc, type: 3}
+  tireRoll: {fileID: 8300000, guid: 996c04ac948ace9429e01823c7efdea8, type: 3}
+  tireSkid: {fileID: 8300000, guid: 42b5b773dcf3b434989a1e4278c634c2, type: 3}
+  collisionLight: {fileID: 8300000, guid: 4d57af78235d4f8286c8c8b347e490a1, type: 3}
+  collisionMedium: {fileID: 8300000, guid: e9107fe92afa4c88a1959f785eac735e, type: 3}
+  collisionHeavy: {fileID: 8300000, guid: e9107fe92afa4c88a1959f785eac735e, type: 3}
+  gearShift: {fileID: 8300000, guid: 0d1f55b5a77f9a54ab47fe7dd234690d, type: 3}
+  engineOffLoad: {fileID: 8300000, guid: 3631ca41d35050e4facd38e45c445559, type: 3}
+  respawn: {fileID: 8300000, guid: edeed098781ef3644a45e0e56e71cbf7, type: 3}
+  landing: {fileID: 8300000, guid: de06a3fc5fabbe3469d73fd41e34e4e0, type: 3}
+  countdownTick: {fileID: 8300000, guid: a13373924ed0d524a869ce0a8e0be7a2, type: 3}
+  startedGo: {fileID: 8300000, guid: a2db058317550bd41b6c8d3a40c3c9a3, type: 3}
+  checkpointPassed: {fileID: 8300000, guid: 8e7b1de09fdf1bf4786043fefe07b491, type: 3}
+  lapChanged: {fileID: 8300000, guid: f35577fa3983461418705a246977f9a8, type: 3}
+  finished: {fileID: 8300000, guid: fee039c2c2a587248902c4887a9e23b5, type: 3}
+  newRecord: {fileID: 8300000, guid: bd3a49146e6e7f04182de600fd1f0221, type: 3}
+  invalidCheckpoint: {fileID: 8300000, guid: dbc48c199cacb6c4ea2ce8f623815ad7, type: 3}
+  restart: {fileID: 8300000, guid: 0d1f55b5a77f9a54ab47fe7dd234690d, type: 3}
+  uiHover: {fileID: 8300000, guid: 89e32f388afa36d4d8d80682cd9a1264, type: 3}
+  uiClick: {fileID: 8300000, guid: 72edbf1d0bc3b4d4282ffcbd9c013b3a, type: 3}
+  uiConfirm: {fileID: 8300000, guid: 4381ed1712ec10b4a8dea9db389ebb34, type: 3}
+  uiBack: {fileID: 8300000, guid: ff68301ac22d34843b7689626ad1d673, type: 3}
+  uiSelectionChanged: {fileID: 8300000, guid: 41faf7cbae15ed746b9d8ed8db89ef16, type: 3}
+  uiError: {fileID: 8300000, guid: 0256316a4f909904581c612537e7699e, type: 3}
+  uiStartRace: {fileID: 8300000, guid: 701786d9e9bb28b43824cbd27655426b, type: 3}
+  uiResultsOpen: {fileID: 8300000, guid: 69a568a05329d634696a576acd84e9c7, type: 3}
+  beachWaves: {fileID: 8300000, guid: 92f63abdf3e6493448514bd5ff02b1af, type: 3}
+  beachWind: {fileID: 8300000, guid: be07c04a46dc3474c809576e363c19a5, type: 3}
+  desertWind: {fileID: 8300000, guid: b259ca723b298aa4a83e991e3025976c, type: 3}
+  desertSandGust: {fileID: 8300000, guid: d6e4d0169d74492409df936a6e23c57f, type: 3}
+  raceMusic: {fileID: 8300000, guid: dd63184a392cb6643bc816d6393852e4, type: 3}
+  menuMusic: {fileID: 8300000, guid: f39ceaef577c5d347a91b860b7680240, type: 3}
+  resultMusic: {fileID: 8300000, guid: 300aa566c2a7e884b9e204f52140aed3, type: 3}
+  speedsterProfile: {fileID: 11400000, guid: de785e458b33a364dab0b821d4f42cc5, type: 2}
+  balancedProfile: {fileID: 11400000, guid: c8e1545cdfafb5349bb42a817fdaaf89, type: 2}
+  controlProfile: {fileID: 11400000, guid: dd079113d77abdc4d841d2c4ee05bb42, type: 2}
+  asphaltSurface: {fileID: 11400000, guid: c7a3d5585ac080747814500d05f1752f, type: 2}
+  sandSurface: {fileID: 11400000, guid: 8b61f9eec47ca254ebc8eb7f5311ac41, type: 2}
+  grassSurface: {fileID: 11400000, guid: 3b69fa66f28141e40a44a13743d2d78a, type: 2}

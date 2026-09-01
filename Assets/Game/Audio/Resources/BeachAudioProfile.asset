@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 703b27c270d8b744d9e786286ed93163, type: 3}
+  m_Name: BeachAudioProfile
+  m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.MapAudioProfile
+  displayName: Beach
+  primaryAmbience: {fileID: 8300000, guid: 92f63abdf3e6493448514bd5ff02b1af, type: 3}
+  secondaryAmbience: {fileID: 8300000, guid: be07c04a46dc3474c809576e363c19a5, type: 3}
+  primaryVolume: 0.58
+  secondaryVolume: 0.08

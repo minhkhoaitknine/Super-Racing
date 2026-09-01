@@ -2,12 +2,13 @@ using SuperRacing.Contracts;
 using SuperRacing.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using SuperRacing.Audio;
 
 namespace SuperRacing.Vehicle
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
-    public sealed class VehicleController : MonoBehaviour, IVehicleController
+    public sealed class VehicleController : MonoBehaviour, IVehicleController, IVehicleAudioTelemetrySource
     {
         [Header("Wheel Colliders")]
         [SerializeField] private WheelCollider frontLeftWheel;
@@ -48,6 +49,7 @@ namespace SuperRacing.Vehicle
         public float SpeedKmh => vehicleBody != null ? vehicleBody.linearVelocity.magnitude * 3.6f : 0f;
         public bool CanDrive { get; set; } = true;
         public bool IsDrifting { get; private set; }
+        public VehicleAudioTelemetry AudioTelemetry => BuildAudioTelemetry();
 
         private Rigidbody vehicleBody;
         private InputAction fallbackDriveAction;
@@ -465,6 +467,36 @@ namespace SuperRacing.Vehicle
         {
             baseFriction.stiffness = stiffness;
             wheel.sidewaysFriction = baseFriction;
+        }
+
+        private VehicleAudioTelemetry BuildAudioTelemetry()
+        {
+            WheelCollider[] wheels = { frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel };
+            int groundedCount = 0;
+            float forwardSlip = 0f;
+            float sidewaysSlip = 0f;
+            SurfaceType surface = SurfaceType.Asphalt;
+            foreach (WheelCollider wheel in wheels)
+            {
+                if (wheel == null || !wheel.GetGroundHit(out WheelHit hit)) continue;
+                groundedCount++;
+                forwardSlip = Mathf.Max(forwardSlip, Mathf.Abs(hit.forwardSlip));
+                sidewaysSlip = Mathf.Max(sidewaysSlip, Mathf.Abs(hit.sidewaysSlip));
+                string surfaceName = hit.collider != null ? (hit.collider.tag + hit.collider.name).ToLowerInvariant() : "";
+                if (surfaceName.Contains("sand")) surface = SurfaceType.Sand;
+                else if (surfaceName.Contains("grass")) surface = SurfaceType.Grass;
+            }
+
+            return new VehicleAudioTelemetry
+            {
+                SpeedKmh = SpeedKmh,
+                Throttle = Mathf.Abs(driveInput.y),
+                Brake = brakeInput ? 1f : 0f,
+                IsGrounded = groundedCount > 0,
+                ForwardSlip = forwardSlip,
+                SidewaysSlip = sidewaysSlip,
+                CurrentSurface = surface
+            };
         }
     }
 }

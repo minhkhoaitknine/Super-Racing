@@ -2,7 +2,8 @@
   "name": "SuperRacing.EditModeTests",
   "rootNamespace": "SuperRacing.Tests",
   "references": [
-    "SuperRacing"
+    "SuperRacing",
+    "SuperRacing.Audio"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

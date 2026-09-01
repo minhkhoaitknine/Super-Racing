@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 322d98ee51f46f54f90ec55017668e7b, type: 3}
+  m_Name: BalancedAudioProfile
+  m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.VehicleAudioProfile
+  displayName: Balanced
+  engineStart: {fileID: 8300000, guid: 82eeb647665b7f24b8f5f76b8c4dceb2, type: 3}
+  gearShift: {fileID: 8300000, guid: 0d1f55b5a77f9a54ab47fe7dd234690d, type: 3}
+  backfire: {fileID: 0}
+  idle: {fileID: 8300000, guid: b6a81d9e50ba62a42af4eca5e4ed1c84, type: 3}
+  lowRpm: {fileID: 8300000, guid: de410a0aa3cc65442ba2d767fca6a288, type: 3}
+  midRpm: {fileID: 8300000, guid: e4f58d44e9910b84fbe273b3b099b5ad, type: 3}
+  highRpm: {fileID: 8300000, guid: 98dc6f094d247c242a18f6f98a11b26a, type: 3}
+  onLoad: {fileID: 8300000, guid: fb10381f1751b1f44b91cda4d6012cdc, type: 3}
+  offLoad: {fileID: 8300000, guid: 3631ca41d35050e4facd38e45c445559, type: 3}
+  gearCount: 5
+  maxSpeedKmh: 145
+  minPitch: 0.78
+  maxPitch: 1.68
+  shiftDuration: 0.16
+  engineVolume: 0.66
+  loadVolume: 0.28
+  rpmFromSpeed:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0.9
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.9
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

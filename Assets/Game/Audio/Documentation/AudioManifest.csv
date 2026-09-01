@@ -1,0 +1,38 @@
+event,chosen_source,chosen_original,candidate_b,candidate_c,license,status
+Vehicle.EngineStart,OpenGameArt Racing Car Engine Loops,loop_0.wav,loop_1.wav,loop_2.wav,CC0,CHOSEN
+Vehicle.EngineIdle,OpenGameArt Racing Car Engine Loops,loop_0.wav,loop_1.wav,loop_2.wav,CC0,CHOSEN
+Vehicle.EngineDrive,OpenGameArt Racing Car Engine Loops,loop_3.wav,loop_4.wav,loop_5.wav,CC0,CHOSEN
+Vehicle.AccelerationLoad,OpenGameArt Racing Car Engine Loops,loop_3.wav,loop_4.wav,loop_5.wav,CC0,CHOSEN
+Vehicle.TireRoll,Kenney Impact Sounds,footstep_concrete_002.ogg,footstep_concrete_001.ogg,footstep_concrete_004.ogg,CC0,CHOSEN
+Vehicle.TireSkid,Kenney Interface Sounds,scratch_002.ogg,scratch_001.ogg,scratch_004.ogg,CC0,CHOSEN
+Vehicle.CollisionLight,OpenGameArt Crash Collision by qubodup,qubodup-crash.ogg,impactMetal_light_002.ogg,impactGeneric_light_002.ogg,CC0,REALISTIC_CHOSEN;SHA256=E468EE00A6C94313CF4EFCF347B5F4E51E98E629608BE277A8F58FEB5E2267FF
+Vehicle.CollisionHeavy,Pixabay Car Crash Sound Effect by DRAGON-STUDIO,dragon-studio-car-crash-sound-effect-376874.mp3,impactMetal_heavy_002.ogg,impactPunch_heavy_002.ogg,Pixabay Content License,REALISTIC_CHOSEN;SHA256=1DC7035E820C102BF315D92589A424EEC4FF629A9976BD336262497D52D0ABF1
+Vehicle.Respawn,Kenney Interface Sounds,maximize_004.ogg,maximize_003.ogg,open_004.ogg,CC0,CHOSEN
+Vehicle.Landing,Kenney Impact Sounds,impactSoft_heavy_002.ogg,impactSoft_heavy_001.ogg,impactGeneric_light_004.ogg,CC0,CHOSEN
+Race.CountdownTick,Kenney Interface Sounds,tick_001.ogg,tick_002.ogg,tick_004.ogg,CC0,CHOSEN
+Race.StartedGo,Kenney Interface Sounds,confirmation_004.ogg,confirmation_003.ogg,maximize_009.ogg,CC0,CHOSEN
+Race.CheckpointPassed,Kenney Interface Sounds,select_003.ogg,select_005.ogg,pluck_001.ogg,CC0,CHOSEN
+Race.LapChanged,Kenney Interface Sounds,confirmation_002.ogg,confirmation_001.ogg,confirmation_003.ogg,CC0,CHOSEN
+Race.Finished,Kenney Interface Sounds,bong_001.ogg,confirmation_002.ogg,maximize_007.ogg,CC0,CHOSEN
+Race.NewRecord,Kenney Interface Sounds,confirmation_001.ogg,confirmation_004.ogg,maximize_009.ogg,CC0,CHOSEN
+Race.InvalidCheckpoint,Kenney Interface Sounds,error_003.ogg,error_002.ogg,error_005.ogg,CC0,CHOSEN
+Race.Restart,Kenney Interface Sounds,switch_006.ogg,switch_004.ogg,open_001.ogg,CC0,CHOSEN
+UI.Hover,Kenney Interface Sounds,scroll_001.ogg,scroll_002.ogg,select_001.ogg,CC0,CHOSEN
+UI.Click,Kenney Interface Sounds,click_003.ogg,click_002.ogg,click_005.ogg,CC0,CHOSEN
+UI.Confirm,Kenney Interface Sounds,confirmation_003.ogg,confirmation_001.ogg,confirmation_004.ogg,CC0,CHOSEN
+UI.Back,Kenney Interface Sounds,back_002.ogg,back_001.ogg,back_004.ogg,CC0,CHOSEN
+UI.SelectionChanged,Kenney Interface Sounds,select_006.ogg,select_004.ogg,select_008.ogg,CC0,CHOSEN
+UI.Error,Kenney Interface Sounds,error_002.ogg,error_001.ogg,error_004.ogg,CC0,CHOSEN
+UI.StartRace,Kenney Interface Sounds,open_004.ogg,open_002.ogg,maximize_004.ogg,CC0,CHOSEN
+UI.ResultsOpen,Kenney Interface Sounds,maximize_007.ogg,maximize_006.ogg,open_003.ogg,CC0,CHOSEN
+Ambience.BeachWaves,OpenGameArt Beach Ocean Waves,wave_01_cc0-18363__jasinski__alkaibeach.flac,wave_02.flac,wave_03.flac,CC0,CHOSEN
+Ambience.BeachWind,OpenGameArt Wind by IgnasD,Wind.ogg,Wind2.ogg,Wind3.ogg,CC0,CHOSEN
+Ambience.DesertWind,OpenGameArt Wind by IgnasD,Wind2.ogg,Wind.ogg,Wind3.ogg,CC0,CHOSEN
+Ambience.DesertSandGust,OpenGameArt Short Wind Sound by remaxim,short wind sound.wav,Wind3.ogg,Wind2.ogg,CC0,CHOSEN
+Music.Race,OpenGameArt Hot Roadway by MintoDog,hot_roadway_bpm160.ogg,hot_roadway_climax_bpm175.ogg,Racing Game Menu,CC0,CHOSEN
+Music.Menu,OpenGameArt Racing Game Menu by MintoDog,racing_game_menu_bpm165.ogg,Hot Roadway,Racing Game Result,CC0,CHOSEN
+Music.Result,OpenGameArt Racing Game Result by MintoDog,racing_game_result_best_bpm140.ogg,result_good_bpm110.ogg,result_bad_bpm95.ogg,CC0,CHOSEN
+Vehicle.EngineLow,OpenGameArt Racing Car Engine Loops,loop_1.wav,loop_0.wav,loop_2.wav,CC0,CHOSEN
+Vehicle.EngineMid,OpenGameArt Racing Car Engine Loops,loop_2.wav,loop_3.wav,loop_1.wav,CC0,CHOSEN
+Vehicle.EngineHigh,OpenGameArt Racing Car Engine Loops,loop_4.wav,loop_5.wav,loop_3.wav,CC0,CHOSEN
+Vehicle.EngineOffLoad,OpenGameArt Racing Car Engine Loops,loop_5.wav,loop_4.wav,loop_3.wav,CC0,CHOSEN

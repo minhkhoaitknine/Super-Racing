@@ -27,6 +27,7 @@ namespace SuperRacing.Race
         public bool CanAcceptCheckpoints { get; set; } = true;
 
         public event Action<int, int> LapChanged;
+        public event Action<int> CheckpointPassed;
         public event Action RaceCompleted;
 
         public void Initialize(int numberOfCheckpoints, int numberOfLaps)
@@ -58,6 +59,7 @@ namespace SuperRacing.Race
             }
 
             expectedCheckpointIndex++;
+            CheckpointPassed?.Invoke(checkpoint.CheckpointIndex);
             if (expectedCheckpointIndex < checkpointCount)
             {
                 return true;
