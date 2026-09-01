@@ -111,6 +111,7 @@ namespace SuperRacing.EditorTools
 
             var carRoot = new GameObject("Interactive Vehicle Root").transform;
             carRoot.SetParent(stage.transform, false);
+            carRoot.gameObject.layer = layer;
             carRoot.localRotation = Quaternion.Euler(0f, 8f, 0f);
             GameObject vehicle = (GameObject)PrefabUtility.InstantiatePrefab(car.VehiclePrefab);
             vehicle.name = car.DisplayName;
@@ -119,7 +120,7 @@ namespace SuperRacing.EditorTools
             SetLayerRecursively(vehicle, layer);
             FitVehicle(vehicle, 4.2f, 0.02f);
             LobbyVehicleDisplay vehicleDisplay = carRoot.gameObject.AddComponent<LobbyVehicleDisplay>();
-            vehicleDisplay.Configure(AssetDatabase.LoadAssetAtPath<GameCatalog>(CatalogPath), 4.2f, 0.02f);
+            vehicleDisplay.Configure(AssetDatabase.LoadAssetAtPath<GameCatalog>(CatalogPath), 4.2f, 0.02f, layer);
 
             var cameraObject = new GameObject("Lobby Preview Camera");
             Camera previewCamera = cameraObject.AddComponent<Camera>();

@@ -9,12 +9,14 @@ namespace SuperRacing.UI
         [SerializeField] private GameCatalog catalog;
         [SerializeField, Min(0.1f)] private float targetSize = 4.2f;
         [SerializeField] private float groundY = 0.02f;
+        [SerializeField, Range(0, 31)] private int previewLayer;
 
-        public void Configure(GameCatalog gameCatalog, float previewTargetSize, float previewGroundY)
+        public void Configure(GameCatalog gameCatalog, float previewTargetSize, float previewGroundY, int vehicleLayer)
         {
             catalog = gameCatalog;
             targetSize = previewTargetSize;
             groundY = previewGroundY;
+            previewLayer = vehicleLayer;
         }
 
         private void Start()
@@ -30,7 +32,7 @@ namespace SuperRacing.UI
             GameObject vehicle = Instantiate(car.VehiclePrefab, transform, false);
             vehicle.name = car.DisplayName;
             DisableVehicleBehaviour(vehicle);
-            SetLayerRecursively(vehicle, gameObject.layer);
+            SetLayerRecursively(vehicle, previewLayer);
             FitVehicle(vehicle);
         }
 

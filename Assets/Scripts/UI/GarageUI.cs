@@ -77,8 +77,7 @@ namespace SuperRacing.UI
 
         public void ConfirmSelection()
         {
-            GameSelection.SelectCar(catalog.Cars[selectedIndex]);
-            SceneManager.LoadScene(trackSelectionSceneName);
+            ReturnToMainMenu();
         }
 
         public void ReturnToMainMenu()
