@@ -21,6 +21,13 @@ namespace SuperRacing.UI
 
         private IVehicleController vehicle;
 
+        public void Configure(MonoBehaviour selectedVehicleController, LapTracker selectedLapTracker, RaceTimer selectedRaceTimer)
+        {
+            vehicleController = selectedVehicleController;
+            lapTracker = selectedLapTracker;
+            raceTimer = selectedRaceTimer;
+        }
+
         private void Awake()
         {
             vehicle = vehicleController as IVehicleController;

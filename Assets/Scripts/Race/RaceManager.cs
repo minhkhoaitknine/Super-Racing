@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 namespace SuperRacing.Race
 {
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(-1000)]
     public sealed class RaceManager : MonoBehaviour
     {
         public enum RaceState
@@ -60,8 +61,11 @@ namespace SuperRacing.Race
 
         private void Awake()
         {
-            track ??= GameSelection.SelectedTrack;
-            car ??= GameSelection.SelectedCar;
+            track = GameSelection.SelectedTrack != null ? GameSelection.SelectedTrack : track;
+            car = GameSelection.SelectedCar != null ? GameSelection.SelectedCar : car;
+
+            LoadSelectedTrack();
+            LoadSelectedVehicle();
             vehicle = vehicleController as IVehicleController;
             if (!ValidateConfiguration())
             {
@@ -73,6 +77,84 @@ namespace SuperRacing.Race
             vehicle.ApplyStats(car);
             vehicle.CanDrive = false;
             raceTimer.ResetTimer();
+        }
+
+        private void LoadSelectedTrack()
+        {
+            if (track == null)
+            {
+                return;
+            }
+
+            string selectedId = track.TrackId.ToLowerInvariant();
+            foreach (GameObject rootObject in gameObject.scene.GetRootGameObjects())
+            {
+                Transform root = rootObject.transform;
+                string rootName = root.name.ToLowerInvariant();
+                if (!rootName.Contains("map_audit") && !rootName.Contains("map_physicsprototype"))
+                {
+                    continue;
+                }
+
+                bool belongsToSelectedTrack = rootName.Contains(selectedId);
+                root.gameObject.SetActive(belongsToSelectedTrack);
+            }
+        }
+
+        private void LoadSelectedVehicle()
+        {
+            if (car == null || car.VehiclePrefab == null)
+            {
+                return;
+            }
+
+            MonoBehaviour previousController = vehicleController;
+            Transform spawn = previousController != null ? previousController.transform : null;
+            Vector3 position = spawn != null ? spawn.position : Vector3.zero;
+            Quaternion rotation = spawn != null ? spawn.rotation : Quaternion.identity;
+
+            GameObject selectedVehicle = Instantiate(car.VehiclePrefab, position, rotation);
+            selectedVehicle.name = car.VehiclePrefab.name;
+
+            MonoBehaviour selectedController = null;
+            foreach (MonoBehaviour component in selectedVehicle.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (component is IVehicleController)
+                {
+                    selectedController = component;
+                    break;
+                }
+            }
+
+            if (selectedController == null)
+            {
+                Debug.LogError($"Selected car prefab '{car.VehiclePrefab.name}' does not contain an IVehicleController.", car.VehiclePrefab);
+                Destroy(selectedVehicle);
+                return;
+            }
+
+            LapTracker selectedLapTracker = selectedVehicle.GetComponent<LapTracker>();
+            if (selectedLapTracker == null)
+            {
+                selectedLapTracker = selectedVehicle.AddComponent<LapTracker>();
+            }
+
+            vehicleController = selectedController;
+            lapTracker = selectedLapTracker;
+
+            RaceSetup setup = FindFirstObjectByType<RaceSetup>(FindObjectsInactive.Include);
+            setup?.Configure(track, selectedLapTracker);
+
+            foreach (SuperRacing.UI.RaceHUD hud in FindObjectsByType<SuperRacing.UI.RaceHUD>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                hud.Configure(selectedController, selectedLapTracker, raceTimer);
+            }
+
+            if (previousController != null && previousController.gameObject != selectedVehicle)
+            {
+                previousController.gameObject.SetActive(false);
+                Destroy(previousController.gameObject);
+            }
         }
 
         private void Start()

@@ -15,8 +15,15 @@ namespace SuperRacing.Race
 
         public IReadOnlyList<Checkpoint> Checkpoints => checkpoints;
 
+        public void Configure(TrackDefinition selectedTrack, LapTracker selectedLapTracker)
+        {
+            track = selectedTrack;
+            playerLapTracker = selectedLapTracker;
+        }
+
         private void Awake()
         {
+            track = GameSelection.SelectedTrack != null ? GameSelection.SelectedTrack : track;
             if (discoverCheckpointsOnAwake || checkpoints.Count == 0)
             {
                 DiscoverCheckpoints();
