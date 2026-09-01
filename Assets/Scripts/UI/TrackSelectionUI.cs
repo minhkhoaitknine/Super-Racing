@@ -56,10 +56,10 @@ namespace SuperRacing.UI
 
         public bool ValidateConfiguration()
         {
-            if (catalog == null || catalog.Tracks.Count == 0 || !GameSelection.HasCar ||
+            if (catalog == null || catalog.Tracks.Count == 0 ||
                 trackNameLabel == null || lapCountLabel == null || recordLabel == null)
             {
-                Debug.LogError("TrackSelectionUI requires a selected car, a catalog with tracks and all text labels.", this);
+                Debug.LogError("TrackSelectionUI requires a catalog with tracks and all text labels.", this);
                 return false;
             }
 
@@ -90,7 +90,7 @@ namespace SuperRacing.UI
             trackNameLabel.text = track.DisplayName;
             lapCountLabel.text = $"{track.LapCount} Laps";
 
-            if (RecordManager.TryGetBestTime(track.TrackId, GameSelection.SelectedCar.CarId, out float bestTime))
+            if (GameSelection.HasCar && RecordManager.TryGetBestTime(track.TrackId, GameSelection.SelectedCar.CarId, out float bestTime))
             {
                 recordLabel.text = $"Best  {RaceHUD.FormatTime(bestTime)}";
             }
