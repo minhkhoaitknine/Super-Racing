@@ -125,15 +125,15 @@ namespace SuperRacing.UI
         {
             TrackDefinition track = catalog.Tracks[selectedIndex];
             trackNameLabel.text = track.DisplayName;
-            lapCountLabel.text = $"{track.LapCount} Laps";
+            lapCountLabel.text = track.LapCount == 1 ? "1 Lap" : $"{track.LapCount} Laps";
 
-            if (GameSelection.HasCar && RecordManager.TryGetBestTime(track.TrackId, GameSelection.SelectedCar.CarId, out float bestTime))
+            if (GameSelection.HasCar && RecordManager.TryGetBestTime(track, GameSelection.SelectedCar, out float bestTime))
             {
                 recordLabel.text = $"Best  {RaceHUD.FormatTime(bestTime)}";
             }
             else
             {
-                recordLabel.text = "Best  --:--.---";
+                recordLabel.text = "No Record";
             }
 
             if (previewImage != null)

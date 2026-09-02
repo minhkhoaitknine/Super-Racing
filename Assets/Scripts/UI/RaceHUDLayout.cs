@@ -72,6 +72,7 @@ namespace SuperRacing.UI
             AddCaption(mapPanel, "TRACK MAP", new Vector2(16f, -16f), 16, Cyan);
             RawImage map = CreateRawImage("Minimap", mapPanel, new Vector2(204f, 178f));
             map.rectTransform.anchorMin = map.rectTransform.anchorMax = new Vector2(0.5f, 0f);
+            map.rectTransform.pivot = new Vector2(0.5f, 0f);
             map.rectTransform.anchoredPosition = new Vector2(0f, 15f);
             map.gameObject.AddComponent<RaceMinimap>();
         }

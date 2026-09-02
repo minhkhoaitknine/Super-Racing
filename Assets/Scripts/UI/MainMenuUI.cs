@@ -8,32 +8,47 @@ namespace SuperRacing.UI
     {
         [SerializeField] private string garageSceneName = "Garage";
         [SerializeField] private string trackSelectionSceneName = "TrackSelection";
-        [SerializeField] private string playGameSceneName = "Test_Vehicle";
 
         public void PlayGame()
         {
-            SceneManager.LoadScene(playGameSceneName);
+            OpenGarage();
         }
 
         public void OpenGarage()
         {
-            SceneManager.LoadScene(garageSceneName);
+            LoadSceneByNameOrBuildPath(garageSceneName);
         }
 
         public void OpenTrackSelection()
         {
-            if (Application.CanStreamedLevelBeLoaded(trackSelectionSceneName))
-            {
-                SceneManager.LoadScene(trackSelectionSceneName);
-                return;
-            }
-
-            Debug.LogWarning($"Track selection scene '{trackSelectionSceneName}' is not available yet.");
+            LoadSceneByNameOrBuildPath(trackSelectionSceneName);
         }
 
         public void QuitGame()
         {
             Application.Quit();
+        }
+
+        private static void LoadSceneByNameOrBuildPath(string sceneName)
+        {
+            if (Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                SceneManager.LoadScene(sceneName);
+                return;
+            }
+
+            for (int index = 0; index < SceneManager.sceneCountInBuildSettings; index++)
+            {
+                string scenePath = SceneUtility.GetScenePathByBuildIndex(index);
+                string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+                if (nameWithoutExtension == sceneName)
+                {
+                    SceneManager.LoadScene(scenePath);
+                    return;
+                }
+            }
+
+            Debug.LogWarning($"Scene '{sceneName}' is not available in Build Settings.");
         }
     }
 }

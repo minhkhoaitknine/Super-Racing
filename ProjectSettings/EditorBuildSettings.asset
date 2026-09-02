@@ -6,26 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Garage.unity
-    guid: 409fc53c736a0b343a7987704bfcb1b6
-  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: b343941569149d74f91e512eb7765754
   - enabled: 1
-    path: Assets/Scenes/CarSelection.unity
-    guid: 258040218e4fc4c8a9d7edfd724ea3dc
+    path: Assets/Scenes/Garage.unity
+    guid: 409fc53c736a0b343a7987704bfcb1b6
   - enabled: 1
     path: Assets/Scenes/TrackSelection.unity
     guid: e1135cd948e374c39a95e77bbcc27ac0
   - enabled: 1
-    path: Assets/Game/Scenes/Test_Vehicle.unity
-    guid: 9f41fb63df9ac394f8d8a8f179475a6a
+    path: Assets/Scenes/Race.unity
+    guid: c723027aabf95594f8d10861df8be793
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
-    path: Assets/Scenes/Test_Race.unity
-    guid: 2006f8af535f41a4f9a3d7d1e04f00f2
+    path: Assets/Scenes/complete_race.unity
+    guid: d34858e8027d29046b3c140ba05370f9
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

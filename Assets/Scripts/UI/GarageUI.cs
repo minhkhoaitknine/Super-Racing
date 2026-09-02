@@ -25,10 +25,20 @@ namespace SuperRacing.UI
         [SerializeField, Min(0.1f)] private float previewTargetSize = 3.25f;
         [SerializeField] private Vector3 vehiclePositionOffset = new Vector3(0f, -0.96f, 0f);
         [SerializeField] private Vector3 vehicleRotationEuler = new Vector3(0f, 8f, 0f);
+        [SerializeField] private string trackSelectionSceneName = "TrackSelection";
         [SerializeField] private string mainMenuSceneName = "MainMenu";
+
+        private static readonly Color SelectedCardColor = new(0f, 0.82f, 1f, 1f);
+        private static readonly Color UnselectedCardColor = new(0.36f, 0.72f, 0.9f, 0.5f);
+        private static readonly Color SelectedOverlayColor = new(0.0f, 0.18f, 0.28f, 0.3f);
+        private static readonly Color UnselectedOverlayColor = new(0.02f, 0.05f, 0.1f, 0.82f);
 
         private int selectedIndex;
         private GameObject previewVehicle;
+        private Button[] carCardButtons;
+        private Image[] carCardBackgrounds;
+        private Image[] carCardOpaqueLayers;
+        private Text[] carCardActiveLabels;
 
         private void Start()
         {
@@ -67,7 +77,12 @@ namespace SuperRacing.UI
 
         public void ConfirmSelection()
         {
-            ReturnToMainMenu();
+            if (catalog != null && catalog.Cars.Count > 0)
+            {
+                GameSelection.SelectCar(catalog.Cars[selectedIndex]);
+            }
+
+            SceneManager.LoadScene(trackSelectionSceneName);
         }
 
         public void ReturnToMainMenu()
@@ -148,6 +163,7 @@ namespace SuperRacing.UI
                 previewImage.enabled = car.PreviewSprite != null;
             }
 
+            RefreshCardSelection();
             RefreshVehiclePreview(car);
         }
 
@@ -250,6 +266,137 @@ namespace SuperRacing.UI
             {
                 SetLayerRecursively(child.gameObject, layer);
             }
+        }
+
+        private void RefreshCardSelection()
+        {
+            EnsureCarCardReferences();
+            if (carCardButtons == null)
+            {
+                return;
+            }
+
+            for (int index = 0; index < carCardButtons.Length; index++)
+            {
+                bool selected = index == selectedIndex;
+
+                if (carCardBackgrounds[index] != null)
+                {
+                    carCardBackgrounds[index].color = selected ? SelectedCardColor : UnselectedCardColor;
+                }
+
+                if (carCardOpaqueLayers[index] != null)
+                {
+                    carCardOpaqueLayers[index].color = selected ? SelectedOverlayColor : UnselectedOverlayColor;
+                }
+
+                if (carCardActiveLabels[index] != null)
+                {
+                    carCardActiveLabels[index].gameObject.SetActive(selected);
+                }
+
+                if (carCardButtons[index] != null)
+                {
+                    ColorBlock colors = carCardButtons[index].colors;
+                    colors.normalColor = selected ? Color.white : new Color(0.72f, 0.84f, 0.9f, 0.88f);
+                    colors.selectedColor = colors.normalColor;
+                    colors.highlightedColor = selected ? Color.white : new Color(0.88f, 0.98f, 1f, 1f);
+                    carCardButtons[index].colors = colors;
+                }
+            }
+        }
+
+        private void EnsureCarCardReferences()
+        {
+            int cardCount = catalog != null && catalog.Cars.Count > 0 ? catalog.Cars.Count : 3;
+            if (carCardButtons != null && carCardButtons.Length == cardCount)
+            {
+                return;
+            }
+
+            carCardButtons = new Button[cardCount];
+            carCardBackgrounds = new Image[cardCount];
+            carCardOpaqueLayers = new Image[cardCount];
+            carCardActiveLabels = new Text[cardCount];
+
+            for (int index = 0; index < cardCount; index++)
+            {
+                GameObject cardObject = GameObject.Find($"CAR {index + 1:00} Card");
+                if (cardObject == null)
+                {
+                    continue;
+                }
+
+                carCardButtons[index] = cardObject.GetComponent<Button>();
+                carCardBackgrounds[index] = cardObject.GetComponent<Image>();
+                carCardOpaqueLayers[index] = FindChildImage(cardObject.transform, "Card Opaque Layer");
+                carCardActiveLabels[index] = FindActiveBadge(cardObject.transform);
+            }
+        }
+
+        private static Image FindChildImage(Transform root, string childName)
+        {
+            Transform child = FindChildByName(root, childName);
+            return child != null ? child.GetComponent<Image>() : null;
+        }
+
+        private static Text FindActiveBadge(Transform card)
+        {
+            Transform badge = FindChildByName(card, "Active Badge");
+            if (badge != null && badge.TryGetComponent(out Text existingText))
+            {
+                return existingText;
+            }
+
+            GameObject badgeObject = new("Active Badge");
+            badgeObject.transform.SetParent(card, false);
+            Text badgeText = badgeObject.AddComponent<Text>();
+            badgeText.font = ResolveFont();
+            badgeText.text = "ACTIVE";
+            badgeText.fontSize = 12;
+            badgeText.fontStyle = FontStyle.Bold;
+            badgeText.alignment = TextAnchor.MiddleRight;
+            badgeText.color = SelectedCardColor;
+            badgeText.raycastTarget = false;
+
+            RectTransform rect = badgeText.rectTransform;
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-14f, -8f);
+            rect.sizeDelta = new Vector2(70f, 26f);
+            return badgeText;
+        }
+
+        private static Transform FindChildByName(Transform root, string childName)
+        {
+            for (int index = 0; index < root.childCount; index++)
+            {
+                Transform child = root.GetChild(index);
+                if (child.name == childName)
+                {
+                    return child;
+                }
+
+                Transform result = FindChildByName(child, childName);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        private static Font ResolveFont()
+        {
+            Text existingText = FindFirstObjectByType<Text>(FindObjectsInactive.Include);
+            if (existingText != null && existingText.font != null)
+            {
+                return existingText.font;
+            }
+
+            return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
     }
 }
