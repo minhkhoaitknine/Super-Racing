@@ -25,6 +25,17 @@ namespace SuperRacing.Race
             return bestTime > 0f;
         }
 
+        public static bool TryGetBestTime(TrackDefinition track, CarDefinition car, out float bestTime)
+        {
+            if (track == null || car == null)
+            {
+                bestTime = 0f;
+                return false;
+            }
+
+            return TryGetBestTime(track.TrackId, car.CarId, out bestTime);
+        }
+
         public static bool TrySaveBestTime(TrackDefinition track, CarDefinition car, float elapsedSeconds)
         {
             if (track == null || car == null)
@@ -57,6 +68,16 @@ namespace SuperRacing.Race
         {
             PlayerPrefs.DeleteKey(BuildKey(trackId, carId));
             PlayerPrefs.Save();
+        }
+
+        public static void DeleteBestTime(TrackDefinition track, CarDefinition car)
+        {
+            if (track == null || car == null)
+            {
+                return;
+            }
+
+            DeleteBestTime(track.TrackId, car.CarId);
         }
     }
 }

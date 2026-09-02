@@ -10,6 +10,7 @@ namespace SuperRacing.Race
     {
         [SerializeField] private TrackDefinition track;
         [SerializeField] private LapTracker playerLapTracker;
+        [SerializeField] private Transform checkpointRoot;
         [SerializeField] private List<Checkpoint> checkpoints = new();
         [SerializeField] private bool discoverCheckpointsOnAwake = true;
 
@@ -17,8 +18,25 @@ namespace SuperRacing.Race
 
         public void Configure(TrackDefinition selectedTrack, LapTracker selectedLapTracker)
         {
+            Configure(selectedTrack, selectedLapTracker, checkpointRoot);
+        }
+
+        public void Configure(TrackDefinition selectedTrack, LapTracker selectedLapTracker, Transform selectedCheckpointRoot)
+        {
             track = selectedTrack;
             playerLapTracker = selectedLapTracker;
+            checkpointRoot = selectedCheckpointRoot;
+
+            if (discoverCheckpointsOnAwake || checkpoints.Count == 0)
+            {
+                DiscoverCheckpoints();
+            }
+
+            if (ValidateConfiguration())
+            {
+                int laps = track != null ? track.LapCount : 1;
+                playerLapTracker.Initialize(checkpoints.Count, laps);
+            }
         }
 
         private void Awake()
@@ -43,7 +61,15 @@ namespace SuperRacing.Race
         public void DiscoverCheckpoints()
         {
             checkpoints.Clear();
-            checkpoints.AddRange(FindObjectsByType<Checkpoint>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+            if (checkpointRoot != null)
+            {
+                checkpoints.AddRange(checkpointRoot.GetComponentsInChildren<Checkpoint>(true));
+            }
+            else
+            {
+                checkpoints.AddRange(FindObjectsByType<Checkpoint>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+            }
+
             checkpoints.Sort((left, right) => left.CheckpointIndex.CompareTo(right.CheckpointIndex));
         }
 

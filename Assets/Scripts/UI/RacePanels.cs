@@ -1,7 +1,11 @@
 using System.Collections;
 using SuperRacing.Race;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace SuperRacing.UI
 {
@@ -22,8 +26,14 @@ namespace SuperRacing.UI
         [SerializeField] private Button restartButton;
         [SerializeField] private Button mainMenuButton;
         [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [SerializeField] private string completeRaceSceneName = "complete_race";
+        [SerializeField, Min(0.1f)] private float finishBlinkSpeed = 2.5f;
 
         private Coroutine hideCountdownRoutine;
+        private Text continuePromptLabel;
+        private bool waitingForFinishDismiss;
+        private Color finalTimeBaseColor = Color.white;
+        private Color recordBaseColor = Color.white;
 
         private void Awake()
         {
@@ -35,8 +45,19 @@ namespace SuperRacing.UI
 
             countdownPanel.SetActive(false);
             finishPanel.SetActive(false);
-            restartButton.onClick.AddListener(raceManager.RestartRace);
-            mainMenuButton.onClick.AddListener(ReturnToMainMenu);
+            finalTimeBaseColor = finalTimeLabel.color;
+            recordBaseColor = recordLabel.color;
+            continuePromptLabel = CreateContinuePromptLabel();
+
+            if (restartButton != null)
+            {
+                restartButton.gameObject.SetActive(false);
+            }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.gameObject.SetActive(false);
+            }
         }
 
         private void OnEnable()
@@ -63,16 +84,20 @@ namespace SuperRacing.UI
             raceManager.RaceFinished -= ShowFinish;
         }
 
-        private void OnDestroy()
+        private void Update()
         {
-            if (restartButton != null && raceManager != null)
+            if (!waitingForFinishDismiss)
             {
-                restartButton.onClick.RemoveListener(raceManager.RestartRace);
+                return;
             }
 
-            if (mainMenuButton != null)
+            UpdateFinishBlink();
+
+            if (WasDismissPressed())
             {
-                mainMenuButton.onClick.RemoveListener(ReturnToMainMenu);
+                waitingForFinishDismiss = false;
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(completeRaceSceneName);
             }
         }
 
@@ -113,8 +138,22 @@ namespace SuperRacing.UI
         {
             countdownPanel.SetActive(false);
             finishPanel.SetActive(true);
-            finalTimeLabel.text = $"Time  {RaceHUD.FormatTime(finalTimeSeconds)}";
-            recordLabel.text = setNewRecord ? "NEW RECORD!" : "Race Complete";
+            finalTimeLabel.text = "COMPLETE";
+            recordLabel.text = $"TIME  {RaceHUD.FormatTime(finalTimeSeconds)}";
+            continuePromptLabel.text = "Press any key or tap anywhere to continue";
+            ResetFinishBlink();
+
+            if (restartButton != null)
+            {
+                restartButton.gameObject.SetActive(false);
+            }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.gameObject.SetActive(false);
+            }
+
+            waitingForFinishDismiss = true;
         }
 
         private void ReturnToMainMenu()
@@ -127,6 +166,77 @@ namespace SuperRacing.UI
             yield return new WaitForSecondsRealtime(0.5f);
             countdownPanel.SetActive(false);
             hideCountdownRoutine = null;
+        }
+
+        private void UpdateFinishBlink()
+        {
+            float alpha = 0.35f + Mathf.PingPong(Time.unscaledTime * finishBlinkSpeed, 0.65f);
+            finalTimeLabel.color = WithAlpha(finalTimeBaseColor, alpha);
+            recordLabel.color = WithAlpha(recordBaseColor, alpha);
+        }
+
+        private void ResetFinishBlink()
+        {
+            finalTimeLabel.color = finalTimeBaseColor;
+            recordLabel.color = recordBaseColor;
+        }
+
+        private static Color WithAlpha(Color color, float alpha)
+        {
+            color.a = alpha;
+            return color;
+        }
+
+        private static bool WasDismissPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+            {
+                return true;
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                return true;
+            }
+
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            {
+                return true;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+            {
+                return true;
+            }
+#endif
+
+            return false;
+        }
+
+        private Text CreateContinuePromptLabel()
+        {
+            GameObject promptObject = new("Continue Prompt");
+            promptObject.transform.SetParent(finishPanel.transform, false);
+
+            Text prompt = promptObject.AddComponent<Text>();
+            prompt.font = finalTimeLabel.font;
+            prompt.fontSize = 20;
+            prompt.alignment = TextAnchor.MiddleCenter;
+            prompt.color = new Color(0.75f, 0.95f, 1f, 1f);
+            prompt.raycastTarget = false;
+            prompt.text = "Press any key or tap anywhere to continue";
+
+            RectTransform rect = prompt.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, 42f);
+            rect.sizeDelta = new Vector2(500f, 36f);
+
+            return prompt;
         }
     }
 }

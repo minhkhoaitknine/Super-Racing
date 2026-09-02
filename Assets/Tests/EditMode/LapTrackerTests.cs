@@ -38,8 +38,8 @@ namespace SuperRacing.Tests
         [Test]
         public void RejectsCheckpointWhenOrderIsWrong()
         {
-            Assert.That(tracker.TryPassCheckpoint(checkpoints[1]), Is.False);
-            Assert.That(tracker.ExpectedCheckpointIndex, Is.EqualTo(0));
+            Assert.That(tracker.TryPassCheckpoint(checkpoints[0]), Is.False);
+            Assert.That(tracker.ExpectedCheckpointIndex, Is.EqualTo(1));
             Assert.That(tracker.CompletedLaps, Is.Zero);
         }
 
@@ -50,7 +50,7 @@ namespace SuperRacing.Tests
 
             Assert.That(tracker.CompletedLaps, Is.EqualTo(1));
             Assert.That(tracker.CurrentLap, Is.EqualTo(2));
-            Assert.That(tracker.ExpectedCheckpointIndex, Is.Zero);
+            Assert.That(tracker.ExpectedCheckpointIndex, Is.EqualTo(1));
             Assert.That(tracker.IsRaceComplete, Is.False);
         }
 
@@ -78,16 +78,15 @@ namespace SuperRacing.Tests
 
             Assert.That(tracker.CurrentLap, Is.EqualTo(1));
             Assert.That(tracker.CompletedLaps, Is.Zero);
-            Assert.That(tracker.ExpectedCheckpointIndex, Is.Zero);
+            Assert.That(tracker.ExpectedCheckpointIndex, Is.EqualTo(1));
             Assert.That(tracker.IsRaceComplete, Is.False);
         }
 
         private void PassCompleteSequence()
         {
-            foreach (Checkpoint checkpoint in checkpoints)
-            {
-                Assert.That(tracker.TryPassCheckpoint(checkpoint), Is.True);
-            }
+            Assert.That(tracker.TryPassCheckpoint(checkpoints[1]), Is.True);
+            Assert.That(tracker.TryPassCheckpoint(checkpoints[2]), Is.True);
+            Assert.That(tracker.TryPassCheckpoint(checkpoints[0]), Is.True);
         }
 
         private static Checkpoint CreateCheckpoint(int index)

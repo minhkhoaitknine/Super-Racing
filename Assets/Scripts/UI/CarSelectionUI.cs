@@ -74,10 +74,11 @@ namespace SuperRacing.UI
 
             if (statsLabel != null)
             {
-                string record = "";
-                if (GameSelection.HasTrack && RecordManager.TryGetBestTime(
-                    GameSelection.SelectedTrack.TrackId, car.CarId, out float best))
+                string record = "\nNo Record";
+                if (GameSelection.HasTrack && RecordManager.TryGetBestTime(GameSelection.SelectedTrack, car, out float best))
+                {
                     record = $"\nBest  {RaceHUD.FormatTime(best)}";
+                }
 
                 statsLabel.text =
                     $"Top Speed  {car.MaxSpeedPercent:0}%\n" +

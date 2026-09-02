@@ -40,6 +40,7 @@ namespace SuperRacing.Race
         [Header("Countdown")]
         [Min(1)] [SerializeField] private int countdownFrom = 3;
         [Min(0.1f)] [SerializeField] private float countdownStepSeconds = 1f;
+        [Min(0f)] [SerializeField] private float minimumFinishSeconds = 8f;
         [SerializeField] private bool startAutomatically = true;
 
         [Header("Runtime Events")]
@@ -49,10 +50,15 @@ namespace SuperRacing.Race
 
         private IVehicleController vehicle;
         private Coroutine countdownRoutine;
+        private Transform selectedTrackRoot;
+        private Collider finishLineTrigger;
+        private bool hasLeftFinishLine;
 
         public RaceState State { get; private set; } = RaceState.Ready;
         public float FinalTimeSeconds { get; private set; }
         public bool SetNewRecord { get; private set; }
+        public bool HasFinishLine => finishLineTrigger != null;
+        public bool IsTouchingFinishLine { get; private set; }
         public TrackDefinition Track => track;
         public CarDefinition Car => car;
 
@@ -75,7 +81,6 @@ namespace SuperRacing.Race
                 return;
             }
 
-            lapTracker.RaceCompleted += FinishRace;
             vehicle.ApplyStats(car);
             vehicle.CanDrive = false;
             raceTimer.ResetTimer();
@@ -85,6 +90,16 @@ namespace SuperRacing.Race
         {
             if (track == null)
             {
+                return;
+            }
+
+            DisableEmbeddedTrackRoots();
+
+            if (track.PreviewPrefab != null)
+            {
+                GameObject selectedTrack = Instantiate(track.PreviewPrefab);
+                selectedTrack.name = $"{track.TrackId}_RuntimeMap";
+                selectedTrackRoot = selectedTrack.transform;
                 return;
             }
 
@@ -100,6 +115,23 @@ namespace SuperRacing.Race
 
                 bool belongsToSelectedTrack = rootName.Contains(selectedId);
                 root.gameObject.SetActive(belongsToSelectedTrack);
+                if (belongsToSelectedTrack)
+                {
+                    selectedTrackRoot = root;
+                }
+            }
+        }
+
+        private void DisableEmbeddedTrackRoots()
+        {
+            foreach (GameObject rootObject in gameObject.scene.GetRootGameObjects())
+            {
+                Transform root = rootObject.transform;
+                string rootName = root.name.ToLowerInvariant();
+                if (rootName.Contains("map_audit") || rootName.Contains("map_physicsprototype"))
+                {
+                    root.gameObject.SetActive(false);
+                }
             }
         }
 
@@ -142,11 +174,12 @@ namespace SuperRacing.Race
             }
 
             vehicleController = selectedController;
-            lapTracker = selectedLapTracker;
+            SetLapTracker(selectedLapTracker);
             RetargetFollowCamera(selectedVehicle.transform);
 
             RaceSetup setup = FindFirstObjectByType<RaceSetup>(FindObjectsInactive.Include);
-            setup?.Configure(track, selectedLapTracker);
+            setup?.Configure(track, selectedLapTracker, selectedTrackRoot);
+            finishLineTrigger = FindFinishLineTrigger();
 
             foreach (SuperRacing.UI.RaceHUD hud in FindObjectsByType<SuperRacing.UI.RaceHUD>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
@@ -186,7 +219,25 @@ namespace SuperRacing.Race
                 {
                     return namedSpawn;
                 }
+            }
 
+            if (selectedTrackRoot != null)
+            {
+                Transform selectedNamedSpawn = FindChildRecursive(selectedTrackRoot, spawnName);
+                if (selectedNamedSpawn != null)
+                {
+                    return selectedNamedSpawn;
+                }
+
+                Transform selectedMapSpawn = selectedTrackRoot.Find("Markers/SpawnPoint");
+                if (selectedMapSpawn != null)
+                {
+                    return selectedMapSpawn;
+                }
+            }
+
+            foreach (GameObject rootObject in gameObject.scene.GetRootGameObjects())
+            {
                 if (!rootObject.activeInHierarchy)
                 {
                     continue;
@@ -236,6 +287,32 @@ namespace SuperRacing.Race
             }
         }
 
+        private Collider FindFinishLineTrigger()
+        {
+            if (selectedTrackRoot == null)
+            {
+                return null;
+            }
+
+            foreach (Checkpoint checkpoint in selectedTrackRoot.GetComponentsInChildren<Checkpoint>(true))
+            {
+                if (checkpoint.CheckpointIndex == 0 && checkpoint.name.Equals("FinishLine", StringComparison.OrdinalIgnoreCase))
+                {
+                    return checkpoint.GetComponent<Collider>();
+                }
+            }
+
+            foreach (Checkpoint checkpoint in selectedTrackRoot.GetComponentsInChildren<Checkpoint>(true))
+            {
+                if (checkpoint.CheckpointIndex == 0)
+                {
+                    return checkpoint.GetComponent<Collider>();
+                }
+            }
+
+            return null;
+        }
+
         private void Start()
         {
             if (startAutomatically)
@@ -244,11 +321,44 @@ namespace SuperRacing.Race
             }
         }
 
+        private void Update()
+        {
+            if (State == RaceState.Racing && lapTracker != null && lapTracker.IsRaceComplete)
+            {
+                FinishRace();
+            }
+
+            if (State == RaceState.Racing)
+            {
+                CheckAutomaticFinishLine();
+            }
+        }
+
         private void OnDestroy()
         {
             if (lapTracker != null)
             {
                 lapTracker.RaceCompleted -= FinishRace;
+            }
+        }
+
+        private void SetLapTracker(LapTracker selectedLapTracker)
+        {
+            if (lapTracker == selectedLapTracker)
+            {
+                return;
+            }
+
+            if (lapTracker != null)
+            {
+                lapTracker.RaceCompleted -= FinishRace;
+            }
+
+            lapTracker = selectedLapTracker;
+
+            if (lapTracker != null)
+            {
+                lapTracker.RaceCompleted += FinishRace;
             }
         }
 
@@ -276,6 +386,22 @@ namespace SuperRacing.Race
         public void ReturnToMainMenu(string sceneName = "MainMenu")
         {
             SceneManager.LoadScene(sceneName);
+        }
+
+        public bool TryCompleteFromFinishLine(LapTracker triggeringLapTracker)
+        {
+            if (State != RaceState.Racing ||
+                triggeringLapTracker == null ||
+                triggeringLapTracker != lapTracker ||
+                raceTimer == null ||
+                !hasLeftFinishLine ||
+                raceTimer.ElapsedSeconds < minimumFinishSeconds)
+            {
+                return false;
+            }
+
+            FinishRace();
+            return true;
         }
 
         public bool ValidateConfiguration()
@@ -313,10 +439,54 @@ namespace SuperRacing.Race
             countdownRoutine = null;
             State = RaceState.Racing;
             lapTracker.ResetProgress();
+            IsTouchingFinishLine = IsVehicleTouchingFinishLine();
+            hasLeftFinishLine = !IsTouchingFinishLine;
             vehicle.CanDrive = true;
             raceTimer.StartTimer();
             RaceStarted?.Invoke();
             onRaceStarted.Invoke();
+        }
+
+        private void CheckAutomaticFinishLine()
+        {
+            if (raceTimer == null || finishLineTrigger == null)
+            {
+                IsTouchingFinishLine = false;
+                return;
+            }
+
+            IsTouchingFinishLine = IsVehicleTouchingFinishLine();
+            if (!IsTouchingFinishLine)
+            {
+                hasLeftFinishLine = true;
+                return;
+            }
+
+            if (hasLeftFinishLine && raceTimer.ElapsedSeconds >= minimumFinishSeconds)
+            {
+                FinishRace();
+            }
+        }
+
+        private bool IsVehicleTouchingFinishLine()
+        {
+            if (finishLineTrigger == null || vehicleController == null)
+            {
+                return false;
+            }
+
+            foreach (Collider vehicleCollider in vehicleController.GetComponentsInChildren<Collider>())
+            {
+                if (vehicleCollider != null &&
+                    vehicleCollider.enabled &&
+                    !vehicleCollider.isTrigger &&
+                    vehicleCollider.bounds.Intersects(finishLineTrigger.bounds))
+                {
+                    return true;
+                }
+            }
+
+            return finishLineTrigger.bounds.Contains(vehicleController.transform.position);
         }
 
         private void FinishRace()
@@ -331,6 +501,7 @@ namespace SuperRacing.Race
             raceTimer.StopTimer();
             FinalTimeSeconds = raceTimer.ElapsedSeconds;
             SetNewRecord = RecordManager.TrySaveBestTime(track, car, FinalTimeSeconds);
+            RaceCompletionState.Save(FinalTimeSeconds, SetNewRecord, track, car);
             RaceFinished?.Invoke(FinalTimeSeconds, SetNewRecord);
             onRaceFinished.Invoke(FinalTimeSeconds, SetNewRecord);
         }

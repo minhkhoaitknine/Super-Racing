@@ -19,6 +19,7 @@ namespace SuperRacing.Data
             if (car != null)
             {
                 UnityEngine.PlayerPrefs.SetString(SelectedCarIdKey, car.CarId);
+                UnityEngine.PlayerPrefs.Save();
             }
         }
 
@@ -29,6 +30,7 @@ namespace SuperRacing.Data
             if (track != null)
             {
                 UnityEngine.PlayerPrefs.SetString(SelectedTrackIdKey, track.TrackId);
+                UnityEngine.PlayerPrefs.Save();
             }
         }
 
@@ -74,6 +76,7 @@ namespace SuperRacing.Data
             SelectedTrack = null;
             UnityEngine.PlayerPrefs.DeleteKey(SelectedCarIdKey);
             UnityEngine.PlayerPrefs.DeleteKey(SelectedTrackIdKey);
+            UnityEngine.PlayerPrefs.Save();
         }
     }
 }

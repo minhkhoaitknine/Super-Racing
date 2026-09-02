@@ -1380,7 +1380,7 @@ GameObject:
   - component: {fileID: 365492641}
   - component: {fileID: 365492640}
   m_Layer: 0
-  m_Name: Thumbnail Camera - SPORT GT
+  m_Name: Thumbnail Camera - Speedster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1935,7 +1935,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: 2041ba486d32fae4a9dc454c6bfe445c, type: 2}
+  m_Texture: {fileID: 8400000, guid: f1097849d7112a941a3fecaddccab6e0, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -2707,7 +2707,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1986201793}
         m_TargetAssemblyTypeName: SuperRacing.UI.GarageUI, SuperRacing
-        m_MethodName: ReturnToMainMenu
+        m_MethodName: ConfirmSelection
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4078,7 +4078,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: SPORT GT
+  m_Text: Control
 --- !u!222 &1165689693
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4333,7 +4333,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: f1097849d7112a941a3fecaddccab6e0, type: 2}
+  m_Texture: {fileID: 8400000, guid: 2041ba486d32fae4a9dc454c6bfe445c, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -4441,7 +4441,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1351387527}
   m_Layer: 8
-  m_Name: Thumbnail Stage - SPORT GT
+  m_Name: Thumbnail Stage - Speedster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5339,7 +5339,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4541279223708551992, guid: fb8f58877e7b4b64cb0a23f0c268c8c8, type: 3}
       propertyPath: m_Name
-      value: SPORT GT Thumbnail Vehicle
+      value: Speedster Thumbnail Vehicle
       objectReference: {fileID: 0}
     - target: {fileID: 4541279223708551992, guid: fb8f58877e7b4b64cb0a23f0c268c8c8, type: 3}
       propertyPath: m_Layer
@@ -6252,7 +6252,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Control
+  m_Text: Speedster
 --- !u!222 &1949950082
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6307,6 +6307,7 @@ MonoBehaviour:
   previewTargetSize: 3.25
   vehiclePositionOffset: {x: 0, y: -0.96, z: 0}
   vehicleRotationEuler: {x: 0, y: 8, z: 0}
+  trackSelectionSceneName: TrackSelection
   mainMenuSceneName: MainMenu
 --- !u!4 &1986201794
 Transform:

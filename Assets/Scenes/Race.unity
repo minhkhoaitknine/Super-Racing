@@ -439,6 +439,7 @@ MonoBehaviour:
   vehicleController: {fileID: 1701936834}
   countdownFrom: 3
   countdownStepSeconds: 1
+  minimumFinishSeconds: 8
   startAutomatically: 1
   onCountdownTick:
     m_PersistentCalls:
@@ -1167,6 +1168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SuperRacing::SuperRacing.Race.RaceSetup
   track: {fileID: 11400000, guid: bd00964b034014a9f894e56189992866, type: 2}
   playerLapTracker: {fileID: 1701936838}
+  checkpointRoot: {fileID: 0}
   checkpoints: []
   discoverCheckpointsOnAwake: 1
 --- !u!4 &452633697

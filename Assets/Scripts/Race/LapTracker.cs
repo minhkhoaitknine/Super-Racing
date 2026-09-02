@@ -18,6 +18,7 @@ namespace SuperRacing.Race
         private int expectedCheckpointIndex;
         private int completedLaps;
         private int totalLaps = 1;
+        private bool hasStartedLap;
 
         public int CurrentLap => Mathf.Min(completedLaps + 1, totalLaps);
         public int TotalLaps => totalLaps;
@@ -39,8 +40,9 @@ namespace SuperRacing.Race
 
         public void ResetProgress()
         {
-            expectedCheckpointIndex = 0;
+            expectedCheckpointIndex = checkpointCount > 1 ? 1 : 0;
             completedLaps = 0;
+            hasStartedLap = true;
             IsRaceComplete = false;
             CanAcceptCheckpoints = true;
             NotifyLapChanged();
@@ -58,26 +60,36 @@ namespace SuperRacing.Race
                 return false;
             }
 
-            expectedCheckpointIndex++;
             CheckpointPassed?.Invoke(checkpoint.CheckpointIndex);
-            if (expectedCheckpointIndex < checkpointCount)
+
+            if (checkpoint.CheckpointIndex == 0)
             {
+                if (hasStartedLap)
+                {
+                    completedLaps++;
+                    if (completedLaps >= totalLaps)
+                    {
+                        IsRaceComplete = true;
+                        CanAcceptCheckpoints = false;
+                        RaceCompleted?.Invoke();
+                        onRaceCompleted.Invoke();
+                        return true;
+                    }
+
+                    NotifyLapChanged();
+                }
+
+                hasStartedLap = true;
+                expectedCheckpointIndex = checkpointCount > 1 ? 1 : 0;
                 return true;
             }
 
-            expectedCheckpointIndex = 0;
-            completedLaps++;
-
-            if (completedLaps >= totalLaps)
+            expectedCheckpointIndex++;
+            if (expectedCheckpointIndex >= checkpointCount)
             {
-                IsRaceComplete = true;
-                CanAcceptCheckpoints = false;
-                RaceCompleted?.Invoke();
-                onRaceCompleted.Invoke();
-                return true;
+                expectedCheckpointIndex = 0;
             }
 
-            NotifyLapChanged();
             return true;
         }
 
