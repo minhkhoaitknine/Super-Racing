@@ -34,6 +34,7 @@ namespace SuperRacing.EditorTools
         {
             ConfigureTrackPreview("Assets/Data/BeachTrack.asset", "Assets/Game/Prefabs/Maps/BeachMap.prefab");
             ConfigureTrackPreview("Assets/Data/DesertTrack.asset", "Assets/Game/Prefabs/Maps/DesertMap.prefab");
+            ConfigureTrackPreview("Assets/Data/TownSquareTrack.asset", "Assets/Game/Prefabs/Maps/TownSquareMap.prefab");
             GameCatalog catalog = AssetDatabase.LoadAssetAtPath<GameCatalog>(CatalogPath);
             if (catalog == null || catalog.Tracks.Count == 0)
             {
@@ -52,6 +53,7 @@ namespace SuperRacing.EditorTools
             }
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            CreateDisplayCamera();
             Transform previewRoot = CreatePreviewStage(previewTexture, previewLayer);
             CreateInterface(catalog, previewTexture, previewRoot);
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
@@ -61,6 +63,17 @@ namespace SuperRacing.EditorTools
             AssetDatabase.SaveAssets();
             Selection.activeGameObject = canvas.gameObject;
             Debug.Log("Track Selection scene rebuilt with interactive 3D map preview.");
+        }
+
+        private static void CreateDisplayCamera()
+        {
+            var cameraObject = new GameObject("Track Selection Display Camera", typeof(Camera), typeof(AudioListener));
+            Camera camera = cameraObject.GetComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = Color.black;
+            camera.cullingMask = 0;
+            camera.depth = -100f;
+            camera.targetDisplay = 0;
         }
 
         private static void ConfigureTrackPreview(string definitionPath, string prefabPath)
@@ -218,7 +231,7 @@ namespace SuperRacing.EditorTools
             Text trackName = CreateText("Track Name", infoPanel.transform, catalog.Tracks[0].DisplayName.ToUpperInvariant(), 30, TextAnchor.MiddleCenter, Color.white);
             trackName.fontStyle = FontStyle.Bold;
             SetRect(trackName.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -115f), new Vector2(280f, 54f), new Vector2(0.5f, 0.5f));
-            Text lapCount = CreateInfoRow(infoPanel.transform, "LAPS", "2", -205f);
+            Text lapCount = CreateInfoRow(infoPanel.transform, "LAPS", catalog.Tracks[0].LapCount.ToString(), -205f);
             Text record = CreateInfoRow(infoPanel.transform, "PERSONAL BEST", "--:--.---", -300f);
             Text hint = CreateText("Rotate Hint", infoPanel.transform, "DRAG MAP TO ROTATE 360°", 13, TextAnchor.MiddleCenter, new Color(0.6f, 0.8f, 0.9f));
             SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 150f), new Vector2(280f, 32f), new Vector2(0.5f, 0.5f));

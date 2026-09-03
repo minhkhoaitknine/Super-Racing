@@ -51,6 +51,7 @@ namespace SuperRacing.Race
         private IVehicleController vehicle;
         private Coroutine countdownRoutine;
         private Transform selectedTrackRoot;
+        private Checkpoint finishLineCheckpoint;
         private Collider finishLineTrigger;
         private bool hasLeftFinishLine;
 
@@ -128,7 +129,9 @@ namespace SuperRacing.Race
             {
                 Transform root = rootObject.transform;
                 string rootName = root.name.ToLowerInvariant();
-                if (rootName.Contains("map_audit") || rootName.Contains("map_physicsprototype"))
+                if (rootName.Contains("map_audit") ||
+                    rootName.Contains("map_physicsprototype") ||
+                    rootName.Equals("checkpoints", StringComparison.OrdinalIgnoreCase))
                 {
                     root.gameObject.SetActive(false);
                 }
@@ -179,7 +182,8 @@ namespace SuperRacing.Race
 
             RaceSetup setup = FindFirstObjectByType<RaceSetup>(FindObjectsInactive.Include);
             setup?.Configure(track, selectedLapTracker, selectedTrackRoot);
-            finishLineTrigger = FindFinishLineTrigger();
+            finishLineCheckpoint = FindFinishLineCheckpoint();
+            finishLineTrigger = finishLineCheckpoint != null ? finishLineCheckpoint.GetComponent<Collider>() : null;
 
             foreach (SuperRacing.UI.RaceHUD hud in FindObjectsByType<SuperRacing.UI.RaceHUD>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
@@ -287,7 +291,7 @@ namespace SuperRacing.Race
             }
         }
 
-        private Collider FindFinishLineTrigger()
+        private Checkpoint FindFinishLineCheckpoint()
         {
             if (selectedTrackRoot == null)
             {
@@ -298,7 +302,7 @@ namespace SuperRacing.Race
             {
                 if (checkpoint.CheckpointIndex == 0 && checkpoint.name.Equals("FinishLine", StringComparison.OrdinalIgnoreCase))
                 {
-                    return checkpoint.GetComponent<Collider>();
+                    return checkpoint;
                 }
             }
 
@@ -306,7 +310,7 @@ namespace SuperRacing.Race
             {
                 if (checkpoint.CheckpointIndex == 0)
                 {
-                    return checkpoint.GetComponent<Collider>();
+                    return checkpoint;
                 }
             }
 
@@ -390,18 +394,12 @@ namespace SuperRacing.Race
 
         public bool TryCompleteFromFinishLine(LapTracker triggeringLapTracker)
         {
-            if (State != RaceState.Racing ||
-                triggeringLapTracker == null ||
-                triggeringLapTracker != lapTracker ||
-                raceTimer == null ||
-                !hasLeftFinishLine ||
-                raceTimer.ElapsedSeconds < minimumFinishSeconds)
+            if (!CanTryFinishLineCheckpoint(triggeringLapTracker))
             {
                 return false;
             }
 
-            FinishRace();
-            return true;
+            return triggeringLapTracker.TryPassCheckpoint(finishLineCheckpoint);
         }
 
         public bool ValidateConfiguration()
@@ -449,7 +447,7 @@ namespace SuperRacing.Race
 
         private void CheckAutomaticFinishLine()
         {
-            if (raceTimer == null || finishLineTrigger == null)
+            if (raceTimer == null || finishLineCheckpoint == null || finishLineTrigger == null)
             {
                 IsTouchingFinishLine = false;
                 return;
@@ -464,8 +462,19 @@ namespace SuperRacing.Race
 
             if (hasLeftFinishLine && raceTimer.ElapsedSeconds >= minimumFinishSeconds)
             {
-                FinishRace();
+                TryCompleteFromFinishLine(lapTracker);
             }
+        }
+
+        private bool CanTryFinishLineCheckpoint(LapTracker triggeringLapTracker)
+        {
+            return State == RaceState.Racing &&
+                triggeringLapTracker != null &&
+                triggeringLapTracker == lapTracker &&
+                finishLineCheckpoint != null &&
+                raceTimer != null &&
+                hasLeftFinishLine &&
+                raceTimer.ElapsedSeconds >= minimumFinishSeconds;
         }
 
         private bool IsVehicleTouchingFinishLine()

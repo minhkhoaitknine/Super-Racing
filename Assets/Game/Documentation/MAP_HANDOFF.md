@@ -8,6 +8,7 @@ Use these prefabs for race scene integration:
 | --- | --- | --- |
 | Beach | `Assets/Game/Prefabs/Maps/BeachMap.prefab` | Built from `BeachMap_PhysicsPrototype`, with colliders and ordered marker suggestions. |
 | Desert | `Assets/Game/Prefabs/Maps/DesertMap.prefab` | Built from `DesertMap_PhysicsPrototype`, with colliders and ordered marker suggestions. |
+| Town Square | `Assets/Game/Prefabs/Maps/TownSquareMap.prefab` | Built from `town-square-track.zip`, with imported collision mesh and ordered marker suggestions. |
 
 The `*_PhysicsPrototype` prefabs remain available as raw collider-only map prototypes.
 
@@ -27,6 +28,7 @@ Member B can collect the `Checkpoint` components under `Markers` and pass their 
 | --- | --- |
 | Beach | `6` |
 | Desert | `7` |
+| Town Square | `6` |
 
 The count includes `FinishLine` as checkpoint index `0`.
 
@@ -34,7 +36,7 @@ The count includes `FinishLine` as checkpoint index `0`.
 
 The current MVP uses one shared `Race` scene. `RaceManager` reads `GameSelection`, instantiates the selected track prefab and vehicle prefab, then binds the selected map's `Markers` child into `RaceSetup`.
 
-The race is configured as a one-lap time trial for both maps. `FinishLine` is checkpoint index `0`, and the race can finish when the active vehicle returns to the finish trigger after leaving the start area and after the minimum finish time has elapsed.
+Beach and Desert are configured as one-lap time trials. Town Square is configured for four laps. `FinishLine` is checkpoint index `0`; a lap only counts after the active vehicle passes every checkpoint in order and then returns to the finish trigger after leaving the start area and after the minimum finish time has elapsed.
 
 If the race scene uses a different racing line, move only the marker transforms/trigger sizes in the map prefab or an integrated prefab variant. The `Checkpoint` component already enforces trigger mode through `OnValidate`.
 

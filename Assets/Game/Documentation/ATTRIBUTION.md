@@ -22,6 +22,17 @@
 - Source archive location: `Map/desert-race-game-prototype-map-v2.zip`
 - Extracted source location: `Assets/Game/Art/Maps/Desert/Source/`
 
+## Town Square Track
+
+- Source: user-provided archive
+- Author: user-confirmed valid for project use
+- License: user-confirmed valid for project use
+- Usage note: User confirmed the provided archive is valid to use in this project.
+- Download format used: FBX package
+- Imported asset: `Assets/Game/Art/Maps/TownSquare/Imported/TownSquare_Offroad_Source.fbx`
+- Source archive location: `Map/town-square-track.zip`
+- Extracted source location: `Assets/Game/Art/Maps/TownSquare/Source/`
+
 ## Generic Passenger Car Pack
 
 - Source: https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5

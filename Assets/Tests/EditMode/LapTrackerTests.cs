@@ -71,6 +71,25 @@ namespace SuperRacing.Tests
         }
 
         [Test]
+        public void FourLapRaceRequiresFullCheckpointSequenceBeforeEachFinish()
+        {
+            tracker.Initialize(checkpoints.Length, 4);
+
+            for (int lap = 1; lap <= 3; lap++)
+            {
+                Assert.That(tracker.TryPassCheckpoint(checkpoints[0]), Is.False);
+                PassCompleteSequence();
+                Assert.That(tracker.CompletedLaps, Is.EqualTo(lap));
+                Assert.That(tracker.IsRaceComplete, Is.False);
+            }
+
+            Assert.That(tracker.TryPassCheckpoint(checkpoints[0]), Is.False);
+            PassCompleteSequence();
+            Assert.That(tracker.CompletedLaps, Is.EqualTo(4));
+            Assert.That(tracker.IsRaceComplete, Is.True);
+        }
+
+        [Test]
         public void ResetRestoresInitialProgress()
         {
             PassCompleteSequence();
