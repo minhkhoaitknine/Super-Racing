@@ -16,6 +16,8 @@ MonoBehaviour:
   displayName: Control
   vehiclePrefab: {fileID: 3738712422382999990, guid: 85751e0ade082f74c88f538f8a816cea, type: 3}
   previewSprite: {fileID: 0}
+  unlockedByDefault: 1
+  purchasePrice: 0
   maxSpeedPercent: 72
   accelerationPercent: 86
   brakingPercent: 100

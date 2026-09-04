@@ -11,6 +11,10 @@ namespace SuperRacing.Data
         [SerializeField] private GameObject vehiclePrefab;
         [SerializeField] private Sprite previewSprite;
 
+        [Header("Shop")]
+        [SerializeField] private bool unlockedByDefault;
+        [Min(0)] [SerializeField] private int purchasePrice = 5000;
+
         [Header("Driving Stats (% of VehicleController defaults)")]
         [Range(0f, 100f)] [SerializeField] private float maxSpeedPercent = 100f;
         [Range(0f, 100f)] [SerializeField] private float accelerationPercent = 100f;
@@ -22,6 +26,8 @@ namespace SuperRacing.Data
         public string DisplayName => displayName;
         public GameObject VehiclePrefab => vehiclePrefab;
         public Sprite PreviewSprite => previewSprite;
+        public bool UnlockedByDefault => unlockedByDefault;
+        public int PurchasePrice => purchasePrice;
         public float MaxSpeedPercent => maxSpeedPercent;
         public float AccelerationPercent => accelerationPercent;
         public float BrakingPercent => brakingPercent;
@@ -31,6 +37,7 @@ namespace SuperRacing.Data
         private void OnValidate()
         {
             carId = NormalizeId(carId, "car");
+            purchasePrice = Mathf.Max(0, purchasePrice);
         }
 
         private static string NormalizeId(string value, string fallback)

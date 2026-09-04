@@ -1,5 +1,6 @@
 using System.Collections;
 using SuperRacing.Data;
+using SuperRacing.Economy;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -42,6 +43,8 @@ namespace SuperRacing.UI
         private Image[] carCardOpaqueLayers;
         private Text[] carCardActiveLabels;
         private int previousTargetFrameRate;
+        private Button continueButton;
+        private Text continueButtonLabel;
 
         private void Awake()
         {
@@ -58,6 +61,7 @@ namespace SuperRacing.UI
             }
 
             selectedIndex = FindSelectedCarIndex();
+            ResolveShopControls();
             RefreshView();
             StartCoroutine(FreezeThumbnailCamerasAfterFirstFrame());
         }
@@ -87,11 +91,20 @@ namespace SuperRacing.UI
 
         public void ConfirmSelection()
         {
-            if (catalog != null && catalog.Cars.Count > 0)
+            if (catalog == null || catalog.Cars.Count == 0)
             {
-                GameSelection.SelectCar(catalog.Cars[selectedIndex]);
+                return;
             }
 
+            CarDefinition selectedCar = catalog.Cars[selectedIndex];
+            if (!CarOwnership.IsOwned(selectedCar))
+            {
+                CarOwnership.TryPurchase(selectedCar);
+                RefreshView();
+                return;
+            }
+
+            GameSelection.SelectCar(selectedCar);
             SceneManager.LoadScene(trackSelectionSceneName);
         }
 
@@ -180,6 +193,36 @@ namespace SuperRacing.UI
 
             RefreshCardSelection();
             RefreshVehiclePreview(car);
+            RefreshShopControls(car);
+        }
+
+        private void ResolveShopControls()
+        {
+            GameObject buttonObject = GameObject.Find("Continue");
+            continueButton = buttonObject != null ? buttonObject.GetComponent<Button>() : null;
+            continueButtonLabel = buttonObject != null ? buttonObject.GetComponentInChildren<Text>(true) : null;
+        }
+
+        private void RefreshShopControls(CarDefinition car)
+        {
+            if (continueButtonLabel == null)
+            {
+                ResolveShopControls();
+            }
+
+            bool owned = CarOwnership.IsOwned(car);
+            bool selected = GameSelection.SelectedCar == car;
+            if (continueButtonLabel != null)
+            {
+                continueButtonLabel.text = owned
+                    ? selected ? "SELECTED" : "SELECT   ▶"
+                    : $"BUY  {car.PurchasePrice:N0} ◆";
+            }
+
+            if (continueButton != null)
+            {
+                continueButton.interactable = owned || CurrencyWallet.Balance >= car.PurchasePrice;
+            }
         }
 
         private static void SetStat(Image fill, Text valueLabel, float normalizedValue)

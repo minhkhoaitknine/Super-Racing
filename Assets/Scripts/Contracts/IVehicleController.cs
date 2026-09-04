@@ -6,6 +6,7 @@ namespace SuperRacing.Contracts
     public interface IVehicleController
     {
         float SpeedKmh { get; }
+        bool IsDrifting { get; }
         bool CanDrive { get; set; }
 
         void ApplyStats(CarDefinition stats);
