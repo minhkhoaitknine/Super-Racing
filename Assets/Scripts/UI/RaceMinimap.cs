@@ -9,11 +9,13 @@ namespace SuperRacing.UI
     {
         private const int TextureWidth = 384;
         private const int TextureHeight = 256;
-        private const float RenderInterval = 0.12f;
+        private const float PositionSmoothTime = 0.055f;
+        private const float RotationSmoothTime = 0.07f;
         private Transform target;
         private Camera minimapCamera;
         private RenderTexture renderTexture;
-        private float nextRenderTime;
+        private Vector3 cameraVelocity;
+        private float yawVelocity;
 
         private void Start()
         {
@@ -31,7 +33,16 @@ namespace SuperRacing.UI
             minimapCamera.useOcclusionCulling = false;
             minimapCamera.nearClipPlane = 0.1f;
             minimapCamera.farClipPlane = 180f;
-            minimapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            if (target != null)
+            {
+                Vector3 initialPosition = target.position;
+                minimapCamera.transform.position = new Vector3(initialPosition.x, initialPosition.y + 100f, initialPosition.z);
+                minimapCamera.transform.rotation = Quaternion.Euler(90f, target.eulerAngles.y, 0f);
+            }
+            else
+            {
+                minimapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            }
             minimapCamera.enabled = false;
 
             renderTexture = new RenderTexture(TextureWidth, TextureHeight, 16, RenderTextureFormat.ARGB32)
@@ -59,17 +70,26 @@ namespace SuperRacing.UI
                 return;
             }
 
-            Vector3 position = target.position;
-            minimapCamera.transform.position = new Vector3(position.x, position.y + 100f, position.z);
-            minimapCamera.transform.rotation = Quaternion.Euler(90f, target.eulerAngles.y, 0f);
+            float deltaTime = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
+            Vector3 targetPosition = target.position + Vector3.up * 100f;
+            minimapCamera.transform.position = Vector3.SmoothDamp(
+                minimapCamera.transform.position,
+                targetPosition,
+                ref cameraVelocity,
+                PositionSmoothTime,
+                Mathf.Infinity,
+                deltaTime);
 
-            if (Time.unscaledTime < nextRenderTime)
-            {
-                return;
-            }
+            float smoothYaw = Mathf.SmoothDampAngle(
+                minimapCamera.transform.eulerAngles.y,
+                target.eulerAngles.y,
+                ref yawVelocity,
+                RotationSmoothTime,
+                Mathf.Infinity,
+                deltaTime);
+            minimapCamera.transform.rotation = Quaternion.Euler(90f, smoothYaw, 0f);
 
             minimapCamera.Render();
-            nextRenderTime = Time.unscaledTime + RenderInterval;
         }
 
         private void ResolveTarget()
