@@ -8,7 +8,7 @@ namespace SuperRacing.UI
     public sealed class RaceMinimap : MonoBehaviour
     {
         private const int TextureSize = 256;
-        private const float RenderInterval = 0.12f;
+        private const float RenderInterval = 0.2f;
 
         private Transform target;
         private Camera minimapCamera;
