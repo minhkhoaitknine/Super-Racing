@@ -19,6 +19,7 @@ namespace SuperRacing.UI
         [SerializeField] private Text lapLabel;
         [SerializeField] private Text timeLabel;
         [SerializeField] private Image speedFill;
+        [SerializeField] private RectTransform speedNeedle;
 
         private IVehicleController vehicle;
 
@@ -30,6 +31,11 @@ namespace SuperRacing.UI
         public void SetSpeedLabel(Text label)
         {
             speedLabel = label;
+        }
+
+        public void SetSpeedNeedle(RectTransform needle)
+        {
+            speedNeedle = needle;
         }
 
         public void Configure(MonoBehaviour selectedVehicleController, LapTracker selectedLapTracker, RaceTimer selectedRaceTimer)
@@ -114,10 +120,17 @@ namespace SuperRacing.UI
             if (vehicle != null && speedLabel != null)
             {
                 float speed = Mathf.Abs(vehicle.SpeedKmh);
-                speedLabel.text = $"{Mathf.RoundToInt(speed)}\n<size=22>KM/H</size>";
+                int approximateSpeed = Mathf.RoundToInt(speed / 10f) * 10;
+                speedLabel.text = $"{approximateSpeed}\n<size=22>KM/H</size>";
                 if (speedFill != null)
                 {
                     speedFill.fillAmount = Mathf.Clamp01(speed / 120f);
+                }
+
+                if (speedNeedle != null)
+                {
+                    float normalizedSpeed = Mathf.Clamp01(speed / 120f);
+                    speedNeedle.localEulerAngles = new Vector3(0f, 0f, Mathf.Lerp(135f, -135f, normalizedSpeed));
                 }
             }
         }
