@@ -7,10 +7,13 @@ namespace SuperRacing.UI
     [RequireComponent(typeof(RawImage))]
     public sealed class RaceMinimap : MonoBehaviour
     {
-        private const int TextureSize = 192;
+        private const int TextureSize = 256;
+        private const float RenderInterval = 0.12f;
+
         private Transform target;
         private Camera minimapCamera;
         private RenderTexture renderTexture;
+        private float nextRenderTime;
 
         private void Start()
         {
@@ -29,10 +32,15 @@ namespace SuperRacing.UI
             minimapCamera.nearClipPlane = 0.1f;
             minimapCamera.farClipPlane = 180f;
             minimapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            minimapCamera.enabled = false;
 
             renderTexture = new RenderTexture(TextureSize, TextureSize, 16, RenderTextureFormat.ARGB32)
             {
-                name = "Runtime Minimap"
+                name = "Runtime Minimap",
+                antiAliasing = 1,
+                useMipMap = false,
+                autoGenerateMips = false,
+                filterMode = FilterMode.Bilinear
             };
             renderTexture.Create();
             minimapCamera.targetTexture = renderTexture;
@@ -54,6 +62,14 @@ namespace SuperRacing.UI
             Vector3 position = target.position;
             minimapCamera.transform.position = new Vector3(position.x, position.y + 100f, position.z);
             minimapCamera.transform.rotation = Quaternion.Euler(90f, target.eulerAngles.y, 0f);
+
+            if (Time.unscaledTime < nextRenderTime)
+            {
+                return;
+            }
+
+            minimapCamera.Render();
+            nextRenderTime = Time.unscaledTime + RenderInterval;
         }
 
         private void ResolveTarget()

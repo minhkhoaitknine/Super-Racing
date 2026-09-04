@@ -86,6 +86,7 @@ namespace SuperRacing.Vehicle
         private void Awake()
         {
             vehicleBody = GetComponent<Rigidbody>();
+            ConfigureRigidbodyForSmoothFollow();
             ResolveWheelReferences();
             CacheWheelFriction();
         }
@@ -264,6 +265,16 @@ namespace SuperRacing.Vehicle
 
             action.Enable();
             return true;
+        }
+
+        private void ConfigureRigidbodyForSmoothFollow()
+        {
+            if (vehicleBody == null || vehicleBody.interpolation != RigidbodyInterpolation.None)
+            {
+                return;
+            }
+
+            vehicleBody.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
         private void ApplyDirectKeyboardFallback()
