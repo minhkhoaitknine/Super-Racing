@@ -1,3 +1,4 @@
+using System.Collections;
 using SuperRacing.Data;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,6 +9,7 @@ namespace SuperRacing.UI
     [DisallowMultipleComponent]
     public sealed class GarageUI : MonoBehaviour
     {
+        private const int GarageTargetFrameRate = 120;
         [SerializeField] private GameCatalog catalog;
         [SerializeField] private Text carNameLabel;
         [SerializeField] private Text secondaryCarNameLabel;
@@ -39,6 +41,13 @@ namespace SuperRacing.UI
         private Image[] carCardBackgrounds;
         private Image[] carCardOpaqueLayers;
         private Text[] carCardActiveLabels;
+        private int previousTargetFrameRate;
+
+        private void Awake()
+        {
+            previousTargetFrameRate = Application.targetFrameRate;
+            Application.targetFrameRate = Mathf.Max(previousTargetFrameRate, GarageTargetFrameRate);
+        }
 
         private void Start()
         {
@@ -50,6 +59,7 @@ namespace SuperRacing.UI
 
             selectedIndex = FindSelectedCarIndex();
             RefreshView();
+            StartCoroutine(FreezeThumbnailCamerasAfterFirstFrame());
         }
 
         public void SelectCar(int index)
@@ -93,6 +103,11 @@ namespace SuperRacing.UI
             }
 
             SceneManager.LoadScene(mainMenuSceneName);
+        }
+
+        private void OnDestroy()
+        {
+            Application.targetFrameRate = previousTargetFrameRate;
         }
 
         public bool ValidateConfiguration()
@@ -203,6 +218,20 @@ namespace SuperRacing.UI
             FitPreviewVehicle(previewVehicle);
         }
 
+
+        private static IEnumerator FreezeThumbnailCamerasAfterFirstFrame()
+        {
+            yield return null;
+
+            Camera[] cameras = FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (Camera camera in cameras)
+            {
+                if (camera.targetTexture != null && camera.name.StartsWith("Thumbnail Camera -"))
+                {
+                    camera.enabled = false;
+                }
+            }
+        }
         private void FitPreviewVehicle(GameObject vehicle)
         {
             Renderer[] renderers = vehicle.GetComponentsInChildren<Renderer>();

@@ -347,10 +347,10 @@ namespace SuperRacing.EditorTools
                 return texture;
             }
 
-            texture = new RenderTexture(1024, 576, 24, RenderTextureFormat.ARGB32)
+            texture = new RenderTexture(1280, 720, 24, RenderTextureFormat.ARGB32)
             {
                 name = "GaragePreview",
-                antiAliasing = 4
+                antiAliasing = 2
             };
             AssetDatabase.CreateAsset(texture, RenderTexturePath);
             return texture;
