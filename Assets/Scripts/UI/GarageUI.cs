@@ -236,7 +236,7 @@ namespace SuperRacing.UI
         private void CreateCustomizationButton()
         {
             if (customizeButton != null) return;
-            Canvas canvas = GetComponentInParent<Canvas>();
+            Canvas canvas = ResolveCanvas();
             if (canvas == null) return;
 
             customizeButton = CreateRuntimeButton("Customize Button", canvas.transform, "CUSTOMIZE", new Color(0.03f, 0.42f, 0.58f, 0.96f));
@@ -250,7 +250,7 @@ namespace SuperRacing.UI
             if (!CarOwnership.IsOwned(car)) return;
 
             if (customizationOverlay != null) Destroy(customizationOverlay);
-            Canvas canvas = GetComponentInParent<Canvas>();
+            Canvas canvas = ResolveCanvas();
             if (canvas == null) return;
 
             customizationOverlay = CreateRuntimeObject("Customization Overlay", canvas.transform);
@@ -378,6 +378,20 @@ namespace SuperRacing.UI
             result.layer = parent.gameObject.layer;
             result.transform.SetParent(parent, false);
             return result;
+        }
+
+        private static Canvas ResolveCanvas()
+        {
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int index = 0; index < canvases.Length; index++)
+            {
+                if (canvases[index] != null && canvases[index].isRootCanvas)
+                {
+                    return canvases[index];
+                }
+            }
+
+            return canvases.Length > 0 ? canvases[0] : null;
         }
 
         private static void Stretch(RectTransform rect)
