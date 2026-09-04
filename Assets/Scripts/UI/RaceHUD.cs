@@ -120,7 +120,8 @@ namespace SuperRacing.UI
             if (vehicle != null && speedLabel != null)
             {
                 float speed = Mathf.Abs(vehicle.SpeedKmh);
-                speedLabel.text = $"{Mathf.RoundToInt(speed)}\n<size=22>KM/H</size>";
+                int approximateSpeed = Mathf.RoundToInt(speed / 10f) * 10;
+                speedLabel.text = $"{approximateSpeed}\n<size=22>KM/H</size>";
                 if (speedFill != null)
                 {
                     speedFill.fillAmount = Mathf.Clamp01(speed / 120f);
