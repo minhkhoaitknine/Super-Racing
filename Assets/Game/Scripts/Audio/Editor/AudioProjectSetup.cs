@@ -228,37 +228,56 @@ namespace SuperRacing.Audio.Editor
 
         private static void BuildSettingsPrefab()
         {
-            GameObject panel = new("AudioSettingsPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(AudioSettingsPanel));
+            GameObject panel = new("AudioSettingsPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CanvasGroup), typeof(AudioSettingsPanel));
             RectTransform rect = panel.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(1920, 1080);
-            Image dimmer = panel.GetComponent<Image>(); dimmer.color = new Color(.005f, .015f, .03f, .78f); dimmer.raycastTarget = true;
+            Image dimmer = panel.GetComponent<Image>(); dimmer.color = new Color(.003f, .009f, .022f, .82f); dimmer.raycastTarget = true;
             AudioSettingsPanel component = panel.GetComponent<AudioSettingsPanel>(); SerializedObject serialized = new(component);
 
-            GameObject card = new("Settings Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline));
-            card.transform.SetParent(panel.transform, false);
-            RectTransform cardRect = card.GetComponent<RectTransform>(); cardRect.sizeDelta = new Vector2(720, 650);
-            card.GetComponent<Image>().color = new Color(.012f, .055f, .085f, .985f);
-            Outline cardOutline = card.GetComponent<Outline>(); cardOutline.effectColor = new Color(0f, .8f, .95f, .5f); cardOutline.effectDistance = new Vector2(2f, -2f);
-            Image accent = CreateImage(card.transform, "Top Accent", new Color(0f, .82f, 1f, 1f));
-            SetRect(accent.rectTransform, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0f, -3f), new Vector2(716f, 6f));
+            RoundedRectGraphic glow = CreateRounded(panel.transform, "Card Glow", new Color(0f, .72f, 1f, .13f), 38f);
+            SetRect(glow.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, -4f), new Vector2(784f, 724f));
+            RoundedRectGraphic shadow = CreateRounded(panel.transform, "Card Shadow", new Color(0f, 0f, 0f, .55f), 34f);
+            SetRect(shadow.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, -14f), new Vector2(766f, 706f));
 
-            Text title = CreateText(card.transform, "AUDIO SETTINGS", new Vector2(0, 273), new Vector2(560, 52)); title.fontSize = 30; title.fontStyle = FontStyle.Bold; title.color = new Color(.78f, .98f, 1f);
-            Text subtitle = CreateText(card.transform, "CUSTOMIZE YOUR RACE MIX", new Vector2(0, 235), new Vector2(560, 28)); subtitle.fontSize = 13; subtitle.color = new Color(.35f, .7f, .8f);
+            GameObject card = new("Settings Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(RoundedRectGraphic), typeof(Outline));
+            card.transform.SetParent(panel.transform, false);
+            RectTransform cardRect = card.GetComponent<RectTransform>(); cardRect.sizeDelta = new Vector2(760, 700);
+            RoundedRectGraphic cardGraphic = card.GetComponent<RoundedRectGraphic>(); cardGraphic.Radius = 32f; cardGraphic.color = new Color(.012f, .035f, .065f, .985f);
+            Outline cardOutline = card.GetComponent<Outline>(); cardOutline.effectColor = new Color(.05f, .75f, .95f, .48f); cardOutline.effectDistance = new Vector2(1f, -1f);
+
+            RoundedRectGraphic accent = CreateRounded(card.transform, "Top Accent", new Color(.02f, .86f, 1f, 1f), 3f);
+            SetRect(accent.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(96f, -30f), new Vector2(128f, 6f));
+            RoundedRectGraphic badge = CreateRounded(card.transform, "Audio Badge", new Color(.02f, .72f, .9f, .14f), 12f);
+            SetRect(badge.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(116f, -62f), new Vector2(168f, 30f));
+            Text badgeText = CreateText(badge.transform, "AUDIO  /  MIXER", Vector2.zero, new Vector2(150f, 28f)); badgeText.fontSize = 12; badgeText.fontStyle = FontStyle.Bold; badgeText.color = new Color(.3f, .9f, 1f);
+            Text title = CreateText(card.transform, "AUDIO SETTINGS", new Vector2(-245, 240), new Vector2(430, 58)); title.text = "SOUND & MUSIC"; title.alignment = TextAnchor.MiddleLeft; title.fontSize = 34; title.fontStyle = FontStyle.Bold; title.color = new Color(.9f, .98f, 1f);
+            Text subtitle = CreateText(card.transform, "CUSTOMIZE YOUR RACE MIX", new Vector2(-245, 204), new Vector2(430, 28)); subtitle.text = "Balance every layer of your race."; subtitle.alignment = TextAnchor.MiddleLeft; subtitle.fontSize = 14; subtitle.color = new Color(.46f, .68f, .77f);
+            RoundedRectGraphic live = CreateRounded(card.transform, "Live Mix", new Color(.05f, .86f, .68f, .14f), 14f);
+            SetRect(live.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(268f, 236f), new Vector2(126f, 34f));
+            Text liveText = CreateText(live.transform, "●  LIVE MIX", Vector2.zero, new Vector2(112f, 30f)); liveText.fontSize = 12; liveText.fontStyle = FontStyle.Bold; liveText.color = new Color(.18f, 1f, .76f);
+            Image separator = CreateImage(card.transform, "Header Separator", new Color(.12f, .32f, .4f, .55f));
+            SetRect(separator.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, 176f), new Vector2(672f, 1f));
+
             string[] names = { "Master", "Music", "SFX", "Ambience", "UI" }; string[] fields = { "master", "music", "sfx", "ambience", "ui" };
             for (int i = 0; i < names.Length; i++)
             {
-                float y = 165f - i * 76f;
-                Image row = CreateImage(card.transform, names[i] + " Row", new Color(.025f, .105f, .145f, .78f));
-                SetRect(row.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, y), new Vector2(640f, 60f));
-                Text label = CreateText(row.transform, names[i].ToUpperInvariant(), new Vector2(-245, 0), new Vector2(120, 36)); label.alignment = TextAnchor.MiddleLeft; label.fontSize = 16; label.fontStyle = FontStyle.Bold; label.color = new Color(.72f, .92f, .97f);
-                Slider slider = CreateSlider(row.transform, new Vector2(20, 0));
-                Text value = CreateText(row.transform, "100%", new Vector2(270, 0), new Vector2(70, 34)); value.fontStyle = FontStyle.Bold; value.color = new Color(0f, .88f, 1f);
+                float y = 132f - i * 72f;
+                RoundedRectGraphic row = CreateRounded(card.transform, names[i] + " Row", i == 0 ? new Color(.025f, .13f, .18f, .96f) : new Color(.02f, .075f, .105f, .9f), 14f);
+                SetRect(row.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, y), new Vector2(672f, 60f));
+                RoundedRectGraphic marker = CreateRounded(row.transform, "Accent", i == 0 ? new Color(.04f, .9f, 1f) : new Color(.08f, .46f, .58f), 2f);
+                SetRect(marker.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(10f, 0f), new Vector2(4f, 28f));
+                Text label = CreateText(row.transform, names[i].ToUpperInvariant(), new Vector2(-256, 0), new Vector2(120, 36)); label.alignment = TextAnchor.MiddleLeft; label.fontSize = 15; label.fontStyle = FontStyle.Bold; label.color = i == 0 ? new Color(.84f, .98f, 1f) : new Color(.66f, .82f, .88f);
+                Slider slider = CreateSlider(row.transform, new Vector2(24, 0));
+                RoundedRectGraphic valuePill = CreateRounded(row.transform, "Value Pill", new Color(.02f, .18f, .24f, 1f), 11f);
+                SetRect(valuePill.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(278f, 0f), new Vector2(72f, 34f));
+                Text value = CreateText(valuePill.transform, "100%", Vector2.zero, new Vector2(68, 30)); value.fontSize = 14; value.fontStyle = FontStyle.Bold; value.color = new Color(.12f, .92f, 1f);
                 serialized.FindProperty(fields[i] + "Slider").objectReferenceValue = slider; serialized.FindProperty(fields[i] + "Value").objectReferenceValue = value;
             }
 
-            Toggle toggle = CreateToggle(card.transform, new Vector2(-235, -255)); Text mute = CreateText(toggle.transform, "MUTE ALL", new Vector2(80, 0), new Vector2(130, 40)); mute.alignment = TextAnchor.MiddleLeft; mute.fontStyle = FontStyle.Bold; mute.color = new Color(.72f, .92f, .97f);
+            Text autosave = CreateText(card.transform, "SAVED AUTOMATICALLY", new Vector2(-240, -244), new Vector2(230, 24)); autosave.alignment = TextAnchor.MiddleLeft; autosave.fontSize = 11; autosave.color = new Color(.35f, .58f, .66f);
+            Toggle toggle = CreateToggle(card.transform, new Vector2(-302, -290)); Text mute = CreateText(toggle.transform, "MUTE ALL", new Vector2(86, 0), new Vector2(140, 40)); mute.alignment = TextAnchor.MiddleLeft; mute.fontSize = 13; mute.fontStyle = FontStyle.Bold; mute.color = new Color(.67f, .86f, .91f);
             serialized.FindProperty("muteToggle").objectReferenceValue = toggle; serialized.FindProperty("muteLabel").objectReferenceValue = mute;
-            Button reset = CreateButton(card.transform, "RESET", new Vector2(70, -255), new Vector2(150, 46), false); UnityEditor.Events.UnityEventTools.AddPersistentListener(reset.onClick, component.ResetDefaults);
-            Button close = CreateButton(card.transform, "DONE", new Vector2(245, -255), new Vector2(150, 46), true); UnityEditor.Events.UnityEventTools.AddPersistentListener(close.onClick, component.RequestClose);
+            Button reset = CreateButton(card.transform, "RESET", new Vector2(118, -290), new Vector2(146, 46), false); UnityEditor.Events.UnityEventTools.AddPersistentListener(reset.onClick, component.ResetDefaults);
+            Button close = CreateButton(card.transform, "SAVE & CLOSE", new Vector2(277, -290), new Vector2(172, 46), true); UnityEditor.Events.UnityEventTools.AddPersistentListener(close.onClick, component.RequestClose);
             serialized.ApplyModifiedPropertiesWithoutUndo(); PrefabUtility.SaveAsPrefabAsset(panel, AudioRoot + "/Prefabs/AudioSettingsPanel.prefab"); UnityEngine.Object.DestroyImmediate(panel);
         }
         private static Text CreateText(Transform parent, string text, Vector2 position, Vector2 size)
@@ -266,15 +285,17 @@ namespace SuperRacing.Audio.Editor
         private static Slider CreateSlider(Transform parent, Vector2 position)
         {
             GameObject go = new("Slider", typeof(RectTransform), typeof(Slider)); go.transform.SetParent(parent, false);
-            RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(350, 32);
+            RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(356, 32);
             Slider s = go.GetComponent<Slider>(); s.direction = Slider.Direction.LeftToRight;
-            Image background = CreateImage(go.transform, "Track", new Color(.08f, .22f, .28f));
-            SetRect(background.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 7f));
-            Image fill = CreateImage(go.transform, "Fill", new Color(0f, .82f, 1f));
-            SetRect(fill.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 9f));
-            Image handle = CreateImage(go.transform, "Handle", new Color(.88f, 1f, 1f));
+            RoundedRectGraphic background = CreateRounded(go.transform, "Track", new Color(.055f, .15f, .19f), 4f);
+            SetRect(background.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 8f));
+            RoundedRectGraphic fill = CreateRounded(go.transform, "Fill", new Color(.02f, .84f, 1f), 5f);
+            SetRect(fill.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 10f));
+            RoundedRectGraphic handleGlow = CreateRounded(go.transform, "Handle Glow", new Color(0f, .8f, 1f, .2f), 15f);
+            SetRect(handleGlow.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(30f, 30f));
+            RoundedRectGraphic handle = CreateRounded(go.transform, "Handle", new Color(.9f, 1f, 1f), 12f);
             SetRect(handle.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(22f, 22f));
-            Outline handleOutline = handle.gameObject.AddComponent<Outline>(); handleOutline.effectColor = new Color(0f, .72f, .9f, .8f); handleOutline.effectDistance = new Vector2(2f, -2f);
+            Outline handleOutline = handle.gameObject.AddComponent<Outline>(); handleOutline.effectColor = new Color(0f, .72f, .9f, .9f); handleOutline.effectDistance = new Vector2(2f, -2f);
             s.fillRect = fill.rectTransform; s.handleRect = handle.rectTransform; s.targetGraphic = handle;
             return s;
         }
@@ -282,15 +303,15 @@ namespace SuperRacing.Audio.Editor
         {
             GameObject go = new("Mute Toggle", typeof(RectTransform), typeof(Toggle)); go.transform.SetParent(parent, false);
             RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(42, 42);
-            Image bg = CreateImage(go.transform, "Background", new Color(.035f, .16f, .21f)); bg.gameObject.AddComponent<Outline>().effectColor = new Color(0f, .72f, .86f, .8f);
-            Image check = CreateImage(go.transform, "Checkmark", new Color(0f, .86f, 1f)); check.rectTransform.offsetMin = new Vector2(8f, 8f); check.rectTransform.offsetMax = new Vector2(-8f, -8f);
+            RoundedRectGraphic bg = CreateRounded(go.transform, "Background", new Color(.025f, .13f, .17f), 10f); bg.gameObject.AddComponent<Outline>().effectColor = new Color(.04f, .65f, .8f, .8f);
+            RoundedRectGraphic check = CreateRounded(go.transform, "Checkmark", new Color(.02f, .86f, 1f), 7f); check.rectTransform.offsetMin = new Vector2(8f, 8f); check.rectTransform.offsetMax = new Vector2(-8f, -8f);
             Toggle t = go.GetComponent<Toggle>(); t.targetGraphic = bg; t.graphic = check; return t;
         }
         private static Button CreateButton(Transform parent, string label, Vector2 position, Vector2 size, bool primary)
         {
-            GameObject go = new(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(Outline)); go.transform.SetParent(parent, false);
+            GameObject go = new(label, typeof(RectTransform), typeof(RoundedRectGraphic), typeof(Button), typeof(Outline)); go.transform.SetParent(parent, false);
             RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = size;
-            Image image = go.GetComponent<Image>(); image.color = primary ? new Color(0f, .78f, .92f) : new Color(.035f, .16f, .22f);
+            RoundedRectGraphic image = go.GetComponent<RoundedRectGraphic>(); image.Radius = 13f; image.color = primary ? new Color(.02f, .82f, .96f) : new Color(.025f, .13f, .18f);
             Outline outline = go.GetComponent<Outline>(); outline.effectColor = new Color(0f, .78f, .92f, .85f); outline.effectDistance = new Vector2(1f, -1f);
             Button button = go.GetComponent<Button>(); ColorBlock colors = button.colors; colors.highlightedColor = new Color(.72f, 1f, 1f); colors.pressedColor = new Color(.45f, .82f, .9f); button.colors = colors;
             Text text = CreateText(go.transform, label, Vector2.zero, size); text.fontStyle = FontStyle.Bold; text.fontSize = 16; text.color = primary ? new Color(.01f, .06f, .08f) : new Color(.72f, .96f, 1f);
@@ -298,6 +319,8 @@ namespace SuperRacing.Audio.Editor
         }
         private static Image CreateImage(Transform parent, string name, Color color)
         { GameObject go = new(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero; Image image = go.GetComponent<Image>(); image.color = color; return image; }
+        private static RoundedRectGraphic CreateRounded(Transform parent, string name, Color color, float radius)
+        { GameObject go = new(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(RoundedRectGraphic)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero; RoundedRectGraphic graphic = go.GetComponent<RoundedRectGraphic>(); graphic.color = color; graphic.Radius = radius; return graphic; }
         private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size)
         { rect.anchorMin = anchorMin; rect.anchorMax = anchorMax; rect.pivot = new Vector2(.5f, .5f); rect.anchoredPosition = position; rect.sizeDelta = size; }
 

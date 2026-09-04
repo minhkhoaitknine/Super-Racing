@@ -184,15 +184,19 @@ namespace SuperRacing.Audio.Tests
             RectTransform root = prefab.GetComponent<RectTransform>();
             Assert.That(root, Is.Not.Null);
             Assert.That(root.sizeDelta, Is.EqualTo(new Vector2(1920f, 1080f)));
+            Assert.That(prefab.GetComponent<CanvasGroup>(), Is.Not.Null, "Modern settings panel needs an unscaled fade/scale intro.");
 
             Transform card = prefab.transform.Find("Settings Card");
             Assert.That(card, Is.Not.Null);
-            Assert.That(((RectTransform)card).sizeDelta, Is.EqualTo(new Vector2(720f, 650f)));
+            Assert.That(((RectTransform)card).sizeDelta, Is.EqualTo(new Vector2(760f, 700f)));
             Assert.That(prefab.GetComponentsInChildren<Slider>(true), Has.Length.EqualTo(5));
             Assert.That(card.Find("AUDIO SETTINGS"), Is.Not.Null);
             Assert.That(card.Find("CUSTOMIZE YOUR RACE MIX"), Is.Not.Null);
+            Assert.That(card.Find("Live Mix"), Is.Not.Null);
+            Assert.That(card.Find("SAVED AUTOMATICALLY"), Is.Not.Null);
+            Assert.That(prefab.GetComponentsInChildren<RoundedRectGraphic>(true).Length, Is.GreaterThanOrEqualTo(20));
             Assert.That(card.Find("RESET"), Is.Not.Null);
-            Assert.That(card.Find("DONE"), Is.Not.Null);
+            Assert.That(card.Find("SAVE & CLOSE"), Is.Not.Null);
         }
     }
 }
