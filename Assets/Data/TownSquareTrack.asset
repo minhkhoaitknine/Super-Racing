@@ -18,3 +18,4 @@ MonoBehaviour:
   previewSprite: {fileID: 0}
   previewPrefab: {fileID: 1613585681505927298, guid: 3da4cca861974f441a3388a59f50e22d, type: 3}
   lapCount: 4
+  requireOrderedCheckpoints: 1

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using SuperRacing.Data;
 using SuperRacing.Race;
 using UnityEditor;
 using UnityEngine;
@@ -52,6 +53,36 @@ namespace SuperRacing.Tests
             Assert.That(tracker.TryPassCheckpoint(setup.Checkpoints[1]), Is.True);
             Assert.That(tracker.TryPassCheckpoint(setup.Checkpoints[0]), Is.True);
             Assert.That(tracker.IsRaceComplete, Is.True);
+        }
+
+        [Test]
+        public void ConfigureUsesOnlyFinishLineWhenTrackDoesNotRequireOrderedCheckpoints()
+        {
+            TrackDefinition track = ScriptableObject.CreateInstance<TrackDefinition>();
+            try
+            {
+                SerializedObject serializedTrack = new(track);
+                serializedTrack.FindProperty("lapCount").intValue = 1;
+                serializedTrack.FindProperty("requireOrderedCheckpoints").boolValue = false;
+                serializedTrack.ApplyModifiedPropertiesWithoutUndo();
+
+                Checkpoint finishLine = CreateCheckpoint(selectedRoot.transform, 0);
+                Checkpoint extraCheckpoint = CreateCheckpoint(selectedRoot.transform, 1);
+                CreateCheckpoint(selectedRoot.transform, 2);
+
+                setup.Configure(track, tracker, selectedRoot.transform);
+
+                Assert.That(setup.Checkpoints, Has.Count.EqualTo(1));
+                Assert.That(setup.Checkpoints[0], Is.SameAs(finishLine));
+                Assert.That(tracker.TotalLaps, Is.EqualTo(1));
+                Assert.That(tracker.TryPassCheckpoint(extraCheckpoint), Is.False);
+                Assert.That(tracker.TryPassCheckpoint(finishLine), Is.True);
+                Assert.That(tracker.IsRaceComplete, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(track);
+            }
         }
 
         private static Checkpoint CreateCheckpoint(Transform parent, int index)

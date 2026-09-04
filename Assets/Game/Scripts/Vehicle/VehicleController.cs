@@ -13,11 +13,11 @@ namespace SuperRacing.Vehicle
         private const float DefaultMotorTorque = 1000f;
         private const float DefaultBrakeTorque = 3000f;
         private const float DefaultMaxSpeedKmh = 120f;
-        private const float DefaultDriveAssistAcceleration = 1f;
+        private const float DefaultDriveAssistAcceleration = 3.5f;
         private const float DefaultMaxSteerAngle = 30f;
         private const float DefaultMinSteerAngleAtTopSpeed = 10f;
-        private const float DefaultLowSpeedSidewaysGrip = 1.45f;
-        private const float DefaultHighSpeedSidewaysGrip = 0.85f;
+        private const float DefaultLowSpeedSidewaysGrip = 1.6f;
+        private const float DefaultHighSpeedSidewaysGrip = 1.25f;
 
         [Header("Wheel Colliders")]
         [SerializeField] private WheelCollider frontLeftWheel;
@@ -29,11 +29,16 @@ namespace SuperRacing.Vehicle
         [SerializeField, Min(0f)] private float motorTorque = 1000f;
         [SerializeField, Min(0f)] private float brakeTorque = 3000f;
         [SerializeField, Min(1f)] private float maxSpeedKmh = 120f;
-        [SerializeField, Min(0f)] private float driveAssistAcceleration = 1f;
+        [SerializeField, Min(0f)] private float driveAssistAcceleration = 3.5f;
         [SerializeField, Range(0f, 60f)] private float maxSteerAngle = 30f;
         [SerializeField, Range(0f, 60f)] private float minSteerAngleAtTopSpeed = 10f;
-        [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.45f;
-        [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 0.85f;
+        [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.6f;
+        [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 1.25f;
+        [SerializeField, Min(0.1f)] private float steeringInputResponse = 3.5f;
+        [SerializeField, Min(0.1f)] private float steeringReturnResponse = 6f;
+        [SerializeField, Min(0f)] private float normalLateralGripResponse = 8f;
+        [SerializeField, Min(0f)] private float normalYawResponse = 6f;
+        [SerializeField, Range(1f, 180f)] private float maxNormalYawRate = 70f;
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
@@ -64,6 +69,7 @@ namespace SuperRacing.Vehicle
         private InputAction fallbackDriveAction;
         private InputAction fallbackBrakeAction;
         private Vector2 driveInput;
+        private float currentSteerInput;
         private bool brakeInput;
         private bool enabledDriveReference;
         private bool enabledBrakeReference;
@@ -80,6 +86,7 @@ namespace SuperRacing.Vehicle
         private void Awake()
         {
             vehicleBody = GetComponent<Rigidbody>();
+            ConfigureRigidbodyForSmoothFollow();
             ResolveWheelReferences();
             CacheWheelFriction();
         }
@@ -99,6 +106,7 @@ namespace SuperRacing.Vehicle
         {
             TearDownInputActions();
             driveInput = Vector2.zero;
+            currentSteerInput = 0f;
             brakeInput = false;
         }
 
@@ -131,8 +139,13 @@ namespace SuperRacing.Vehicle
             UpdateGripForSpeed(IsDrifting);
 
             float speed01 = Mathf.Clamp01(SpeedKmh / Mathf.Max(1f, maxSpeedKmh));
-            float steerLimit = Mathf.Lerp(maxSteerAngle, minSteerAngleAtTopSpeed, speed01);
-            float steerAngle = CanDrive ? driveInput.x * steerLimit : 0f;
+            float steerLimit = Mathf.Lerp(maxSteerAngle, minSteerAngleAtTopSpeed, Mathf.Sqrt(speed01));
+            float targetSteerInput = CanDrive ? driveInput.x : 0f;
+            float inputResponse = Mathf.Abs(targetSteerInput) > Mathf.Abs(currentSteerInput)
+                ? steeringInputResponse
+                : steeringReturnResponse;
+            currentSteerInput = Mathf.MoveTowards(currentSteerInput, targetSteerInput, inputResponse * Time.fixedDeltaTime);
+            float steerAngle = currentSteerInput * steerLimit;
             frontLeftWheel.steerAngle = steerAngle;
             frontRightWheel.steerAngle = steerAngle;
 
@@ -151,6 +164,7 @@ namespace SuperRacing.Vehicle
             rearRightWheel.brakeTorque = rearBrakeTorque;
 
             ApplyDriveAssist(appliedMotorTorque, overForwardSpeedLimit);
+            ApplyNormalHandlingAssist();
             ApplyDriftYawAssist();
         }
 
@@ -159,6 +173,7 @@ namespace SuperRacing.Vehicle
             transform.SetPositionAndRotation(position, rotation);
             vehicleBody.linearVelocity = Vector3.zero;
             vehicleBody.angularVelocity = Vector3.zero;
+            currentSteerInput = 0f;
             flippedTimer = 0f;
         }
 
@@ -250,6 +265,16 @@ namespace SuperRacing.Vehicle
 
             action.Enable();
             return true;
+        }
+
+        private void ConfigureRigidbodyForSmoothFollow()
+        {
+            if (vehicleBody == null || vehicleBody.interpolation != RigidbodyInterpolation.None)
+            {
+                return;
+            }
+
+            vehicleBody.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
         private void ApplyDirectKeyboardFallback()
@@ -407,12 +432,36 @@ namespace SuperRacing.Vehicle
 
         private void ApplyDriftYawAssist()
         {
-            if (!IsDrifting || vehicleBody == null || Mathf.Abs(driveInput.x) < 0.01f)
+            if (!IsDrifting || vehicleBody == null || Mathf.Abs(currentSteerInput) < 0.01f)
             {
                 return;
             }
 
-            vehicleBody.AddTorque(Vector3.up * (driveInput.x * driftYawAssist), ForceMode.Acceleration);
+            vehicleBody.AddTorque(Vector3.up * (currentSteerInput * driftYawAssist), ForceMode.Acceleration);
+        }
+
+        private void ApplyNormalHandlingAssist()
+        {
+            if (IsDrifting || vehicleBody == null || !CanDrive)
+            {
+                return;
+            }
+
+            Vector3 verticalVelocity = Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
+            Vector3 localPlanarVelocity = transform.InverseTransformDirection(
+                Vector3.ProjectOnPlane(vehicleBody.linearVelocity, Vector3.up));
+            float lateralRetention = Mathf.Exp(-normalLateralGripResponse * Time.fixedDeltaTime);
+            localPlanarVelocity.x *= lateralRetention;
+            vehicleBody.linearVelocity = transform.TransformDirection(localPlanarVelocity) + verticalVelocity;
+
+            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(localPlanarVelocity.z) / 5f);
+            float targetYawRate = currentSteerInput * maxNormalYawRate * Mathf.Deg2Rad * steeringAtSpeed;
+            Vector3 angularVelocity = vehicleBody.angularVelocity;
+            angularVelocity.y = Mathf.MoveTowards(
+                angularVelocity.y,
+                targetYawRate,
+                normalYawResponse * Time.fixedDeltaTime);
+            vehicleBody.angularVelocity = angularVelocity;
         }
 
         private void ApplyDriveAssist(float appliedMotorTorque, bool overForwardSpeedLimit)
@@ -454,13 +503,6 @@ namespace SuperRacing.Vehicle
 
             vehicleBody.linearVelocity = assistedPlanarVelocity + Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
 
-            float speedForSteer = planarVelocity.magnitude;
-            float steerResponse = Mathf.Clamp01(speedForSteer / 8f);
-            float yawDegrees = driveInput.x * maxSteerAngle * steerResponse * Time.fixedDeltaTime;
-            if (Mathf.Abs(yawDegrees) > 0.001f)
-            {
-                vehicleBody.MoveRotation(vehicleBody.rotation * Quaternion.Euler(0f, yawDegrees, 0f));
-            }
         }
 
         private void OnGUI()

@@ -20,4 +20,4 @@ MonoBehaviour:
   accelerationPercent: 100
   brakingPercent: 90
   steeringPercent: 80
-  gripPercent: 80
+  gripPercent: 90

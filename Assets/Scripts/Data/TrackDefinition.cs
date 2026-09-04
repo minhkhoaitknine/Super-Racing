@@ -14,6 +14,7 @@ namespace SuperRacing.Data
 
         [Header("Race Rules")]
         [Min(1)] [SerializeField] private int lapCount = 2;
+        [SerializeField] private bool requireOrderedCheckpoints = true;
 
         public string TrackId => trackId;
         public string DisplayName => displayName;
@@ -21,6 +22,7 @@ namespace SuperRacing.Data
         public Sprite PreviewSprite => previewSprite;
         public GameObject PreviewPrefab => previewPrefab;
         public int LapCount => lapCount;
+        public bool RequireOrderedCheckpoints => requireOrderedCheckpoints;
 
         private void OnValidate()
         {

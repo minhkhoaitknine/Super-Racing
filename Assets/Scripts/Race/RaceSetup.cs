@@ -32,6 +32,8 @@ namespace SuperRacing.Race
                 DiscoverCheckpoints();
             }
 
+            ApplyTrackCheckpointRules();
+
             if (ValidateConfiguration())
             {
                 int laps = track != null ? track.LapCount : 1;
@@ -46,6 +48,8 @@ namespace SuperRacing.Race
             {
                 DiscoverCheckpoints();
             }
+
+            ApplyTrackCheckpointRules();
 
             if (!ValidateConfiguration())
             {
@@ -71,6 +75,33 @@ namespace SuperRacing.Race
             }
 
             checkpoints.Sort((left, right) => left.CheckpointIndex.CompareTo(right.CheckpointIndex));
+        }
+
+        private void ApplyTrackCheckpointRules()
+        {
+            if (track == null || track.RequireOrderedCheckpoints || checkpoints.Count <= 1)
+            {
+                return;
+            }
+
+            Checkpoint finishLine = null;
+            for (int index = 0; index < checkpoints.Count; index++)
+            {
+                Checkpoint checkpoint = checkpoints[index];
+                if (checkpoint != null && checkpoint.CheckpointIndex == 0)
+                {
+                    finishLine = checkpoint;
+                    break;
+                }
+            }
+
+            if (finishLine == null)
+            {
+                return;
+            }
+
+            checkpoints.Clear();
+            checkpoints.Add(finishLine);
         }
 
         public bool ValidateConfiguration()
