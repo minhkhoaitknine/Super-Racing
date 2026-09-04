@@ -13,11 +13,11 @@ namespace SuperRacing.Vehicle
         private const float DefaultMotorTorque = 1000f;
         private const float DefaultBrakeTorque = 3000f;
         private const float DefaultMaxSpeedKmh = 120f;
-        private const float DefaultDriveAssistAcceleration = 1f;
+        private const float DefaultDriveAssistAcceleration = 3.5f;
         private const float DefaultMaxSteerAngle = 30f;
         private const float DefaultMinSteerAngleAtTopSpeed = 10f;
-        private const float DefaultLowSpeedSidewaysGrip = 1.45f;
-        private const float DefaultHighSpeedSidewaysGrip = 0.85f;
+        private const float DefaultLowSpeedSidewaysGrip = 1.6f;
+        private const float DefaultHighSpeedSidewaysGrip = 1.25f;
 
         [Header("Wheel Colliders")]
         [SerializeField] private WheelCollider frontLeftWheel;
@@ -29,11 +29,12 @@ namespace SuperRacing.Vehicle
         [SerializeField, Min(0f)] private float motorTorque = 1000f;
         [SerializeField, Min(0f)] private float brakeTorque = 3000f;
         [SerializeField, Min(1f)] private float maxSpeedKmh = 120f;
-        [SerializeField, Min(0f)] private float driveAssistAcceleration = 1f;
+        [SerializeField, Min(0f)] private float driveAssistAcceleration = 3.5f;
         [SerializeField, Range(0f, 60f)] private float maxSteerAngle = 30f;
         [SerializeField, Range(0f, 60f)] private float minSteerAngleAtTopSpeed = 10f;
-        [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.45f;
-        [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 0.85f;
+        [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.6f;
+        [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 1.25f;
+        [SerializeField, Range(0f, 1f)] private float steeringAssistStrength = 0.35f;
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
@@ -456,7 +457,7 @@ namespace SuperRacing.Vehicle
 
             float speedForSteer = planarVelocity.magnitude;
             float steerResponse = Mathf.Clamp01(speedForSteer / 8f);
-            float yawDegrees = driveInput.x * maxSteerAngle * steerResponse * Time.fixedDeltaTime;
+            float yawDegrees = driveInput.x * maxSteerAngle * steerResponse * steeringAssistStrength * Time.fixedDeltaTime;
             if (Mathf.Abs(yawDegrees) > 0.001f)
             {
                 vehicleBody.MoveRotation(vehicleBody.rotation * Quaternion.Euler(0f, yawDegrees, 0f));

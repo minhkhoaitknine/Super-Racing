@@ -621,11 +621,12 @@ MonoBehaviour:
   motorTorque: 1000
   brakeTorque: 3000
   maxSpeedKmh: 120
-  driveAssistAcceleration: 1
+  driveAssistAcceleration: 3.5
   maxSteerAngle: 30
   minSteerAngleAtTopSpeed: 10
-  lowSpeedSidewaysGrip: 1.45
-  highSpeedSidewaysGrip: 0.85
+  lowSpeedSidewaysGrip: 1.6
+  highSpeedSidewaysGrip: 1.25
+  steeringAssistStrength: 0.35
   flippedRespawnDelay: 2
   flippedUpDotThreshold: 0.25
   fallRespawnY: -10
