@@ -626,7 +626,11 @@ MonoBehaviour:
   minSteerAngleAtTopSpeed: 10
   lowSpeedSidewaysGrip: 1.6
   highSpeedSidewaysGrip: 1.25
-  steeringAssistStrength: 0.35
+  steeringInputResponse: 3.5
+  steeringReturnResponse: 6
+  normalLateralGripResponse: 8
+  normalYawResponse: 6
+  maxNormalYawRate: 70
   flippedRespawnDelay: 2
   flippedUpDotThreshold: 0.25
   fallRespawnY: -10
