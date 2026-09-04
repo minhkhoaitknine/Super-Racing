@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: SandSurfaceProfile
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.SurfaceAudioProfile
   surface: 1
-  tireRoll: {fileID: 8300000, guid: 996c04ac948ace9429e01823c7efdea8, type: 3}
-  tireSkid: {fileID: 8300000, guid: 42b5b773dcf3b434989a1e4278c634c2, type: 3}
-  rollVolume: 0.46
-  skidVolume: 0.58
-  skidThreshold: 0.24
-  pitchMultiplier: 0.82
+  tireRoll: {fileID: 8300000, guid: f9e3e4f3aba7ef94eb219ef10fed595f, type: 3}
+  tireSkid: {fileID: 8300000, guid: 2e745e9fe3b0dd54ea356459796ef033, type: 3}
+  tireRollVariants: []
+  tireSkidVariants: []
+  rollVolume: 0.42
+  skidVolume: 0.85
+  skidThreshold: 0.32
+  pitchMultiplier: 0.78

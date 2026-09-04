@@ -25,6 +25,7 @@ namespace SuperRacing.Audio.Editor
             Directory.CreateDirectory(AudioRoot + "/Clips/Music");
             Directory.CreateDirectory(AudioRoot + "/Prefabs");
             AssetDatabase.Refresh();
+            ConfigureImportSettings();
 
             AudioCatalog catalog = LoadOrCreate<AudioCatalog>(ResourcesRoot + "/AudioCatalog.asset");
             AssignCatalog(catalog);
@@ -32,14 +33,19 @@ namespace SuperRacing.Audio.Editor
             EditorUtility.SetDirty(catalog);
 
             MapAudioProfile beach = LoadOrCreate<MapAudioProfile>(ResourcesRoot + "/BeachAudioProfile.asset");
-            beach.displayName = "Beach"; beach.primaryAmbience = catalog.beachWaves; beach.secondaryAmbience = catalog.beachWind; beach.primaryVolume = .58f; beach.secondaryVolume = .08f;
+            beach.displayName = "Beach"; beach.primaryAmbience = catalog.beachWaves; beach.secondaryAmbience = catalog.beachWind; beach.primaryVolume = 1f; beach.secondaryVolume = .75f;
             MapAudioProfile desert = LoadOrCreate<MapAudioProfile>(ResourcesRoot + "/DesertAudioProfile.asset");
-            desert.displayName = "Desert"; desert.primaryAmbience = catalog.desertWind; desert.secondaryAmbience = catalog.desertSandGust; desert.primaryVolume = .28f; desert.secondaryVolume = .38f;
-            EditorUtility.SetDirty(beach); EditorUtility.SetDirty(desert);
+            desert.displayName = "Desert"; desert.primaryAmbience = catalog.desertWind; desert.secondaryAmbience = catalog.desertSandGust; desert.primaryVolume = 1f; desert.secondaryVolume = .65f;
+            MapAudioProfile townSquare = LoadOrCreate<MapAudioProfile>(ResourcesRoot + "/TownSquareAudioProfile.asset");
+            townSquare.displayName = "Town Square"; townSquare.primaryAmbience = catalog.beachWind; townSquare.secondaryAmbience = catalog.desertWind; townSquare.primaryVolume = .7f; townSquare.secondaryVolume = .35f;
+            EditorUtility.SetDirty(beach); EditorUtility.SetDirty(desert); EditorUtility.SetDirty(townSquare);
 
             AudioMixer mixer = BuildMixer();
-            BuildPrefab(catalog, mixer);
             BuildSettingsPrefab();
+            catalog.mixer = mixer;
+            catalog.audioSettingsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AudioRoot + "/Prefabs/AudioSettingsPanel.prefab");
+            EditorUtility.SetDirty(catalog);
+            BuildPrefab(catalog, mixer);
             BuildSandbox();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -47,6 +53,45 @@ namespace SuperRacing.Audio.Editor
         }
 
         public static void BuildFromCommandLine() { Build(); EditorApplication.Exit(0); }
+        public static void BuildSettingsPrefabFromCommandLine()
+        {
+            BuildSettingsPrefab();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorApplication.Exit(0);
+        }
+
+        public static void AssignGoVoiceFromCommandLine()
+        {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            AudioCatalog catalog = AssetDatabase.LoadAssetAtPath<AudioCatalog>(ResourcesRoot + "/AudioCatalog.asset");
+            AudioClip goVoice = Clip("Race/EVT_Race_StartedGo_VOICE_NORMALIZED_CHOSEN.wav");
+            if (catalog == null || goVoice == null) throw new InvalidOperationException("GO voice or AudioCatalog could not be imported.");
+            catalog.startedGo = goVoice;
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            EditorApplication.Exit(0);
+        }
+
+        [MenuItem("Super Racing/Audio/Normalize And Assign GO Voice")]
+        public static void NormalizeAndAssignGoVoice()
+        {
+            const string sourcePath = AudioRoot + "/Clips/Race/EVT_Race_StartedGo_VOICE_CHOSEN.mp3";
+            const string outputPath = AudioRoot + "/Clips/Race/EVT_Race_StartedGo_VOICE_NORMALIZED_CHOSEN.wav";
+            AudioClip goVoice = NormalizeShortCue(sourcePath, outputPath, .24f, .72f);
+            AudioCatalog catalog = AssetDatabase.LoadAssetAtPath<AudioCatalog>(ResourcesRoot + "/AudioCatalog.asset");
+            if (catalog == null || goVoice == null) throw new InvalidOperationException("GO voice or AudioCatalog could not be processed.");
+            catalog.startedGo = goVoice;
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[AudioAudit] GO ready: {goVoice.name}, {goVoice.length:0.000}s, preloaded PCM.");
+        }
+
+        public static void NormalizeAndAssignGoVoiceFromCommandLine()
+        {
+            NormalizeAndAssignGoVoice();
+            EditorApplication.Exit(0);
+        }
 
         private static void BuildPrefab(AudioCatalog catalog, AudioMixer mixer)
         {
@@ -78,6 +123,7 @@ namespace SuperRacing.Audio.Editor
             AddMixerChild(addChild, controller, groups["Vehicle"], groups["SFX"]); AddMixerChild(addChild, controller, groups["Race"], groups["SFX"]); AddMixerChild(addChild, controller, groups["UI"], groups["SFX"]);
             AddMixerChild(addChild, controller, groups["Engine"], groups["Vehicle"]); AddMixerChild(addChild, controller, groups["Tires"], groups["Vehicle"]); AddMixerChild(addChild, controller, groups["Collision"], groups["Vehicle"]);
             RenameDefaultSnapshot(controllerType, controller);
+            BuildSnapshots(controllerType, controller, groups);
             ExposeVolume(controllerType, controller, master, "MasterVolume"); ExposeVolume(controllerType, controller, groups["Music"], "MusicVolume");
             ExposeVolume(controllerType, controller, groups["SFX"], "SfxVolume"); ExposeVolume(controllerType, controller, groups["Ambience"], "AmbienceVolume"); ExposeVolume(controllerType, controller, groups["UI"], "UiVolume");
             AssetDatabase.SaveAssets();
@@ -92,13 +138,47 @@ namespace SuperRacing.Audio.Editor
             PropertyInfo property = controllerType.GetProperty("snapshots", flags); Array current = property?.GetValue(controller) as Array;
             if (current != null && current.Length > 0) ((UnityEngine.Object)current.GetValue(0)).name = "Default";
         }
+        private static void BuildSnapshots(Type controllerType, object controller, System.Collections.Generic.Dictionary<string, object> groups)
+        {
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            PropertyInfo snapshotsProperty = controllerType.GetProperty("snapshots", flags);
+            PropertyInfo targetProperty = controllerType.GetProperty("TargetSnapshot", flags);
+            MethodInfo clone = controllerType.GetMethod("CloneNewSnapshotFromTarget", flags);
+            Array snapshots = snapshotsProperty?.GetValue(controller) as Array;
+            if (snapshots == null || snapshots.Length == 0 || clone == null) return;
+            object defaultSnapshot = snapshots.GetValue(0);
+            SetGroupVolume(groups["Vehicle"], defaultSnapshot, 10f);
+            SetGroupVolume(groups["Collision"], defaultSnapshot, 6f);
+            CreateSnapshot("Countdown", new[] { (groups["Vehicle"], 10f), (groups["Collision"], 6f), (groups["Music"], -7f) });
+            CreateSnapshot("Paused", new[] { (groups["Vehicle"], 8f), (groups["Collision"], 5f), (groups["Music"], -12f), (groups["SFX"], -6f), (groups["Ambience"], -12f) });
+            CreateSnapshot("Finish", new[] { (groups["Vehicle"], 4f), (groups["Collision"], 5f), (groups["Engine"], -12f), (groups["Ambience"], -14f), (groups["Music"], -3f) });
+            targetProperty?.SetValue(controller, defaultSnapshot);
+
+            void SetGroupVolume(object group, object snapshot, float db)
+            {
+                MethodInfo setVolume = group.GetType().GetMethod("SetValueForVolume", flags);
+                setVolume?.Invoke(group, new[] { controller, snapshot, (object)db });
+            }
+
+            void CreateSnapshot(string name, (object group, float db)[] values)
+            {
+                targetProperty?.SetValue(controller, defaultSnapshot);
+                clone.Invoke(controller, new object[] { false });
+                Array updated = snapshotsProperty.GetValue(controller) as Array;
+                object snapshot = updated.GetValue(updated.Length - 1);
+                ((UnityEngine.Object)snapshot).name = name;
+                foreach ((object group, float db) in values)
+                    SetGroupVolume(group, snapshot, db);
+            }
+        }
         private static void ExposeVolume(Type controllerType, object controller, object group, string exposedName)
         {
             const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
             try
             {
-                Array effects = group.GetType().GetProperty("effects", flags)?.GetValue(group) as Array; if (effects == null || effects.Length == 0) return;
-                object effect = effects.GetValue(0); object guid = effect.GetType().GetMethod("GetGUIDForMixLevel", flags)?.Invoke(effect, null); if (guid == null) return;
+                object guid = group.GetType().GetProperty("volume", flags)?.GetValue(group)
+                    ?? group.GetType().GetMethod("GetGUIDForVolume", flags)?.Invoke(group, null);
+                if (guid == null) throw new InvalidOperationException("Could not resolve the group volume GUID.");
                 PropertyInfo exposedProperty = controllerType.GetProperty("exposedParameters", flags); Array current = exposedProperty.GetValue(controller) as Array;
                 Type exposedType = current.GetType().GetElementType(); object exposed = Activator.CreateInstance(exposedType);
                 exposedType.GetField("guid", flags).SetValue(exposed, guid); exposedType.GetField("name", flags).SetValue(exposed, exposedName);
@@ -117,16 +197,28 @@ namespace SuperRacing.Audio.Editor
             c.speedsterProfile = ConfigureVehicle("SpeedsterAudioProfile", "Speedster", c, idle, mid, high, high, offLoad, 6, 180f, .9f, 1.9f, .72f);
             c.balancedProfile = ConfigureVehicle("BalancedAudioProfile", "Balanced", c, idle, low, mid, high, offLoad, 5, 145f, .78f, 1.68f, .66f);
             c.controlProfile = ConfigureVehicle("ControlAudioProfile", "Control", c, idle, idle, low, mid, offLoad, 4, 120f, .64f, 1.42f, .72f);
-            c.asphaltSurface = ConfigureSurface("AsphaltSurfaceProfile", SurfaceType.Asphalt, c.tireRoll, c.tireSkid, .34f, .7f, .32f, 1f);
-            c.sandSurface = ConfigureSurface("SandSurfaceProfile", SurfaceType.Sand, c.tireRoll, c.tireSkid, .46f, .58f, .24f, .82f);
-            c.grassSurface = ConfigureSurface("GrassSurfaceProfile", SurfaceType.Grass, c.tireRoll, c.tireSkid, .4f, .5f, .28f, .9f);
+            AudioClip asphaltRoll = Clip("Vehicle/Surface/LOOP_Surface_AsphaltRoll_REAL_CHOSEN.wav");
+            AudioClip asphaltSkid = Clip("Vehicle/Surface/LOOP_Surface_AsphaltSkid_REAL_CHOSEN.wav");
+            AudioClip sandRoll = Clip("Vehicle/Surface/LOOP_Surface_SandRoll_REAL_CHOSEN.mp3");
+            AudioClip sandSkid = Clip("Vehicle/Surface/LOOP_Surface_SandSkid_REAL_CHOSEN.ogg");
+            AudioClip grassRoll = Clip("Vehicle/Surface/LOOP_Surface_GrassRoll_REAL_CHOSEN.ogg");
+            AudioClip grassSkid = Clip("Vehicle/Surface/LOOP_Surface_GrassSkid_REAL_CHOSEN.ogg");
+            c.asphaltSurface = ConfigureSurface("AsphaltSurfaceProfile", SurfaceType.Asphalt, asphaltRoll, asphaltSkid, .34f, .62f, .3f, 1f);
+            c.sandSurface = ConfigureSurface("SandSurfaceProfile", SurfaceType.Sand, sandRoll, sandSkid, .42f, .85f, .32f, .78f);
+            c.grassSurface = ConfigureSurface("GrassSurfaceProfile", SurfaceType.Grass, grassRoll, grassSkid, .36f, 1f, .34f, .88f);
         }
 
         private static VehicleAudioProfile ConfigureVehicle(string asset, string display, AudioCatalog c, AudioClip idle, AudioClip low, AudioClip mid, AudioClip high, AudioClip offLoad, int gears, float maxSpeed, float minPitch, float maxPitch, float volume)
         {
             VehicleAudioProfile p = LoadOrCreate<VehicleAudioProfile>(ResourcesRoot + "/" + asset + ".asset"); p.displayName = display;
             p.engineStart = c.engineStart; p.gearShift = c.gearShift != c.restart ? c.gearShift : null; p.idle = idle; p.lowRpm = low; p.midRpm = mid; p.highRpm = high; p.onLoad = c.accelerationLoad; p.offLoad = offLoad;
-            p.gearCount = gears; p.maxSpeedKmh = maxSpeed; p.minPitch = minPitch; p.maxPitch = maxPitch; p.engineVolume = volume; EditorUtility.SetDirty(p); return p;
+            p.gearShiftVariants = new[] { Clip("Vehicle/EVT_Vehicle_GearShift_01_REAL_CHOSEN.wav"), Clip("Vehicle/EVT_Vehicle_GearShift_02_REAL_CHOSEN.wav") };
+            p.backfire = Clip("Vehicle/EVT_Vehicle_Backfire_REAL_CHOSEN.mp3");
+            p.backfireVariants = p.backfire != null ? new[] { p.backfire } : Array.Empty<AudioClip>();
+            p.gearCount = gears; p.maxSpeedKmh = maxSpeed; p.minPitch = minPitch; p.maxPitch = maxPitch;
+            p.engineVolume = display == "Balanced" ? .84f : display == "Control" ? .9f : .88f;
+            p.loadVolume = display == "Control" ? .42f : display == "Balanced" ? .44f : .46f;
+            EditorUtility.SetDirty(p); return p;
         }
         private static SurfaceAudioProfile ConfigureSurface(string asset, SurfaceType type, AudioClip roll, AudioClip skid, float rollVolume, float skidVolume, float threshold, float pitch)
         {
@@ -137,31 +229,77 @@ namespace SuperRacing.Audio.Editor
         private static void BuildSettingsPrefab()
         {
             GameObject panel = new("AudioSettingsPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(AudioSettingsPanel));
-            RectTransform rect = panel.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(520, 430); panel.GetComponent<Image>().color = new Color(.04f, .05f, .08f, .94f);
+            RectTransform rect = panel.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(1920, 1080);
+            Image dimmer = panel.GetComponent<Image>(); dimmer.color = new Color(.005f, .015f, .03f, .78f); dimmer.raycastTarget = true;
             AudioSettingsPanel component = panel.GetComponent<AudioSettingsPanel>(); SerializedObject serialized = new(component);
+
+            GameObject card = new("Settings Card", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline));
+            card.transform.SetParent(panel.transform, false);
+            RectTransform cardRect = card.GetComponent<RectTransform>(); cardRect.sizeDelta = new Vector2(720, 650);
+            card.GetComponent<Image>().color = new Color(.012f, .055f, .085f, .985f);
+            Outline cardOutline = card.GetComponent<Outline>(); cardOutline.effectColor = new Color(0f, .8f, .95f, .5f); cardOutline.effectDistance = new Vector2(2f, -2f);
+            Image accent = CreateImage(card.transform, "Top Accent", new Color(0f, .82f, 1f, 1f));
+            SetRect(accent.rectTransform, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0f, -3f), new Vector2(716f, 6f));
+
+            Text title = CreateText(card.transform, "AUDIO SETTINGS", new Vector2(0, 273), new Vector2(560, 52)); title.fontSize = 30; title.fontStyle = FontStyle.Bold; title.color = new Color(.78f, .98f, 1f);
+            Text subtitle = CreateText(card.transform, "CUSTOMIZE YOUR RACE MIX", new Vector2(0, 235), new Vector2(560, 28)); subtitle.fontSize = 13; subtitle.color = new Color(.35f, .7f, .8f);
             string[] names = { "Master", "Music", "SFX", "Ambience", "UI" }; string[] fields = { "master", "music", "sfx", "ambience", "ui" };
             for (int i = 0; i < names.Length; i++)
             {
-                Text label = CreateText(panel.transform, names[i], new Vector2(-190, 145 - i * 58), new Vector2(105, 35));
-                Slider slider = CreateSlider(panel.transform, new Vector2(25, 145 - i * 58));
-                Text value = CreateText(panel.transform, "100%", new Vector2(205, 145 - i * 58), new Vector2(70, 35));
+                float y = 165f - i * 76f;
+                Image row = CreateImage(card.transform, names[i] + " Row", new Color(.025f, .105f, .145f, .78f));
+                SetRect(row.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0f, y), new Vector2(640f, 60f));
+                Text label = CreateText(row.transform, names[i].ToUpperInvariant(), new Vector2(-245, 0), new Vector2(120, 36)); label.alignment = TextAnchor.MiddleLeft; label.fontSize = 16; label.fontStyle = FontStyle.Bold; label.color = new Color(.72f, .92f, .97f);
+                Slider slider = CreateSlider(row.transform, new Vector2(20, 0));
+                Text value = CreateText(row.transform, "100%", new Vector2(270, 0), new Vector2(70, 34)); value.fontStyle = FontStyle.Bold; value.color = new Color(0f, .88f, 1f);
                 serialized.FindProperty(fields[i] + "Slider").objectReferenceValue = slider; serialized.FindProperty(fields[i] + "Value").objectReferenceValue = value;
             }
-            Toggle toggle = CreateToggle(panel.transform, new Vector2(-100, -165)); Text mute = CreateText(toggle.transform, "Mute", new Vector2(55, 0), new Vector2(100, 35));
+
+            Toggle toggle = CreateToggle(card.transform, new Vector2(-235, -255)); Text mute = CreateText(toggle.transform, "MUTE ALL", new Vector2(80, 0), new Vector2(130, 40)); mute.alignment = TextAnchor.MiddleLeft; mute.fontStyle = FontStyle.Bold; mute.color = new Color(.72f, .92f, .97f);
             serialized.FindProperty("muteToggle").objectReferenceValue = toggle; serialized.FindProperty("muteLabel").objectReferenceValue = mute;
-            Button reset = CreateButton(panel.transform, "Reset defaults", new Vector2(120, -165)); UnityEditor.Events.UnityEventTools.AddPersistentListener(reset.onClick, component.ResetDefaults);
+            Button reset = CreateButton(card.transform, "RESET", new Vector2(70, -255), new Vector2(150, 46), false); UnityEditor.Events.UnityEventTools.AddPersistentListener(reset.onClick, component.ResetDefaults);
+            Button close = CreateButton(card.transform, "DONE", new Vector2(245, -255), new Vector2(150, 46), true); UnityEditor.Events.UnityEventTools.AddPersistentListener(close.onClick, component.RequestClose);
             serialized.ApplyModifiedPropertiesWithoutUndo(); PrefabUtility.SaveAsPrefabAsset(panel, AudioRoot + "/Prefabs/AudioSettingsPanel.prefab"); UnityEngine.Object.DestroyImmediate(panel);
         }
         private static Text CreateText(Transform parent, string text, Vector2 position, Vector2 size)
         { GameObject go = new(text, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = size; Text t = go.GetComponent<Text>(); t.text = text; t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.color = Color.white; t.alignment = TextAnchor.MiddleCenter; return t; }
         private static Slider CreateSlider(Transform parent, Vector2 position)
-        { GameObject go = new("Slider", typeof(RectTransform), typeof(Slider)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(300, 28); Slider s = go.GetComponent<Slider>(); Image background = CreateImage(go.transform, "Background", new Color(.2f, .22f, .28f)); Image fill = CreateImage(go.transform, "Fill", new Color(.2f, .65f, 1f)); Image handle = CreateImage(go.transform, "Handle", Color.white); s.fillRect = fill.rectTransform; s.handleRect = handle.rectTransform; s.targetGraphic = handle; return s; }
+        {
+            GameObject go = new("Slider", typeof(RectTransform), typeof(Slider)); go.transform.SetParent(parent, false);
+            RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(350, 32);
+            Slider s = go.GetComponent<Slider>(); s.direction = Slider.Direction.LeftToRight;
+            Image background = CreateImage(go.transform, "Track", new Color(.08f, .22f, .28f));
+            SetRect(background.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 7f));
+            Image fill = CreateImage(go.transform, "Fill", new Color(0f, .82f, 1f));
+            SetRect(fill.rectTransform, new Vector2(0f, .5f), new Vector2(1f, .5f), Vector2.zero, new Vector2(0f, 9f));
+            Image handle = CreateImage(go.transform, "Handle", new Color(.88f, 1f, 1f));
+            SetRect(handle.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(22f, 22f));
+            Outline handleOutline = handle.gameObject.AddComponent<Outline>(); handleOutline.effectColor = new Color(0f, .72f, .9f, .8f); handleOutline.effectDistance = new Vector2(2f, -2f);
+            s.fillRect = fill.rectTransform; s.handleRect = handle.rectTransform; s.targetGraphic = handle;
+            return s;
+        }
         private static Toggle CreateToggle(Transform parent, Vector2 position)
-        { GameObject go = new("Mute Toggle", typeof(RectTransform), typeof(Toggle)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(40, 40); Image bg = CreateImage(go.transform, "Background", new Color(.2f, .22f, .28f)); Image check = CreateImage(go.transform, "Checkmark", new Color(.2f, .65f, 1f)); Toggle t = go.GetComponent<Toggle>(); t.targetGraphic = bg; t.graphic = check; return t; }
-        private static Button CreateButton(Transform parent, string label, Vector2 position)
-        { GameObject go = new(label, typeof(RectTransform), typeof(Image), typeof(Button)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(170, 42); go.GetComponent<Image>().color = new Color(.15f, .45f, .75f); CreateText(go.transform, label, Vector2.zero, r.sizeDelta); return go.GetComponent<Button>(); }
+        {
+            GameObject go = new("Mute Toggle", typeof(RectTransform), typeof(Toggle)); go.transform.SetParent(parent, false);
+            RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = new Vector2(42, 42);
+            Image bg = CreateImage(go.transform, "Background", new Color(.035f, .16f, .21f)); bg.gameObject.AddComponent<Outline>().effectColor = new Color(0f, .72f, .86f, .8f);
+            Image check = CreateImage(go.transform, "Checkmark", new Color(0f, .86f, 1f)); check.rectTransform.offsetMin = new Vector2(8f, 8f); check.rectTransform.offsetMax = new Vector2(-8f, -8f);
+            Toggle t = go.GetComponent<Toggle>(); t.targetGraphic = bg; t.graphic = check; return t;
+        }
+        private static Button CreateButton(Transform parent, string label, Vector2 position, Vector2 size, bool primary)
+        {
+            GameObject go = new(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(Outline)); go.transform.SetParent(parent, false);
+            RectTransform r = go.GetComponent<RectTransform>(); r.anchoredPosition = position; r.sizeDelta = size;
+            Image image = go.GetComponent<Image>(); image.color = primary ? new Color(0f, .78f, .92f) : new Color(.035f, .16f, .22f);
+            Outline outline = go.GetComponent<Outline>(); outline.effectColor = new Color(0f, .78f, .92f, .85f); outline.effectDistance = new Vector2(1f, -1f);
+            Button button = go.GetComponent<Button>(); ColorBlock colors = button.colors; colors.highlightedColor = new Color(.72f, 1f, 1f); colors.pressedColor = new Color(.45f, .82f, .9f); button.colors = colors;
+            Text text = CreateText(go.transform, label, Vector2.zero, size); text.fontStyle = FontStyle.Bold; text.fontSize = 16; text.color = primary ? new Color(.01f, .06f, .08f) : new Color(.72f, .96f, 1f);
+            return button;
+        }
         private static Image CreateImage(Transform parent, string name, Color color)
         { GameObject go = new(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)); go.transform.SetParent(parent, false); RectTransform r = go.GetComponent<RectTransform>(); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero; Image image = go.GetComponent<Image>(); image.color = color; return image; }
+        private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size)
+        { rect.anchorMin = anchorMin; rect.anchorMax = anchorMax; rect.pivot = new Vector2(.5f, .5f); rect.anchoredPosition = position; rect.sizeDelta = size; }
 
 
         private static void BuildSandbox()
@@ -201,24 +339,50 @@ namespace SuperRacing.Audio.Editor
             c.engineDrive = Clip("Vehicle/LOOP_Vehicle_EngineDrive_CHOSEN.wav");
             c.accelerationLoad = Clip("Vehicle/LOOP_Vehicle_AccelerationLoad_CHOSEN.wav");
             c.engineOffLoad = Clip("Vehicle/LOOP_Vehicle_EngineOffLoad_CHOSEN.wav");
-            c.tireRoll = Clip("Vehicle/LOOP_Vehicle_TireRoll_CHOSEN.ogg"); c.tireSkid = Clip("Vehicle/LOOP_Vehicle_TireSkid_CHOSEN.ogg");
-            c.collisionLight = Clip("Vehicle/EVT_Vehicle_CollisionLight_REALISTIC_CHOSEN.ogg"); c.collisionMedium = Clip("Vehicle/EVT_Vehicle_CollisionHeavy_REALISTIC_CHOSEN.mp3"); c.collisionHeavy = Clip("Vehicle/EVT_Vehicle_CollisionHeavy_REALISTIC_CHOSEN.mp3");
+            c.tireRoll = Clip("Vehicle/Surface/LOOP_Surface_AsphaltRoll_REAL_CHOSEN.wav"); c.tireSkid = Clip("Vehicle/Surface/LOOP_Surface_AsphaltSkid_REAL_CHOSEN.wav");
+            c.collisionLight = Clip("Vehicle/EVT_Vehicle_CollisionLight_TRIMMED_CHOSEN.wav");
+            c.collisionMedium = Clip("Vehicle/EVT_Vehicle_CollisionMedium_TRIMMED_CHOSEN.wav");
+            c.collisionHeavy = Clip("Vehicle/EVT_Vehicle_CollisionHeavy_TRIMMED_CHOSEN.wav");
+            c.collisionLightVariants = new[] { c.collisionLight };
+            c.collisionMediumVariants = new[] { c.collisionMedium };
+            c.collisionHeavyVariants = new[] { c.collisionHeavy };
             c.respawn = Clip("Vehicle/EVT_Vehicle_Respawn_CHOSEN.ogg"); c.landing = Clip("Vehicle/EVT_Vehicle_Landing_CHOSEN.ogg");
-            c.countdownTick = Clip("Race/EVT_Race_CountdownTick_CHOSEN.ogg"); c.startedGo = Clip("Race/EVT_Race_StartedGo_CHOSEN.ogg");
+            c.countdownTick = Clip("Race/EVT_Race_CountdownTick_CHOSEN.ogg"); c.startedGo = Clip("Race/EVT_Race_StartedGo_VOICE_NORMALIZED_CHOSEN.wav");
             c.checkpointPassed = Clip("Race/EVT_Race_CheckpointPassed_CHOSEN.ogg"); c.lapChanged = Clip("Race/EVT_Race_LapChanged_CHOSEN.ogg");
             c.finished = Clip("Race/EVT_Race_Finished_CHOSEN.ogg"); c.newRecord = Clip("Race/EVT_Race_NewRecord_CHOSEN.ogg");
             c.invalidCheckpoint = Clip("Race/EVT_Race_InvalidCheckpoint_CHOSEN.ogg"); c.restart = Clip("Race/EVT_Race_Restart_CHOSEN.ogg");
-            c.gearShift = null; // No dedicated shift sample yet; never reuse the race Restart cue.
+            c.gearShift = Clip("Vehicle/EVT_Vehicle_GearShift_01_REAL_CHOSEN.wav");
             c.uiHover = Clip("UI/EVT_UI_Hover_CHOSEN.ogg"); c.uiClick = Clip("UI/EVT_UI_Click_CHOSEN.ogg");
             c.uiConfirm = Clip("UI/EVT_UI_Confirm_CHOSEN.ogg"); c.uiBack = Clip("UI/EVT_UI_Back_CHOSEN.ogg");
             c.uiSelectionChanged = Clip("UI/EVT_UI_SelectionChanged_CHOSEN.ogg"); c.uiError = Clip("UI/EVT_UI_Error_CHOSEN.ogg");
             c.uiStartRace = Clip("UI/EVT_UI_StartRace_CHOSEN.ogg"); c.uiResultsOpen = Clip("UI/EVT_UI_ResultsOpen_CHOSEN.ogg");
-            c.beachWaves = Clip("Ambience/LOOP_Ambience_BeachWaves_CHOSEN.flac"); c.beachWind = Clip("Ambience/LOOP_Ambience_BeachWind_CHOSEN.ogg");
-            c.desertWind = Clip("Ambience/LOOP_Ambience_DesertWind_CHOSEN.ogg"); c.desertSandGust = Clip("Ambience/EVT_Ambience_DesertSandGust_CHOSEN.wav");
+            c.beachWaves = Clip("Ambience/LOOP_Ambience_BeachWaves_NORMALIZED_CHOSEN.wav"); c.beachWind = Clip("Ambience/LOOP_Ambience_BeachWind_NORMALIZED_CHOSEN.wav");
+            c.desertWind = Clip("Ambience/LOOP_Ambience_DesertWind_NORMALIZED_CHOSEN.wav"); c.desertSandGust = Clip("Ambience/LOOP_Ambience_DesertSandGust_NORMALIZED_CHOSEN.wav");
             c.raceMusic = Clip("Music/LOOP_Music_Race_CHOSEN.ogg"); c.menuMusic = Clip("Music/LOOP_Music_Menu_CHOSEN.ogg"); c.resultMusic = Clip("Music/LOOP_Music_Result_CHOSEN.ogg");
         }
 
         private static AudioClip Clip(string relative) => AssetDatabase.LoadAssetAtPath<AudioClip>(AudioRoot + "/Clips/" + relative);
+
+        private static void ConfigureImportSettings()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:AudioClip", new[] { AudioRoot + "/Clips" });
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (AssetImporter.GetAtPath(path) is not AudioImporter importer) continue;
+                AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+                bool music = path.Contains("/Music/");
+                bool ambience = path.Contains("/Ambience/");
+                bool loop = Path.GetFileName(path).StartsWith("LOOP_", StringComparison.OrdinalIgnoreCase);
+                settings.loadType = music || ambience ? AudioClipLoadType.Streaming : loop ? AudioClipLoadType.CompressedInMemory : AudioClipLoadType.DecompressOnLoad;
+                settings.compressionFormat = music || ambience || loop ? AudioCompressionFormat.Vorbis : AudioCompressionFormat.ADPCM;
+                settings.quality = music ? .72f : ambience ? .65f : .8f;
+                settings.preloadAudioData = !music && !ambience;
+                importer.defaultSampleSettings = settings;
+                importer.loadInBackground = music || ambience;
+                importer.SaveAndReimport();
+            }
+        }
         private static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {
             T value = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -242,6 +406,380 @@ namespace SuperRacing.Audio.Editor
         }
 
         private static float Noise(System.Random random) => (float)(random.NextDouble() * 2.0 - 1.0);
+
+        [MenuItem("Super Racing/Audio/Trim Collision Clips")]
+        public static void TrimCollisionClips()
+        {
+            const string vehicleRoot = AudioRoot + "/Clips/Vehicle/";
+            AudioClip light = TrimClip(vehicleRoot + "EVT_Vehicle_CollisionLight_REALISTIC_CHOSEN.ogg", vehicleRoot + "EVT_Vehicle_CollisionLight_TRIMMED_CHOSEN.wav", .38f);
+            AudioClip medium = TrimClip(vehicleRoot + "EVT_Vehicle_CollisionMedium_02_REAL_CHOSEN.wav", vehicleRoot + "EVT_Vehicle_CollisionMedium_TRIMMED_CHOSEN.wav", .48f);
+            AudioClip heavy = TrimClip(vehicleRoot + "EVT_Vehicle_CollisionHeavy_REALISTIC_CHOSEN.mp3", vehicleRoot + "EVT_Vehicle_CollisionHeavy_TRIMMED_CHOSEN.wav", .55f);
+            AudioCatalog catalog = AssetDatabase.LoadAssetAtPath<AudioCatalog>(ResourcesRoot + "/AudioCatalog.asset");
+            if (catalog == null || light == null || medium == null || heavy == null)
+                throw new InvalidOperationException("Could not trim every collision clip.");
+            catalog.collisionLight = light;
+            catalog.collisionMedium = medium;
+            catalog.collisionHeavy = heavy;
+            catalog.collisionLightVariants = new[] { light };
+            catalog.collisionMediumVariants = new[] { medium };
+            catalog.collisionHeavyVariants = new[] { heavy };
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[VehicleAudio] Trimmed collisions: {light.length:0.000}s / {medium.length:0.000}s / {heavy.length:0.000}s");
+        }
+
+        [MenuItem("Super Racing/Audio/Audit Ambience Loudness")]
+        public static void AuditAmbienceLoudness()
+        {
+            string[] paths =
+            {
+                AudioRoot + "/Clips/Ambience/LOOP_Ambience_BeachWaves_CHOSEN.flac",
+                AudioRoot + "/Clips/Ambience/LOOP_Ambience_BeachWind_CHOSEN.ogg",
+                AudioRoot + "/Clips/Ambience/LOOP_Ambience_DesertWind_CHOSEN.ogg",
+                AudioRoot + "/Clips/Ambience/EVT_Ambience_DesertSandGust_CHOSEN.wav"
+            };
+            foreach (string path in paths)
+            {
+                AudioImporter importer = AssetImporter.GetAtPath(path) as AudioImporter;
+                if (importer == null) { Debug.LogError("[AudioAudit] Missing importer " + path); continue; }
+                AudioImporterSampleSettings original = importer.defaultSampleSettings;
+                bool originalBackground = importer.loadInBackground;
+                try
+                {
+                    AudioImporterSampleSettings decoded = original;
+                    decoded.loadType = AudioClipLoadType.DecompressOnLoad;
+                    decoded.compressionFormat = AudioCompressionFormat.PCM;
+                    decoded.preloadAudioData = true;
+                    importer.defaultSampleSettings = decoded;
+                    importer.loadInBackground = false;
+                    importer.SaveAndReimport();
+                    AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                    float[] samples = new float[clip.samples * clip.channels];
+                    if (!clip.GetData(samples, 0)) { Debug.LogError("[AudioAudit] Could not decode " + path); continue; }
+                    double squares = 0d;
+                    float peak = 0f;
+                    foreach (float sample in samples) { squares += sample * sample; peak = Mathf.Max(peak, Mathf.Abs(sample)); }
+                    float rms = Mathf.Sqrt((float)(squares / Mathf.Max(1, samples.Length)));
+                    Debug.Log($"[AudioAudit] {clip.name}: {clip.length:0.00}s RMS={rms:0.0000} peak={peak:0.0000}");
+                }
+                finally
+                {
+                    importer = AssetImporter.GetAtPath(path) as AudioImporter;
+                    if (importer != null)
+                    {
+                        importer.defaultSampleSettings = original;
+                        importer.loadInBackground = originalBackground;
+                        importer.SaveAndReimport();
+                    }
+                }
+            }
+        }
+
+        [MenuItem("Super Racing/Audio/Audit Tire Skid Loudness")]
+        public static void AuditTireSkidLoudness()
+        {
+            string[] paths =
+            {
+                AudioRoot + "/Clips/Vehicle/Surface/LOOP_Surface_AsphaltSkid_REAL_CHOSEN.wav",
+                AudioRoot + "/Clips/Vehicle/Surface/LOOP_Surface_SandSkid_REAL_CHOSEN.ogg",
+                AudioRoot + "/Clips/Vehicle/Surface/LOOP_Surface_GrassSkid_REAL_CHOSEN.ogg"
+            };
+            foreach (string path in paths) AuditImportedClip(path, "TireAudit");
+        }
+
+        private static void AuditImportedClip(string path, string label)
+        {
+            AudioImporter importer = AssetImporter.GetAtPath(path) as AudioImporter;
+            if (importer == null) { Debug.LogError($"[{label}] Missing importer {path}"); return; }
+            AudioImporterSampleSettings original = importer.defaultSampleSettings;
+            bool originalBackground = importer.loadInBackground;
+            try
+            {
+                AudioImporterSampleSettings decoded = original;
+                decoded.loadType = AudioClipLoadType.DecompressOnLoad;
+                decoded.compressionFormat = AudioCompressionFormat.PCM;
+                decoded.preloadAudioData = true;
+                importer.defaultSampleSettings = decoded;
+                importer.loadInBackground = false;
+                importer.SaveAndReimport();
+                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                float[] samples = new float[clip.samples * clip.channels];
+                if (!clip.GetData(samples, 0)) { Debug.LogError($"[{label}] Could not decode {path}"); return; }
+                double squares = 0d;
+                float peak = 0f;
+                foreach (float sample in samples) { squares += sample * sample; peak = Mathf.Max(peak, Mathf.Abs(sample)); }
+                float rms = Mathf.Sqrt((float)(squares / Mathf.Max(1, samples.Length)));
+                Debug.Log($"[{label}] {clip.name}: {clip.length:0.00}s RMS={rms:0.0000} peak={peak:0.0000}");
+            }
+            finally
+            {
+                importer = AssetImporter.GetAtPath(path) as AudioImporter;
+                if (importer != null)
+                {
+                    importer.defaultSampleSettings = original;
+                    importer.loadInBackground = originalBackground;
+                    importer.SaveAndReimport();
+                }
+            }
+        }
+
+        [MenuItem("Super Racing/Audio/Normalize Ambience Clips")]
+        public static void NormalizeAmbienceClips()
+        {
+            const string ambienceRoot = AudioRoot + "/Clips/Ambience/";
+            AudioClip beachWaves = NormalizeAmbienceClip(ambienceRoot + "LOOP_Ambience_BeachWaves_CHOSEN.flac", ambienceRoot + "LOOP_Ambience_BeachWaves_NORMALIZED_CHOSEN.wav", .09f);
+            AudioClip beachWind = NormalizeAmbienceClip(ambienceRoot + "LOOP_Ambience_BeachWind_CHOSEN.ogg", ambienceRoot + "LOOP_Ambience_BeachWind_NORMALIZED_CHOSEN.wav", .08f);
+            AudioClip desertWind = NormalizeAmbienceClip(ambienceRoot + "LOOP_Ambience_DesertWind_CHOSEN.ogg", ambienceRoot + "LOOP_Ambience_DesertWind_NORMALIZED_CHOSEN.wav", .08f);
+            AudioClip desertGust = NormalizeAmbienceClip(ambienceRoot + "EVT_Ambience_DesertSandGust_CHOSEN.wav", ambienceRoot + "LOOP_Ambience_DesertSandGust_NORMALIZED_CHOSEN.wav", .07f);
+            AudioCatalog catalog = AssetDatabase.LoadAssetAtPath<AudioCatalog>(ResourcesRoot + "/AudioCatalog.asset");
+            MapAudioProfile beach = AssetDatabase.LoadAssetAtPath<MapAudioProfile>(ResourcesRoot + "/BeachAudioProfile.asset");
+            MapAudioProfile desert = AssetDatabase.LoadAssetAtPath<MapAudioProfile>(ResourcesRoot + "/DesertAudioProfile.asset");
+            if (catalog == null || beach == null || desert == null) throw new InvalidOperationException("Ambience catalog/profile assets are missing.");
+            catalog.beachWaves = beachWaves; catalog.beachWind = beachWind; catalog.desertWind = desertWind; catalog.desertSandGust = desertGust;
+            beach.primaryAmbience = beachWaves; beach.secondaryAmbience = beachWind;
+            desert.primaryAmbience = desertWind; desert.secondaryAmbience = desertGust;
+            EditorUtility.SetDirty(catalog); EditorUtility.SetDirty(beach); EditorUtility.SetDirty(desert);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[AudioAudit] Normalized ambience clips created and assigned.");
+        }
+
+        private static AudioClip NormalizeAmbienceClip(string sourcePath, string outputPath, float targetRms)
+        {
+            AudioImporter sourceImporter = AssetImporter.GetAtPath(sourcePath) as AudioImporter;
+            if (sourceImporter == null) throw new FileNotFoundException("Ambience source importer not found", sourcePath);
+            AudioImporterSampleSettings original = sourceImporter.defaultSampleSettings;
+            bool originalBackground = sourceImporter.loadInBackground;
+            float[] samples;
+            int channels;
+            int frequency;
+            try
+            {
+                AudioImporterSampleSettings decoded = original;
+                decoded.loadType = AudioClipLoadType.DecompressOnLoad;
+                decoded.compressionFormat = AudioCompressionFormat.PCM;
+                decoded.preloadAudioData = true;
+                sourceImporter.defaultSampleSettings = decoded;
+                sourceImporter.loadInBackground = false;
+                sourceImporter.SaveAndReimport();
+                AudioClip source = AssetDatabase.LoadAssetAtPath<AudioClip>(sourcePath);
+                samples = new float[source.samples * source.channels];
+                if (!source.GetData(samples, 0)) throw new InvalidOperationException("Could not decode " + sourcePath);
+                channels = source.channels;
+                frequency = source.frequency;
+            }
+            finally
+            {
+                sourceImporter = AssetImporter.GetAtPath(sourcePath) as AudioImporter;
+                if (sourceImporter != null)
+                {
+                    sourceImporter.defaultSampleSettings = original;
+                    sourceImporter.loadInBackground = originalBackground;
+                    sourceImporter.SaveAndReimport();
+                }
+            }
+
+            double squares = 0d;
+            float peak = 0f;
+            foreach (float sample in samples) { squares += sample * sample; peak = Mathf.Max(peak, Mathf.Abs(sample)); }
+            float rms = Mathf.Sqrt((float)(squares / Mathf.Max(1, samples.Length)));
+            float gain = rms > .00001f ? targetRms / rms : 1f;
+            if (peak > .00001f) gain = Mathf.Min(gain, .9f / peak);
+            for (int i = 0; i < samples.Length; i++) samples[i] = Mathf.Clamp(samples[i] * gain, -1f, 1f);
+            WritePcmWave(outputPath, samples, channels, frequency);
+            AssetDatabase.ImportAsset(outputPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+            AudioImporter outputImporter = AssetImporter.GetAtPath(outputPath) as AudioImporter;
+            if (outputImporter != null)
+            {
+                AudioImporterSampleSettings outputSettings = outputImporter.defaultSampleSettings;
+                outputSettings.loadType = AudioClipLoadType.Streaming;
+                outputSettings.compressionFormat = AudioCompressionFormat.Vorbis;
+                outputSettings.quality = .8f;
+                outputSettings.preloadAudioData = false;
+                outputImporter.defaultSampleSettings = outputSettings;
+                outputImporter.loadInBackground = true;
+                outputImporter.SaveAndReimport();
+            }
+            Debug.Log($"[AudioAudit] Normalized {Path.GetFileName(sourcePath)} gain={gain:0.00}x RMS {rms:0.0000}->{targetRms:0.0000}");
+            return AssetDatabase.LoadAssetAtPath<AudioClip>(outputPath);
+        }
+
+        private static AudioClip TrimClip(string sourcePath, string outputPath, float maximumSeconds)
+        {
+            AudioClip source = AssetDatabase.LoadAssetAtPath<AudioClip>(sourcePath);
+            if (source == null) throw new FileNotFoundException("Collision source clip not found", sourcePath);
+            source.LoadAudioData();
+            float[] input = new float[source.samples * source.channels];
+            if (!source.GetData(input, 0)) throw new InvalidOperationException("Could not decode " + sourcePath);
+
+            float peak = 0f;
+            for (int i = 0; i < input.Length; i++) peak = Mathf.Max(peak, Mathf.Abs(input[i]));
+            float threshold = Mathf.Max(.0025f, peak * .025f);
+            int firstFrame = 0;
+            int lastFrame = source.samples - 1;
+            bool found = false;
+            for (int frame = 0; frame < source.samples && !found; frame++)
+                for (int channel = 0; channel < source.channels; channel++)
+                    if (Mathf.Abs(input[frame * source.channels + channel]) >= threshold) { firstFrame = frame; found = true; break; }
+            found = false;
+            for (int frame = source.samples - 1; frame >= firstFrame && !found; frame--)
+                for (int channel = 0; channel < source.channels; channel++)
+                    if (Mathf.Abs(input[frame * source.channels + channel]) >= threshold) { lastFrame = frame; found = true; break; }
+
+            int preRoll = Mathf.RoundToInt(source.frequency * .006f);
+            int postRoll = Mathf.RoundToInt(source.frequency * .018f);
+            firstFrame = Mathf.Max(0, firstFrame - preRoll);
+            int maxFrames = Mathf.Max(1, Mathf.RoundToInt(maximumSeconds * source.frequency));
+            int frameCount = Mathf.Min(maxFrames, Mathf.Min(source.samples - firstFrame, lastFrame - firstFrame + 1 + postRoll));
+            float[] output = new float[frameCount * source.channels];
+            Array.Copy(input, firstFrame * source.channels, output, 0, output.Length);
+
+            float outputPeak = 0f;
+            for (int i = 0; i < output.Length; i++) outputPeak = Mathf.Max(outputPeak, Mathf.Abs(output[i]));
+            float gain = outputPeak > .0001f ? Mathf.Min(4f, .9f / outputPeak) : 1f;
+            int fadeInFrames = Mathf.Min(frameCount / 4, Mathf.RoundToInt(source.frequency * .003f));
+            int fadeOutFrames = Mathf.Min(frameCount / 3, Mathf.RoundToInt(source.frequency * .035f));
+            for (int frame = 0; frame < frameCount; frame++)
+            {
+                float envelope = 1f;
+                if (fadeInFrames > 0 && frame < fadeInFrames) envelope *= frame / (float)fadeInFrames;
+                int remaining = frameCount - 1 - frame;
+                if (fadeOutFrames > 0 && remaining < fadeOutFrames) envelope *= remaining / (float)fadeOutFrames;
+                for (int channel = 0; channel < source.channels; channel++)
+                    output[frame * source.channels + channel] = Mathf.Clamp(output[frame * source.channels + channel] * gain * envelope, -1f, 1f);
+            }
+
+            WritePcmWave(outputPath, output, source.channels, source.frequency);
+            AssetDatabase.ImportAsset(outputPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+            AudioImporter importer = AssetImporter.GetAtPath(outputPath) as AudioImporter;
+            if (importer != null)
+            {
+                AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+                settings.loadType = AudioClipLoadType.DecompressOnLoad;
+                settings.compressionFormat = AudioCompressionFormat.PCM;
+                settings.preloadAudioData = true;
+                importer.defaultSampleSettings = settings;
+                importer.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<AudioClip>(outputPath);
+        }
+
+        private static AudioClip NormalizeShortCue(string sourcePath, string outputPath, float targetRms, float maximumSeconds)
+        {
+            AudioImporter sourceImporter = AssetImporter.GetAtPath(sourcePath) as AudioImporter;
+            if (sourceImporter == null) throw new FileNotFoundException("Short cue source importer not found", sourcePath);
+
+            AudioImporterSampleSettings original = sourceImporter.defaultSampleSettings;
+            bool originalBackground = sourceImporter.loadInBackground;
+            float[] input;
+            int sourceSamples;
+            int channels;
+            int frequency;
+            try
+            {
+                AudioImporterSampleSettings decoded = original;
+                decoded.loadType = AudioClipLoadType.DecompressOnLoad;
+                decoded.compressionFormat = AudioCompressionFormat.PCM;
+                decoded.preloadAudioData = true;
+                sourceImporter.defaultSampleSettings = decoded;
+                sourceImporter.loadInBackground = false;
+                sourceImporter.SaveAndReimport();
+
+                AudioClip source = AssetDatabase.LoadAssetAtPath<AudioClip>(sourcePath);
+                source.LoadAudioData();
+                sourceSamples = source.samples;
+                channels = source.channels;
+                frequency = source.frequency;
+                input = new float[sourceSamples * channels];
+                if (!source.GetData(input, 0)) throw new InvalidOperationException("Could not decode " + sourcePath);
+            }
+            finally
+            {
+                sourceImporter = AssetImporter.GetAtPath(sourcePath) as AudioImporter;
+                if (sourceImporter != null)
+                {
+                    sourceImporter.defaultSampleSettings = original;
+                    sourceImporter.loadInBackground = originalBackground;
+                    sourceImporter.SaveAndReimport();
+                }
+            }
+
+            float inputPeak = 0f;
+            for (int i = 0; i < input.Length; i++) inputPeak = Mathf.Max(inputPeak, Mathf.Abs(input[i]));
+            float threshold = Mathf.Max(.003f, inputPeak * .018f);
+            int firstFrame = 0;
+            int lastFrame = sourceSamples - 1;
+            bool found = false;
+            for (int frame = 0; frame < sourceSamples && !found; frame++)
+                for (int channel = 0; channel < channels; channel++)
+                    if (Mathf.Abs(input[frame * channels + channel]) >= threshold) { firstFrame = frame; found = true; break; }
+            found = false;
+            for (int frame = sourceSamples - 1; frame >= firstFrame && !found; frame--)
+                for (int channel = 0; channel < channels; channel++)
+                    if (Mathf.Abs(input[frame * channels + channel]) >= threshold) { lastFrame = frame; found = true; break; }
+
+            firstFrame = Mathf.Max(0, firstFrame - Mathf.RoundToInt(frequency * .008f));
+            lastFrame = Mathf.Min(sourceSamples - 1, lastFrame + Mathf.RoundToInt(frequency * .025f));
+            int maxFrames = Mathf.Max(1, Mathf.RoundToInt(maximumSeconds * frequency));
+            int frameCount = Mathf.Min(maxFrames, lastFrame - firstFrame + 1);
+            float[] output = new float[frameCount * channels];
+            Array.Copy(input, firstFrame * channels, output, 0, output.Length);
+
+            double squares = 0d;
+            float outputPeak = 0f;
+            foreach (float sample in output) { squares += sample * sample; outputPeak = Mathf.Max(outputPeak, Mathf.Abs(sample)); }
+            float inputRms = Mathf.Sqrt((float)(squares / Mathf.Max(1, output.Length)));
+            float gain = inputRms > .00001f ? targetRms / inputRms : 1f;
+            if (outputPeak > .00001f) gain = Mathf.Min(gain, .92f / outputPeak);
+            int fadeInFrames = Mathf.Min(frameCount / 4, Mathf.RoundToInt(frequency * .002f));
+            int fadeOutFrames = Mathf.Min(frameCount / 3, Mathf.RoundToInt(frequency * .018f));
+            for (int frame = 0; frame < frameCount; frame++)
+            {
+                float envelope = 1f;
+                if (fadeInFrames > 0 && frame < fadeInFrames) envelope *= frame / (float)fadeInFrames;
+                int remaining = frameCount - 1 - frame;
+                if (fadeOutFrames > 0 && remaining < fadeOutFrames) envelope *= remaining / (float)fadeOutFrames;
+                for (int channel = 0; channel < channels; channel++)
+                    output[frame * channels + channel] = Mathf.Clamp(output[frame * channels + channel] * gain * envelope, -1f, 1f);
+            }
+
+            WritePcmWave(outputPath, output, channels, frequency);
+            AssetDatabase.ImportAsset(outputPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+            AudioImporter outputImporter = AssetImporter.GetAtPath(outputPath) as AudioImporter;
+            if (outputImporter != null)
+            {
+                AudioImporterSampleSettings settings = outputImporter.defaultSampleSettings;
+                settings.loadType = AudioClipLoadType.DecompressOnLoad;
+                settings.compressionFormat = AudioCompressionFormat.PCM;
+                settings.preloadAudioData = true;
+                outputImporter.defaultSampleSettings = settings;
+                outputImporter.loadInBackground = false;
+                outputImporter.forceToMono = true;
+                outputImporter.SaveAndReimport();
+            }
+
+            AudioClip result = AssetDatabase.LoadAssetAtPath<AudioClip>(outputPath);
+            float[] verified = new float[result.samples * result.channels];
+            if (!result.GetData(verified, 0)) throw new InvalidOperationException("Could not verify " + outputPath);
+            double verifiedSquares = 0d;
+            float verifiedPeak = 0f;
+            foreach (float sample in verified) { verifiedSquares += sample * sample; verifiedPeak = Mathf.Max(verifiedPeak, Mathf.Abs(sample)); }
+            float verifiedRms = Mathf.Sqrt((float)(verifiedSquares / Mathf.Max(1, verified.Length)));
+            Debug.Log($"[AudioAudit] GO loudness: source peak={inputPeak:0.000}, trimmed RMS={inputRms:0.000}; output peak={verifiedPeak:0.000}, RMS={verifiedRms:0.000}, gain={gain:0.00}x");
+            return result;
+        }
+
+        private static void WritePcmWave(string assetPath, float[] samples, int channels, int rate)
+        {
+            string fullPath = Path.GetFullPath(assetPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+            using BinaryWriter writer = new(File.Create(fullPath));
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("RIFF")); writer.Write(36 + samples.Length * 2);
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt ")); writer.Write(16); writer.Write((short)1); writer.Write((short)channels);
+            writer.Write(rate); writer.Write(rate * channels * 2); writer.Write((short)(channels * 2)); writer.Write((short)16);
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("data")); writer.Write(samples.Length * 2);
+            foreach (float sample in samples) writer.Write((short)(Mathf.Clamp(sample, -1f, 1f) * short.MaxValue));
+        }
+
         private static void WriteWave(string assetPath, float seconds, Func<float, System.Random, float> sample)
         {
             const int rate = 22050; int count = Mathf.RoundToInt(seconds * rate); System.Random random = new(42);

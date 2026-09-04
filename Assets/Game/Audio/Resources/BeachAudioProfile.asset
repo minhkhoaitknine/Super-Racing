@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BeachAudioProfile
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.MapAudioProfile
   displayName: Beach
-  primaryAmbience: {fileID: 8300000, guid: 92f63abdf3e6493448514bd5ff02b1af, type: 3}
-  secondaryAmbience: {fileID: 8300000, guid: be07c04a46dc3474c809576e363c19a5, type: 3}
-  primaryVolume: 0.58
-  secondaryVolume: 0.08
+  primaryAmbience: {fileID: 8300000, guid: 461b7fa127f0d414798d5a2e4cc12b77, type: 3}
+  secondaryAmbience: {fileID: 8300000, guid: de4011bad69f5b44bb81d720b226bf6e, type: 3}
+  primaryVolume: 1
+  secondaryVolume: 0.75

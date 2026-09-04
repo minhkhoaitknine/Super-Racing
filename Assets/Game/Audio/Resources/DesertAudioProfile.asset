@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DesertAudioProfile
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.MapAudioProfile
   displayName: Desert
-  primaryAmbience: {fileID: 8300000, guid: b259ca723b298aa4a83e991e3025976c, type: 3}
-  secondaryAmbience: {fileID: 8300000, guid: d6e4d0169d74492409df936a6e23c57f, type: 3}
-  primaryVolume: 0.28
-  secondaryVolume: 0.38
+  primaryAmbience: {fileID: 8300000, guid: c2979e7cb21186846ad1c49ba111077b, type: 3}
+  secondaryAmbience: {fileID: 8300000, guid: a8c6906f51fb86a41b9f89230815ef6c, type: 3}
+  primaryVolume: 1
+  secondaryVolume: 0.65

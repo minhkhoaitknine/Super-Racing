@@ -1,38 +1,47 @@
-event,chosen_source,chosen_original,candidate_b,candidate_c,license,status
-Vehicle.EngineStart,OpenGameArt Racing Car Engine Loops,loop_0.wav,loop_1.wav,loop_2.wav,CC0,CHOSEN
-Vehicle.EngineIdle,OpenGameArt Racing Car Engine Loops,loop_0.wav,loop_1.wav,loop_2.wav,CC0,CHOSEN
-Vehicle.EngineDrive,OpenGameArt Racing Car Engine Loops,loop_3.wav,loop_4.wav,loop_5.wav,CC0,CHOSEN
-Vehicle.AccelerationLoad,OpenGameArt Racing Car Engine Loops,loop_3.wav,loop_4.wav,loop_5.wav,CC0,CHOSEN
-Vehicle.TireRoll,Kenney Impact Sounds,footstep_concrete_002.ogg,footstep_concrete_001.ogg,footstep_concrete_004.ogg,CC0,CHOSEN
-Vehicle.TireSkid,Kenney Interface Sounds,scratch_002.ogg,scratch_001.ogg,scratch_004.ogg,CC0,CHOSEN
-Vehicle.CollisionLight,OpenGameArt Crash Collision by qubodup,qubodup-crash.ogg,impactMetal_light_002.ogg,impactGeneric_light_002.ogg,CC0,REALISTIC_CHOSEN;SHA256=E468EE00A6C94313CF4EFCF347B5F4E51E98E629608BE277A8F58FEB5E2267FF
-Vehicle.CollisionHeavy,Pixabay Car Crash Sound Effect by DRAGON-STUDIO,dragon-studio-car-crash-sound-effect-376874.mp3,impactMetal_heavy_002.ogg,impactPunch_heavy_002.ogg,Pixabay Content License,REALISTIC_CHOSEN;SHA256=1DC7035E820C102BF315D92589A424EEC4FF629A9976BD336262497D52D0ABF1
-Vehicle.Respawn,Kenney Interface Sounds,maximize_004.ogg,maximize_003.ogg,open_004.ogg,CC0,CHOSEN
-Vehicle.Landing,Kenney Impact Sounds,impactSoft_heavy_002.ogg,impactSoft_heavy_001.ogg,impactGeneric_light_004.ogg,CC0,CHOSEN
-Race.CountdownTick,Kenney Interface Sounds,tick_001.ogg,tick_002.ogg,tick_004.ogg,CC0,CHOSEN
-Race.StartedGo,Kenney Interface Sounds,confirmation_004.ogg,confirmation_003.ogg,maximize_009.ogg,CC0,CHOSEN
-Race.CheckpointPassed,Kenney Interface Sounds,select_003.ogg,select_005.ogg,pluck_001.ogg,CC0,CHOSEN
-Race.LapChanged,Kenney Interface Sounds,confirmation_002.ogg,confirmation_001.ogg,confirmation_003.ogg,CC0,CHOSEN
-Race.Finished,Kenney Interface Sounds,bong_001.ogg,confirmation_002.ogg,maximize_007.ogg,CC0,CHOSEN
-Race.NewRecord,Kenney Interface Sounds,confirmation_001.ogg,confirmation_004.ogg,maximize_009.ogg,CC0,CHOSEN
-Race.InvalidCheckpoint,Kenney Interface Sounds,error_003.ogg,error_002.ogg,error_005.ogg,CC0,CHOSEN
-Race.Restart,Kenney Interface Sounds,switch_006.ogg,switch_004.ogg,open_001.ogg,CC0,CHOSEN
-UI.Hover,Kenney Interface Sounds,scroll_001.ogg,scroll_002.ogg,select_001.ogg,CC0,CHOSEN
-UI.Click,Kenney Interface Sounds,click_003.ogg,click_002.ogg,click_005.ogg,CC0,CHOSEN
-UI.Confirm,Kenney Interface Sounds,confirmation_003.ogg,confirmation_001.ogg,confirmation_004.ogg,CC0,CHOSEN
-UI.Back,Kenney Interface Sounds,back_002.ogg,back_001.ogg,back_004.ogg,CC0,CHOSEN
-UI.SelectionChanged,Kenney Interface Sounds,select_006.ogg,select_004.ogg,select_008.ogg,CC0,CHOSEN
-UI.Error,Kenney Interface Sounds,error_002.ogg,error_001.ogg,error_004.ogg,CC0,CHOSEN
-UI.StartRace,Kenney Interface Sounds,open_004.ogg,open_002.ogg,maximize_004.ogg,CC0,CHOSEN
-UI.ResultsOpen,Kenney Interface Sounds,maximize_007.ogg,maximize_006.ogg,open_003.ogg,CC0,CHOSEN
-Ambience.BeachWaves,OpenGameArt Beach Ocean Waves,wave_01_cc0-18363__jasinski__alkaibeach.flac,wave_02.flac,wave_03.flac,CC0,CHOSEN
-Ambience.BeachWind,OpenGameArt Wind by IgnasD,Wind.ogg,Wind2.ogg,Wind3.ogg,CC0,CHOSEN
-Ambience.DesertWind,OpenGameArt Wind by IgnasD,Wind2.ogg,Wind.ogg,Wind3.ogg,CC0,CHOSEN
-Ambience.DesertSandGust,OpenGameArt Short Wind Sound by remaxim,short wind sound.wav,Wind3.ogg,Wind2.ogg,CC0,CHOSEN
-Music.Race,OpenGameArt Hot Roadway by MintoDog,hot_roadway_bpm160.ogg,hot_roadway_climax_bpm175.ogg,Racing Game Menu,CC0,CHOSEN
-Music.Menu,OpenGameArt Racing Game Menu by MintoDog,racing_game_menu_bpm165.ogg,Hot Roadway,Racing Game Result,CC0,CHOSEN
-Music.Result,OpenGameArt Racing Game Result by MintoDog,racing_game_result_best_bpm140.ogg,result_good_bpm110.ogg,result_bad_bpm95.ogg,CC0,CHOSEN
-Vehicle.EngineLow,OpenGameArt Racing Car Engine Loops,loop_1.wav,loop_0.wav,loop_2.wav,CC0,CHOSEN
-Vehicle.EngineMid,OpenGameArt Racing Car Engine Loops,loop_2.wav,loop_3.wav,loop_1.wav,CC0,CHOSEN
-Vehicle.EngineHigh,OpenGameArt Racing Car Engine Loops,loop_4.wav,loop_5.wav,loop_3.wav,CC0,CHOSEN
-Vehicle.EngineOffLoad,OpenGameArt Racing Car Engine Loops,loop_5.wav,loop_4.wav,loop_3.wav,CC0,CHOSEN
+event,candidate_a,candidate_b,candidate_c,chosen_file,author,url,license,sha256,status
+Vehicle.EngineStart,loop_0.wav,loop_1.wav,loop_2.wav,EVT_Vehicle_EngineStart_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,69D74B106509037CE547429E4C3F9AE906B0FFFE88D0BB8B3B5A8B0CFC239048,INTEGRATED
+Vehicle.EngineIdle,loop_0.wav,loop_1.wav,loop_2.wav,LOOP_Vehicle_EngineIdle_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,69D74B106509037CE547429E4C3F9AE906B0FFFE88D0BB8B3B5A8B0CFC239048,INTEGRATED
+Vehicle.EngineDrive,loop_3.wav,loop_4.wav,loop_5.wav,LOOP_Vehicle_EngineDrive_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,015AEE5CD2DEC394B28FF0994360C780CFBE29C3CDDFB16DBA8DF81B4A68EEA2,INTEGRATED
+Vehicle.AccelerationLoad,loop_3.wav,loop_4.wav,loop_5.wav,LOOP_Vehicle_AccelerationLoad_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,015AEE5CD2DEC394B28FF0994360C780CFBE29C3CDDFB16DBA8DF81B4A68EEA2,INTEGRATED
+Vehicle.CollisionLight,qubodup-crash.ogg,impactMetal_light_002.ogg,impactGeneric_light_002.ogg,EVT_Vehicle_CollisionLight_REALISTIC_CHOSEN.ogg,qubodup,https://opengameart.org/content/crash-collision,CC0,E468EE00A6C94313CF4EFCF347B5F4E51E98E629608BE277A8F58FEB5E2267FF,INTEGRATED
+Vehicle.CollisionHeavy,dragon-studio-car-crash-sound-effect-376874.mp3,impactMetal_heavy_002.ogg,impactPunch_heavy_002.ogg,EVT_Vehicle_CollisionHeavy_REALISTIC_CHOSEN.mp3,DRAGON-STUDIO,https://pixabay.com/sound-effects/film-special-effects-car-crash-sound-effect-376874/,Pixabay Content License,1DC7035E820C102BF315D92589A424EEC4FF629A9976BD336262497D52D0ABF1,INTEGRATED
+Vehicle.Respawn,maximize_004.ogg,maximize_003.ogg,open_004.ogg,EVT_Vehicle_Respawn_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,59C7A24B204BE24D2A44A86D1E4D18C2CF51FA0446967A14B2590E8FB3AFAF34,INTEGRATED
+Vehicle.Landing,impactSoft_heavy_002.ogg,impactSoft_heavy_001.ogg,impactGeneric_light_004.ogg,EVT_Vehicle_Landing_CHOSEN.ogg,Kenney,https://kenney.nl/assets/impact-sounds,CC0,D130AE541951243D3F6ED963D0057450A445FFE117FBF9A084D34EB1635CB563,INTEGRATED
+Race.CountdownTick,tick_001.ogg,tick_002.ogg,tick_004.ogg,EVT_Race_CountdownTick_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,9D057B918024C787BBE6C00BEED13A7EF72A3FA0C259ADD3CEF36582792F4230,INTEGRATED
+Race.StartedGo,Go.wav,go_go.wav,confirmation_004.ogg,EVT_Race_StartedGo_VOICE_NORMALIZED_CHOSEN.wav,owly-bee,https://freesound.org/people/owly-bee/sounds/415341/,CC-BY-4.0,322D012C88FB5F2538898B04CED203680F44424730F7DE4E8DB0B8C4FA1EC807,INTEGRATED
+Race.CheckpointPassed,select_003.ogg,select_005.ogg,pluck_001.ogg,EVT_Race_CheckpointPassed_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,9A612FD2F513D52A296906B41071C990F75DEFE56BE3BEE60D2D4E2423B51B8B,INTEGRATED
+Race.LapChanged,confirmation_002.ogg,confirmation_001.ogg,confirmation_003.ogg,EVT_Race_LapChanged_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,33B17A9A9A2397C62B285C52C33A907FDFFB476909C99E42DDE603F6A7A8B12C,INTEGRATED
+Race.Finished,bong_001.ogg,confirmation_002.ogg,maximize_007.ogg,EVT_Race_Finished_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,D21D0F0B782445DB579D11E2506B24CD1AC9D664EE33AEAF807761AA7B6FD710,INTEGRATED
+Race.NewRecord,confirmation_001.ogg,confirmation_004.ogg,maximize_009.ogg,EVT_Race_NewRecord_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,063564703B6094D70718A3E787A55CC9141611E4ECD6B6637F8828F79B4A8C3A,INTEGRATED
+Race.InvalidCheckpoint,error_003.ogg,error_002.ogg,error_005.ogg,EVT_Race_InvalidCheckpoint_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,885B28175C7B511118BCFFAB95675B48BBAC9005CF6514656EBDAD979276B3AB,INTEGRATED
+Race.Restart,switch_006.ogg,switch_004.ogg,open_001.ogg,EVT_Race_Restart_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,2676DDC4E341EE557B4D1DC8767EF8655540D66FB3DED6A1614080DBC4DC6F18,INTEGRATED
+UI.Hover,scroll_001.ogg,scroll_002.ogg,select_001.ogg,EVT_UI_Hover_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,320C6AAFB2C7A503EAE508DC443B72D7F7C0A317BFD16813157ED400CD04CF16,IMPORTED_DISABLED
+UI.Click,click_003.ogg,click_002.ogg,click_005.ogg,EVT_UI_Click_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,2FA929138BC3A0F432696588F66EAC94B8F6D463905EC8808C6461CE4B054292,INTEGRATED
+UI.Confirm,confirmation_003.ogg,confirmation_001.ogg,confirmation_004.ogg,EVT_UI_Confirm_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,3091BF0BE0497F825769EE0733CA7BDC3BCD59BD6C6E8F2BA8F93D580FF38022,INTEGRATED
+UI.Back,back_002.ogg,back_001.ogg,back_004.ogg,EVT_UI_Back_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,61581C58194E3F19F531072EDABBC344204C7E0A2887B8EDEDCE4357BCF09195,INTEGRATED
+UI.SelectionChanged,select_006.ogg,select_004.ogg,select_008.ogg,EVT_UI_SelectionChanged_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,B44550FA8D3276C072CE7C3C1315D949F7A28A95BC22B3618AD4EEA62EAC8ABE,INTEGRATED
+UI.Error,error_002.ogg,error_001.ogg,error_004.ogg,EVT_UI_Error_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,76810EC365F41078FD0507101DA5BB7B8730FE011DDE43908329FDABD8575E79,INTEGRATED
+UI.StartRace,open_004.ogg,open_002.ogg,maximize_004.ogg,EVT_UI_StartRace_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,4E02B8287BC4D9E7BF7A889CB9E48613C8EB22A310DFB0BF29C2BFD0A1E4BEA5,INTEGRATED
+UI.ResultsOpen,maximize_007.ogg,maximize_006.ogg,open_003.ogg,EVT_UI_ResultsOpen_CHOSEN.ogg,Kenney,https://kenney.nl/assets/interface-sounds,CC0,3400931F3F3A1E9CF253EFEF9069BCDF053EDD2234E4EE9BF88977C389943484,INTEGRATED
+Ambience.BeachWaves,wave_01_cc0-18363__jasinski__alkaibeach.flac,wave_02.flac,wave_03.flac,LOOP_Ambience_BeachWaves_NORMALIZED_CHOSEN.wav,jasinski/qubodup,https://opengameart.org/content/beach-ocean-waves,CC0,19E7B6D15A2DDA7117E2CC593E1B4B1F301DFB61836E191421672C5046A2C443,INTEGRATED
+Ambience.BeachWind,Wind.ogg,Wind2.ogg,Wind3.ogg,LOOP_Ambience_BeachWind_NORMALIZED_CHOSEN.wav,IgnasD,https://opengameart.org/content/wind,CC0,436F0077D28AD88CFF7303F455686A2F98F40AB60A40C3175F392CCE9C0FF3D8,INTEGRATED
+Ambience.DesertWind,Wind2.ogg,Wind.ogg,Wind3.ogg,LOOP_Ambience_DesertWind_NORMALIZED_CHOSEN.wav,IgnasD,https://opengameart.org/content/wind,CC0,B8FB7C4AF7F93662436322D82C926E862709FB55FE4509BC27B4D954963E10B3,INTEGRATED
+Ambience.DesertSandGust,short wind sound.wav,Wind3.ogg,Wind2.ogg,LOOP_Ambience_DesertSandGust_NORMALIZED_CHOSEN.wav,remaxim,https://opengameart.org/content/short-wind-sound,CC0,87B9B232F7D985075D5308CEA2C92821C1462B888CA76A64145F161A9439584B,INTEGRATED
+Music.Race,hot_roadway_bpm160.ogg,hot_roadway_climax_bpm175.ogg,Racing Game Menu,LOOP_Music_Race_CHOSEN.ogg,MintoDog,https://opengameart.org/content/hot-roadway,CC0,66D065B2C48D41F7BF86635A81296B99E5963075DCCF4906C83C573F53971A7C,INTEGRATED
+Music.Menu,racing_game_menu_bpm165.ogg,Hot Roadway,Racing Game Result,LOOP_Music_Menu_CHOSEN.ogg,MintoDog,https://opengameart.org/content/racing-game-menu,CC0,0FC09EE09C3F9427ED409EDA778C012CDA6CEFD367BD1342C016EAC1126B6C59,INTEGRATED
+Music.Result,racing_game_result_best_bpm140.ogg,result_good_bpm110.ogg,result_bad_bpm95.ogg,LOOP_Music_Result_CHOSEN.ogg,MintoDog,https://opengameart.org/content/racing-game-result,CC0,023EF44392B378153129262C0478278CFF8B569599ADDAD845465FFE19E22C62,INTEGRATED
+Vehicle.EngineLow,loop_1.wav,loop_0.wav,loop_2.wav,LOOP_Vehicle_EngineLow_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,96D971D5AB21681E4B5AE22BFDC48A598F3CB008C871F6445754259525B6442F,INTEGRATED
+Vehicle.EngineMid,loop_2.wav,loop_3.wav,loop_1.wav,LOOP_Vehicle_EngineMid_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,D21AD8A0C588B485ABD0EDA5724950483366A83CC3AF4A64AFB0CF4BD0BE0F9A,INTEGRATED
+Vehicle.EngineHigh,loop_4.wav,loop_5.wav,loop_3.wav,LOOP_Vehicle_EngineHigh_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,A526C06F9CD1DB5B2D69695864316F48BEC9089AA2AC3817EBF400FCD1C18A27,INTEGRATED
+Vehicle.EngineOffLoad,loop_5.wav,loop_4.wav,loop_3.wav,LOOP_Vehicle_EngineOffLoad_CHOSEN.wav,domasx2,https://opengameart.org/content/racing-car-engine-sound-loops,CC0,AEA1E875B464C50E7C431E779759D3E070396DD29B5D1221911FA6F7D3F422F9,INTEGRATED
+Vehicle.GearShift,clank1.wav,lightclunk1.wav,lightclunk2.wav,EVT_Vehicle_GearShift_01_REAL_CHOSEN.wav,BMacZero,https://opengameart.org/content/mechanical-sounds,CC0,899A46A8423FA0CA349B3C70A07A422D1EAA3A58695CE6FACFBAE074DD70226F,INTEGRATED
+Vehicle.GearShiftVariant,lightclunk1.wav,clank1.wav,mechanical1.wav,EVT_Vehicle_GearShift_02_REAL_CHOSEN.wav,BMacZero,https://opengameart.org/content/mechanical-sounds,CC0,D5A2AA8764C02924F6ED6FBAAD0C650AB2D57EC57A626CEE9E6645F941DBC8FA,INTEGRATED
+Vehicle.AsphaltRoll,car1.wav,footstep_concrete_002.ogg,car2.wav,LOOP_Surface_AsphaltRoll_REAL_CHOSEN.wav,Yaroslav_Novikov,https://opengameart.org/content/car-1,CC0,85D1CA20F95244C558B57E2BE465C8EFCF2F7425BB54049E9EDDCBEC7F1739AF,INTEGRATED
+Vehicle.AsphaltSkid,tires_squal_loop.wav,scratch_001.ogg,scratch_004.ogg,LOOP_Surface_AsphaltSkid_REAL_CHOSEN.wav,audible-edge/Tom Haigh,https://opengameart.org/content/car-tire-squeal-skid-loop,CC-BY-3.0,2B341CFA20987388FCCA9FD91D8BE5056CB6C6C54ABC2A97846C2BE5E5A4F604,INTEGRATED
+Vehicle.SandRoll,sand_footsteps.mp3,Fantozzi-SandL2.ogg,Fantozzi-SandR2.ogg,LOOP_Surface_SandRoll_REAL_CHOSEN.mp3,Peludo,https://opengameart.org/content/water-splash-and-sand-footsteps,CC0,F61ED2653DF85F23485A4A4ECC57DFDD6F4BF77301FA7CC67FDD1C993A9979D6,INTEGRATED
+Vehicle.SandSkid,Fantozzi-SandL1.ogg,Fantozzi-SandL2.ogg,Fantozzi-SandR1.ogg,LOOP_Surface_SandSkid_REAL_CHOSEN.ogg,Fantozzi/qubodup,https://lpc.opengameart.org/content/fantozzis-footsteps-grasssand-stone,CC0,FE6EC00CBE8790BE0F37540CB8DB8D245CA062337B121003685B6A96700CD0AE,INTEGRATED
+Vehicle.GrassRoll,moving_leaves_stereo.ogg,full_steps_stereo.ogg,Fantozzi-SandL3.ogg,LOOP_Surface_GrassRoll_REAL_CHOSEN.ogg,Augmentality/HaelDB,https://opengameart.org/content/random-sounds-samples,CC0/OGA-BY-3.0,678C0DA00EF1092F4BE7C2D8C7B22C1C91C5FC8CA1F3F9570CE59DE995C0138C,INTEGRATED
+Vehicle.GrassSkid,full_steps_stereo.ogg,moving_leaves_stereo.ogg,Fantozzi-SandR3.ogg,LOOP_Surface_GrassSkid_REAL_CHOSEN.ogg,Augmentality/HaelDB,https://opengameart.org/content/random-sounds-samples,CC0/OGA-BY-3.0,3641037E278E4D5F255DB668501863D872D6257B5976D69BE75A88D89FBD10B0,INTEGRATED
+Vehicle.CollisionMedium,lightclunk2.wav,mechanical1.wav,impactMetal_heavy_002.ogg,EVT_Vehicle_CollisionMedium_01_REAL_CHOSEN.wav,BMacZero,https://opengameart.org/content/mechanical-sounds,CC0,987BE837A5941DED9A81572C319B9BF8F57D9F89741A5781FC7104ADC87D60F5,INTEGRATED
+Vehicle.CollisionMediumVariant,mechanical1.wav,lightclunk2.wav,impactGeneric_light_002.ogg,EVT_Vehicle_CollisionMedium_02_REAL_CHOSEN.wav,BMacZero,https://opengameart.org/content/mechanical-sounds,CC0,DE520AD93FA9F4DF357B31A8FDEF7778D8DF994574C861F9337D5241FEE5DB33,INTEGRATED
+Vehicle.Backfire,BACKFIRE.ogg,backfiring vehicle right-left.wav,Gun Shot.wav,EVT_Vehicle_Backfire_REAL_CHOSEN.mp3,CeebFrack,https://freesound.org/people/CeebFrack/sounds/105351/,CC0,403635259FCB22D32BCAB5061668D643D5B74E5C5FC2B99FC1DE21EA3EBC2DE8,INTEGRATED

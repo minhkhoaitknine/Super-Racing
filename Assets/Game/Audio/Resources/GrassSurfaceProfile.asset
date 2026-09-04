@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: GrassSurfaceProfile
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.SurfaceAudioProfile
   surface: 2
-  tireRoll: {fileID: 8300000, guid: 996c04ac948ace9429e01823c7efdea8, type: 3}
-  tireSkid: {fileID: 8300000, guid: 42b5b773dcf3b434989a1e4278c634c2, type: 3}
-  rollVolume: 0.4
-  skidVolume: 0.5
-  skidThreshold: 0.28
-  pitchMultiplier: 0.9
+  tireRoll: {fileID: 8300000, guid: da2c7a37fab86014683a9f6d6f336fff, type: 3}
+  tireSkid: {fileID: 8300000, guid: ca206d01e9e91ec42b3950803e564f0b, type: 3}
+  tireRollVariants: []
+  tireSkidVariants: []
+  rollVolume: 0.36
+  skidVolume: 1
+  skidThreshold: 0.34
+  pitchMultiplier: 0.88

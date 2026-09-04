@@ -10,6 +10,8 @@ namespace SuperRacing.Audio
         public AudioClip engineStart;
         public AudioClip gearShift;
         public AudioClip backfire;
+        public AudioClip[] gearShiftVariants;
+        public AudioClip[] backfireVariants;
         [Header("RPM loops")]
         public AudioClip idle;
         public AudioClip lowRpm;
@@ -25,6 +27,8 @@ namespace SuperRacing.Audio
         public float shiftDuration = 0.16f;
         [Range(0f, 1f)] public float engineVolume = 0.65f;
         [Range(0f, 1f)] public float loadVolume = 0.28f;
+        [Range(0f, 1f)] public float backfireThrottleDrop = 0.62f;
+        [Range(0f, 1f)] public float backfireMinimumRpm = 0.7f;
         public AnimationCurve rpmFromSpeed = AnimationCurve.Linear(0f, 0.1f, 1f, 1f);
 
         public int GearForSpeed(float speedKmh)

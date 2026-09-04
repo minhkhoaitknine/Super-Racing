@@ -8,6 +8,8 @@ namespace SuperRacing.Audio
         public SurfaceType surface = SurfaceType.Asphalt;
         public AudioClip tireRoll;
         public AudioClip tireSkid;
+        public AudioClip[] tireRollVariants;
+        public AudioClip[] tireSkidVariants;
         [Range(0f, 1f)] public float rollVolume = 0.35f;
         [Range(0f, 1f)] public float skidVolume = 0.7f;
         public float skidThreshold = 0.32f;

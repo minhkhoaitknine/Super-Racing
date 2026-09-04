@@ -53,18 +53,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: SuperRacing.Audio::SuperRacing.Audio.GameAudioManager
   catalog: {fileID: 11400000, guid: b6527a00ae500d74fb351c44decef162, type: 2}
   mixer: {fileID: 24100000, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  musicGroup: {fileID: -19063273633017446, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  sfxGroup: {fileID: -5903891554740591033, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  ambienceGroup: {fileID: 4391676977786058591, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  uiGroup: {fileID: -8209930211731828391, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  raceGroup: {fileID: -3691618933138478779, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  engineGroup: {fileID: 6328616465403433622, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  tiresGroup: {fileID: -7096316560508112374, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  collisionGroup: {fileID: -4553315940846079588, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  musicGroup: {fileID: -3650540971787002796, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  sfxGroup: {fileID: -6498575085641508754, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  ambienceGroup: {fileID: 2283807089603906359, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  uiGroup: {fileID: -5950359730799584609, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  raceGroup: {fileID: 4925398105187162610, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  engineGroup: {fileID: -6125996017415732596, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  tiresGroup: {fileID: -8904733227442456823, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  collisionGroup: {fileID: 2141822334016693409, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   defaultSnapshot: {fileID: 24500006, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
-  countdownSnapshot: {fileID: 0}
-  pausedSnapshot: {fileID: 0}
-  finishSnapshot: {fileID: 0}
+  countdownSnapshot: {fileID: 5253552781133470999, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  pausedSnapshot: {fileID: 9087523539043995380, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  finishSnapshot: {fileID: 1794454790583506556, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   sfxSource: {fileID: 7026392779999390387}
   raceSource: {fileID: 5420270490165951080}
   uiSource: {fileID: 8589186619721497054}
@@ -80,7 +80,7 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: -5903891554740591033, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: -6498575085641508754, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -177,7 +177,7 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: -3691618933138478779, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: 4925398105187162610, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -274,7 +274,7 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: -8209930211731828391, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: -5950359730799584609, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -371,11 +371,11 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: -19063273633017446, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: -3650540971787002796, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.7
+  m_Volume: 1
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -468,7 +468,7 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 4391676977786058591, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: 2283807089603906359, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -565,7 +565,7 @@ AudioSource:
   m_GameObject: {fileID: 7684331106673898460}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 4391676977786058591, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  OutputAudioMixerGroup: {fileID: 2283807089603906359, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -665,6 +665,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c76b05b626eccd44b8113942d7668bd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: SuperRacing.Audio::SuperRacing.Audio.RaceAudioBinder
-  raceManager: {fileID: 0}
-  lapTracker: {fileID: 0}
-  audioManager: {fileID: 0}

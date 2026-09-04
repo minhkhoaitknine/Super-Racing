@@ -12,21 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38c982381c359c48a98e90bbfa5376d, type: 3}
   m_Name: AudioCatalog
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.AudioCatalog
+  mixer: {fileID: 24100000, guid: 338c02bbaacb5634197b1b08b67fefee, type: 2}
+  audioSettingsPrefab: {fileID: 7133667908863879269, guid: 1abe984af613fae419dbd75fc86f42cb, type: 3}
   engineStart: {fileID: 8300000, guid: 82eeb647665b7f24b8f5f76b8c4dceb2, type: 3}
   engineIdle: {fileID: 8300000, guid: b6a81d9e50ba62a42af4eca5e4ed1c84, type: 3}
   engineDrive: {fileID: 8300000, guid: 89d30b563d6c3d14e838a827b9192300, type: 3}
   accelerationLoad: {fileID: 8300000, guid: fb10381f1751b1f44b91cda4d6012cdc, type: 3}
-  tireRoll: {fileID: 8300000, guid: 996c04ac948ace9429e01823c7efdea8, type: 3}
-  tireSkid: {fileID: 8300000, guid: 42b5b773dcf3b434989a1e4278c634c2, type: 3}
-  collisionLight: {fileID: 8300000, guid: 4d57af78235d4f8286c8c8b347e490a1, type: 3}
-  collisionMedium: {fileID: 8300000, guid: e9107fe92afa4c88a1959f785eac735e, type: 3}
-  collisionHeavy: {fileID: 8300000, guid: e9107fe92afa4c88a1959f785eac735e, type: 3}
-  gearShift: {fileID: 8300000, guid: 0d1f55b5a77f9a54ab47fe7dd234690d, type: 3}
+  tireRoll: {fileID: 8300000, guid: 8a399dcf28377ed4a98286ad4d9d9513, type: 3}
+  tireSkid: {fileID: 8300000, guid: ebc0ddc7559a0ba4e8e7ee1f5ccc630a, type: 3}
+  collisionLight: {fileID: 8300000, guid: 04763f9ca5b0780418a8c7c575d29974, type: 3}
+  collisionMedium: {fileID: 8300000, guid: fa47a47f82f50a9489fa86fce9d01049, type: 3}
+  collisionHeavy: {fileID: 8300000, guid: c60eaf4636d6b49429aa35c6e12486f4, type: 3}
+  collisionLightVariants:
+  - {fileID: 8300000, guid: 04763f9ca5b0780418a8c7c575d29974, type: 3}
+  collisionMediumVariants:
+  - {fileID: 8300000, guid: fa47a47f82f50a9489fa86fce9d01049, type: 3}
+  collisionHeavyVariants:
+  - {fileID: 8300000, guid: c60eaf4636d6b49429aa35c6e12486f4, type: 3}
+  gearShift: {fileID: 8300000, guid: f8d5ba2b6832cfc41a7c8a612c93df2e, type: 3}
   engineOffLoad: {fileID: 8300000, guid: 3631ca41d35050e4facd38e45c445559, type: 3}
   respawn: {fileID: 8300000, guid: edeed098781ef3644a45e0e56e71cbf7, type: 3}
   landing: {fileID: 8300000, guid: de06a3fc5fabbe3469d73fd41e34e4e0, type: 3}
   countdownTick: {fileID: 8300000, guid: a13373924ed0d524a869ce0a8e0be7a2, type: 3}
-  startedGo: {fileID: 8300000, guid: a2db058317550bd41b6c8d3a40c3c9a3, type: 3}
+  startedGo: {fileID: 8300000, guid: 70ddb68596a72874c97ed8b73f691c2d, type: 3}
   checkpointPassed: {fileID: 8300000, guid: 8e7b1de09fdf1bf4786043fefe07b491, type: 3}
   lapChanged: {fileID: 8300000, guid: f35577fa3983461418705a246977f9a8, type: 3}
   finished: {fileID: 8300000, guid: fee039c2c2a587248902c4887a9e23b5, type: 3}
@@ -41,10 +49,10 @@ MonoBehaviour:
   uiError: {fileID: 8300000, guid: 0256316a4f909904581c612537e7699e, type: 3}
   uiStartRace: {fileID: 8300000, guid: 701786d9e9bb28b43824cbd27655426b, type: 3}
   uiResultsOpen: {fileID: 8300000, guid: 69a568a05329d634696a576acd84e9c7, type: 3}
-  beachWaves: {fileID: 8300000, guid: 92f63abdf3e6493448514bd5ff02b1af, type: 3}
-  beachWind: {fileID: 8300000, guid: be07c04a46dc3474c809576e363c19a5, type: 3}
-  desertWind: {fileID: 8300000, guid: b259ca723b298aa4a83e991e3025976c, type: 3}
-  desertSandGust: {fileID: 8300000, guid: d6e4d0169d74492409df936a6e23c57f, type: 3}
+  beachWaves: {fileID: 8300000, guid: 461b7fa127f0d414798d5a2e4cc12b77, type: 3}
+  beachWind: {fileID: 8300000, guid: de4011bad69f5b44bb81d720b226bf6e, type: 3}
+  desertWind: {fileID: 8300000, guid: c2979e7cb21186846ad1c49ba111077b, type: 3}
+  desertSandGust: {fileID: 8300000, guid: a8c6906f51fb86a41b9f89230815ef6c, type: 3}
   raceMusic: {fileID: 8300000, guid: dd63184a392cb6643bc816d6393852e4, type: 3}
   menuMusic: {fileID: 8300000, guid: f39ceaef577c5d347a91b860b7680240, type: 3}
   resultMusic: {fileID: 8300000, guid: 300aa566c2a7e884b9e204f52140aed3, type: 3}
