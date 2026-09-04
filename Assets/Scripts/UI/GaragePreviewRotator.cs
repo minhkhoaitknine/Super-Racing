@@ -11,10 +11,14 @@ namespace SuperRacing.UI
         [SerializeField, Min(0.001f)] private float dragSmoothTime = 0.035f;
         [SerializeField, Min(0.001f)] private float autoSmoothTime = 0.08f;
         [SerializeField, Min(0f)] private float autoRotationSpeed = 12f;
+        [SerializeField, Min(0f)] private float inertiaDamping = 7f;
+        [SerializeField, Min(0f)] private float autoResumeDelay = 0.8f;
 
         private float targetYaw;
         private float currentYaw;
         private float yawVelocity;
+        private float dragVelocity;
+        private float lastInteractionTime = float.NegativeInfinity;
         private bool isDragging;
 
         public void SetTarget(Transform previewTarget)
@@ -37,7 +41,17 @@ namespace SuperRacing.UI
 
             if (!isDragging)
             {
-                targetYaw += autoRotationSpeed * Time.unscaledDeltaTime;
+                float timeSinceInteraction = Time.unscaledTime - lastInteractionTime;
+                if (timeSinceInteraction < autoResumeDelay && Mathf.Abs(dragVelocity) > 0.01f)
+                {
+                    targetYaw += dragVelocity * Time.unscaledDeltaTime;
+                    dragVelocity *= Mathf.Exp(-inertiaDamping * Time.unscaledDeltaTime);
+                }
+                else if (timeSinceInteraction >= autoResumeDelay)
+                {
+                    dragVelocity = 0f;
+                    targetYaw += autoRotationSpeed * Time.unscaledDeltaTime;
+                }
             }
 
             float smoothTime = isDragging ? dragSmoothTime : autoSmoothTime;
@@ -60,6 +74,8 @@ namespace SuperRacing.UI
                 targetYaw = currentYaw;
                 yawVelocity = 0f;
             }
+            dragVelocity = 0f;
+            lastInteractionTime = Time.unscaledTime;
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -69,12 +85,20 @@ namespace SuperRacing.UI
                 return;
             }
 
-            targetYaw -= eventData.delta.x * dragSensitivity;
+            float deltaYaw = -eventData.delta.x * dragSensitivity;
+            targetYaw += deltaYaw;
+
+            float deltaTime = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
+            float instantaneousVelocity = deltaYaw / deltaTime;
+            float velocityBlend = 1f - Mathf.Exp(-20f * deltaTime);
+            dragVelocity = Mathf.Lerp(dragVelocity, instantaneousVelocity, velocityBlend);
+            lastInteractionTime = Time.unscaledTime;
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
             isDragging = false;
+            lastInteractionTime = Time.unscaledTime;
         }
 
         private void ResetRotationState()
@@ -82,6 +106,8 @@ namespace SuperRacing.UI
             currentYaw = target == null ? 0f : target.localEulerAngles.y;
             targetYaw = currentYaw;
             yawVelocity = 0f;
+            dragVelocity = 0f;
+            lastInteractionTime = float.NegativeInfinity;
         }
     }
 }
