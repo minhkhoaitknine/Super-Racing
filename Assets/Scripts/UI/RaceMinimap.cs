@@ -7,7 +7,7 @@ namespace SuperRacing.UI
     [RequireComponent(typeof(RawImage))]
     public sealed class RaceMinimap : MonoBehaviour
     {
-        private const int TextureSize = 256;
+        private const int TextureSize = 192;
         private Transform target;
         private Camera minimapCamera;
         private RenderTexture renderTexture;
@@ -23,6 +23,11 @@ namespace SuperRacing.UI
             minimapCamera.clearFlags = CameraClearFlags.SolidColor;
             minimapCamera.backgroundColor = new Color(0.01f, 0.025f, 0.04f, 1f);
             minimapCamera.depth = -20f;
+            minimapCamera.allowHDR = false;
+            minimapCamera.allowMSAA = false;
+            minimapCamera.useOcclusionCulling = false;
+            minimapCamera.nearClipPlane = 0.1f;
+            minimapCamera.farClipPlane = 180f;
             minimapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
             renderTexture = new RenderTexture(TextureSize, TextureSize, 16, RenderTextureFormat.ARGB32)

@@ -5,5 +5,7 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="SuperRacing.EditModeTests.csproj" />
   <Project Path="SuperRacing.PlayModeTests.csproj" />
+  <Project Path="SuperRacing.Audio.PlayModeTests.csproj" />
+  <Project Path="SuperRacing.Audio.EditModeTests.csproj" />
   <Project Path="SuperRacing.Audio.Editor.csproj" />
 </Solution>
