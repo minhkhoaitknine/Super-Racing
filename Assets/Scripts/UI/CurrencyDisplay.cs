@@ -61,7 +61,7 @@ namespace SuperRacing.UI
             rect.anchorMin = new Vector2(1f, 0.5f);
             rect.anchorMax = new Vector2(1f, 0.5f);
             rect.pivot = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = new Vector2(8f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 0f);
             rect.sizeDelta = new Vector2(34f, 34f);
 
             Image image = buttonObject.AddComponent<Image>();
