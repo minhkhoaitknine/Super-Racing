@@ -8,7 +8,7 @@ namespace SuperRacing.Audio
     public enum AudioCueId
     {
         CountdownTick, StartedGo, CheckpointPassed, LapChanged, Finished, NewRecord,
-        InvalidCheckpoint, Restart, Respawn, Landing, CollisionLight, CollisionHeavy,
+        InvalidCheckpoint, Restart, Respawn, Landing, CollisionLight, CollisionMedium, CollisionHeavy,
         UIHover, UIClick, UIConfirm, UIBack, UISelectionChanged, UIError, UIStartRace, UIResultsOpen
     }
     public enum MusicId { Menu, Race, Result }

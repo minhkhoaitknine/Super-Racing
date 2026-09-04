@@ -1,10 +1,15 @@
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace SuperRacing.Audio
 {
     [CreateAssetMenu(fileName = "AudioCatalog", menuName = "Super Racing/Audio Catalog")]
     public sealed class AudioCatalog : ScriptableObject
     {
+        [Header("Runtime")]
+        public AudioMixer mixer;
+        public GameObject audioSettingsPrefab;
+
         [Header("Vehicle")]
         public AudioClip engineStart;
         public AudioClip engineIdle;
@@ -15,6 +20,9 @@ namespace SuperRacing.Audio
         public AudioClip collisionLight;
         public AudioClip collisionMedium;
         public AudioClip collisionHeavy;
+        public AudioClip[] collisionLightVariants;
+        public AudioClip[] collisionMediumVariants;
+        public AudioClip[] collisionHeavyVariants;
         public AudioClip gearShift;
         public AudioClip engineOffLoad;
         public AudioClip respawn;
@@ -66,7 +74,8 @@ namespace SuperRacing.Audio
                 AudioCueId.Finished => finished, AudioCueId.NewRecord => newRecord,
                 AudioCueId.InvalidCheckpoint => invalidCheckpoint, AudioCueId.Restart => restart,
                 AudioCueId.Respawn => respawn, AudioCueId.Landing => landing,
-                AudioCueId.CollisionLight => collisionLight, AudioCueId.CollisionHeavy => collisionHeavy,
+                AudioCueId.CollisionLight => collisionLight, AudioCueId.CollisionMedium => collisionMedium,
+                AudioCueId.CollisionHeavy => collisionHeavy,
                 AudioCueId.UIHover => uiHover, AudioCueId.UIClick => uiClick,
                 AudioCueId.UIConfirm => uiConfirm, AudioCueId.UIBack => uiBack,
                 AudioCueId.UISelectionChanged => uiSelectionChanged, AudioCueId.UIError => uiError,

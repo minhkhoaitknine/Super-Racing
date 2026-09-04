@@ -1,0 +1,6 @@
+{
+  "name": "SuperRacing.Audio.PlayModeTests",
+  "rootNamespace": "SuperRacing.Audio.Tests",
+  "references": ["SuperRacing.Audio", "SuperRacing"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

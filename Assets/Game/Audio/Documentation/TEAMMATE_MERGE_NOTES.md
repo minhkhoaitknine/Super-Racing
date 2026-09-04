@@ -1,8 +1,8 @@
 # Audio merge notes
 
-Baseline: teammate work on `origin/main` at commit `7ed2bdf`.
+Current baseline: teammate work on `origin/main` at commit `bb18f1c` (includes the completed production race flow).
 
-## Existing teammate files changed for audio integration
+## Historical integration already present in the baseline
 
 ### `Assets/Game/Scripts/Vehicle/VehicleController.cs`
 
@@ -26,27 +26,36 @@ Baseline: teammate work on `origin/main` at commit `7ed2bdf`.
 
 - `AudioRuntimeInstaller` creates the global audio manager when a scene loads.
 - It adds one `VehicleAudioEmitter` to vehicles that expose `IVehicleController` or `IVehicleAudioTelemetrySource` and have a Rigidbody.
-- The teammate's `PrototypeVehicleController` in `Test_Race` is supported through the emitter's Rigidbody fallback without modifying that controller.
+- The selected production vehicle in `Race` is supported through controller telemetry or the emitter's Rigidbody fallback without modifying that controller.
 - Existing emitters are detected, so one vehicle cannot receive a duplicate emitter.
 - Vehicle names containing `Speedster` or `Control` select those profiles; all other names use `Balanced`.
 - Audio reads gameplay state but does not write to the vehicle controller or race state.
+
+The current audio completion pass does not edit any of those files. All new integration is implemented by runtime adapters under `Assets/Game/Scripts/Audio` and data/assets under `Assets/Game/Audio`.
 
 ## Verification status
 
 - Unity Editor imported the merged assets and compiled all project/audio assemblies without C# errors.
 - No Git merge conflicts remain.
-- Automated batch tests could not start on this machine because Unity Licensing Client IPC timed out. Run them from Unity Test Runner after the Editor license session is active.
-- Tire-roll was re-enabled for user testing. Its selected placeholder is still Kenney's `footstep_concrete_002.ogg`, so replace it with a true continuous tire recording if the repeated texture is unsuitable.
-- Gear-shift is temporarily muted because the generated profiles incorrectly reused `EVT_Race_Restart_CHOSEN`. Runtime also rejects that legacy mapping. Add a dedicated vehicle shift sample before re-enabling it.
+- Post-merge Unity batch verification passes 45/45 EditMode and 13/13 PlayMode tests. The final pass adds coverage for the settings prefab layout, snapshot reset, the teammate pause-menu integration, and absence of a duplicate audio pause system.
+- Asphalt, Sand, and Grass now use separate real recordings for roll/skid. The old scratch/concrete placeholders remain only as unused rollback assets.
+- Gear-shift uses two dedicated CC0 mechanical recordings and never reuses `EVT_Race_Restart_CHOSEN`.
 - Collision and landing one-shots were restored after isolation testing identified the tire placeholder as the harsh continuous sound. Ground-contact filtering, minimum impact speed, cooldown, and reduced collision gain remain enabled to prevent vibration spam.
-- Music now starts by scene context: menu music in `MainMenu`/`Garage`, race music in `Test_Vehicle`, `Test_Race`, `AudioSandbox`, and race-named scenes. Race events still restart/crossfade race music at the proper start signal.
-- Heavy collision playback is audition-trimmed to 50% with a short fade-out; the source asset remains intact for rollback/re-editing.
+- Music follows the production build flow: menu music in `MainMenu`, `Garage`, and `TrackSelection`; race music in `Race`; result music plus the Finish snapshot in `complete_race`.
+- Light, medium, and heavy collision use distinct variant sets. Runtime no longer stops the shared source halfway through a heavy cue.
 - AudioSandbox Beach/Desert/Race buttons now solo their category. Beach emphasizes waves, Desert emphasizes sand gust, and Race stops ambience before playing music so the three choices are clearly distinguishable.
-- Tire-skid is now muted by default: its selected placeholder is Kenney Interface Sounds `scratch_002.ogg`, not a tire recording, and looping it caused the confirmed harsh vibration-synchronised sound. Slip telemetry remains intact for a future replacement clip.
+- Tire skid is enabled with conservative slip thresholds and low gain. It remains silent during normal straight driving.
+
+## Runtime-owned menu/settings integration
+
+- Garage: the existing `Settings` button receives an additional runtime listener; existing listeners are preserved.
+- Race: the runtime adapter adds one `AUDIO SETTINGS` entry to the teammate-owned `RacePauseMenu`. It creates no competing Pause button or Escape handler. Audio observes the teammate pause state and pushes/pops the `Paused` snapshot without owning gameplay pause state.
+- MainMenu and TrackSelection do not receive a Settings button.
+- No teammate scene, controller, race, or UI source file is changed by this pass.
 
 ## Manual vehicle audio test
 
-1. Open `Assets/Game/Scenes/Test_Vehicle.unity`.
+1. Open `Assets/Scenes/Race.unity` (or enter through `MainMenu -> Garage -> TrackSelection`).
 2. Press Play, then click inside the Game view.
 3. Drive with W/S or Up/Down; steer with A/D or Left/Right; hold Space while steering to brake/drift.
 4. Listen for engine start, continuous RPM crossfades, simulated gear shifts, tire roll/skid, collisions, and landing.

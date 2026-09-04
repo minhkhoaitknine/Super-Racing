@@ -1,0 +1,7 @@
+{
+  "name": "SuperRacing.Audio.EditModeTests",
+  "rootNamespace": "SuperRacing.Audio.Tests",
+  "references": ["SuperRacing.Audio"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "includePlatforms": ["Editor"]
+}

@@ -14,8 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SuperRacing.Audio.VehicleAudioProfile
   displayName: Balanced
   engineStart: {fileID: 8300000, guid: 82eeb647665b7f24b8f5f76b8c4dceb2, type: 3}
-  gearShift: {fileID: 8300000, guid: 0d1f55b5a77f9a54ab47fe7dd234690d, type: 3}
-  backfire: {fileID: 0}
+  gearShift: {fileID: 8300000, guid: f8d5ba2b6832cfc41a7c8a612c93df2e, type: 3}
+  backfire: {fileID: 8300000, guid: a5c2bf37de65f6942b0eaf1efe6c6ac9, type: 3}
+  gearShiftVariants:
+  - {fileID: 8300000, guid: f8d5ba2b6832cfc41a7c8a612c93df2e, type: 3}
+  - {fileID: 8300000, guid: 2da964618886feb49a8c687f06101e58, type: 3}
+  backfireVariants:
+  - {fileID: 8300000, guid: a5c2bf37de65f6942b0eaf1efe6c6ac9, type: 3}
   idle: {fileID: 8300000, guid: b6a81d9e50ba62a42af4eca5e4ed1c84, type: 3}
   lowRpm: {fileID: 8300000, guid: de410a0aa3cc65442ba2d767fca6a288, type: 3}
   midRpm: {fileID: 8300000, guid: e4f58d44e9910b84fbe273b3b099b5ad, type: 3}
@@ -27,8 +32,10 @@ MonoBehaviour:
   minPitch: 0.78
   maxPitch: 1.68
   shiftDuration: 0.16
-  engineVolume: 0.66
-  loadVolume: 0.28
+  engineVolume: 0.84
+  loadVolume: 0.44
+  backfireThrottleDrop: 0.62
+  backfireMinimumRpm: 0.7
   rpmFromSpeed:
     serializedVersion: 2
     m_Curve:

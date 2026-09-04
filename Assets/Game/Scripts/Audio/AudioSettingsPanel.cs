@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SuperRacing.Audio
@@ -10,6 +12,7 @@ namespace SuperRacing.Audio
         [SerializeField] private Toggle muteToggle;
         [SerializeField] private Text masterValue, musicValue, sfxValue, ambienceValue, uiValue, muteLabel;
         private bool syncing;
+        public event Action CloseRequested;
 
         private void OnEnable()
         {
@@ -18,6 +21,7 @@ namespace SuperRacing.Audio
             if (muteToggle != null) { muteToggle.onValueChanged.RemoveListener(OnMuteChanged); muteToggle.onValueChanged.AddListener(OnMuteChanged); }
             Refresh();
         }
+        private void OnDisable() => GameAudioManager.Instance?.FlushSettings();
         public void Refresh()
         {
             GameAudioManager manager = GameAudioManager.Instance; if (manager == null) return; syncing = true;
@@ -26,14 +30,24 @@ namespace SuperRacing.Audio
             if (muteToggle != null) muteToggle.isOn = manager.IsMuted; UpdateMuteLabel(manager.IsMuted); syncing = false;
         }
         public void ResetDefaults() { GameAudioManager.Instance?.ResetAudioSettings(); Refresh(); }
+        public void RequestClose() => CloseRequested?.Invoke();
         private void Bind(Slider slider, AudioBus bus, Text label)
         {
-            if (slider == null) return; slider.minValue = 0f; slider.maxValue = 1f; slider.wholeNumbers = false;
+            if (slider == null) return; slider.minValue = 0f; slider.maxValue = bus == AudioBus.Master ? GameAudioManager.MaxMasterVolume : 1f; slider.wholeNumbers = false;
             slider.onValueChanged.RemoveAllListeners(); slider.onValueChanged.AddListener(value => { if (syncing) return; GameAudioManager.Instance?.SetBusVolume(bus, value); SetLabel(label, value); });
+            AudioSliderPreview preview = slider.GetComponent<AudioSliderPreview>();
+            if (preview == null) preview = slider.gameObject.AddComponent<AudioSliderPreview>();
+            preview.Bus = bus;
         }
         private void OnMuteChanged(bool value) { if (syncing) return; GameAudioManager.Instance?.SetMuted(value); UpdateMuteLabel(value); }
         private void UpdateMuteLabel(bool muted) { if (muteLabel != null) muteLabel.text = muted ? "Unmute" : "Mute"; }
         private static void Set(Slider slider, float value, Text label) { if (slider != null) slider.SetValueWithoutNotify(value); SetLabel(label, value); }
         private static void SetLabel(Text label, float value) { if (label != null) label.text = Mathf.RoundToInt(value * 100f) + "%"; }
+    }
+
+    public sealed class AudioSliderPreview : MonoBehaviour, IPointerUpHandler
+    {
+        public AudioBus Bus { get; set; }
+        public void OnPointerUp(PointerEventData _) => GameAudioManager.Instance?.PlayBusPreview(Bus);
     }
 }
