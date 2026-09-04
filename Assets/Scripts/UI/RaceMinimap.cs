@@ -9,6 +9,7 @@ namespace SuperRacing.UI
     {
         private const int TextureWidth = 384;
         private const int TextureHeight = 256;
+        private const float RenderInterval = 0.2f;
         private const float PositionSmoothTime = 0.055f;
         private const float RotationSmoothTime = 0.07f;
         private Transform target;
@@ -16,6 +17,7 @@ namespace SuperRacing.UI
         private RenderTexture renderTexture;
         private Vector3 cameraVelocity;
         private float yawVelocity;
+        private float nextRenderTime;
 
         private void Start()
         {
@@ -89,7 +91,13 @@ namespace SuperRacing.UI
                 deltaTime);
             minimapCamera.transform.rotation = Quaternion.Euler(90f, smoothYaw, 0f);
 
+            if (Time.unscaledTime < nextRenderTime)
+            {
+                return;
+            }
+
             minimapCamera.Render();
+            nextRenderTime = Time.unscaledTime + RenderInterval;
         }
 
         private void ResolveTarget()

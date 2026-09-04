@@ -8,24 +8,27 @@ namespace SuperRacing.UI
     {
         [SerializeField] private Transform target;
         [SerializeField, Min(0.01f)] private float dragSensitivity = 0.35f;
-        [SerializeField, Min(0.01f)] private float rotationSharpness = 18f;
+        [SerializeField, Min(0.001f)] private float dragSmoothTime = 0.035f;
+        [SerializeField, Min(0.001f)] private float autoSmoothTime = 0.08f;
         [SerializeField, Min(0f)] private float autoRotationSpeed = 12f;
 
         private float targetYaw;
+        private float currentYaw;
+        private float yawVelocity;
         private bool isDragging;
 
         public void SetTarget(Transform previewTarget)
         {
             target = previewTarget;
-            targetYaw = target == null ? 0f : target.eulerAngles.y;
+            ResetRotationState();
         }
 
         private void Awake()
         {
-            targetYaw = target == null ? 0f : target.eulerAngles.y;
+            ResetRotationState();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (target == null)
             {
@@ -37,14 +40,26 @@ namespace SuperRacing.UI
                 targetYaw += autoRotationSpeed * Time.unscaledDeltaTime;
             }
 
-            Quaternion desiredRotation = Quaternion.Euler(0f, targetYaw, 0f);
-            float blend = 1f - Mathf.Exp(-rotationSharpness * Time.unscaledDeltaTime);
-            target.rotation = Quaternion.Slerp(target.rotation, desiredRotation, blend);
+            float smoothTime = isDragging ? dragSmoothTime : autoSmoothTime;
+            currentYaw = Mathf.SmoothDampAngle(
+                currentYaw,
+                targetYaw,
+                ref yawVelocity,
+                smoothTime,
+                Mathf.Infinity,
+                Mathf.Max(Time.unscaledDeltaTime, 0.0001f));
+            target.localRotation = Quaternion.Euler(0f, currentYaw, 0f);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
             isDragging = true;
+            if (target != null)
+            {
+                currentYaw = target.localEulerAngles.y;
+                targetYaw = currentYaw;
+                yawVelocity = 0f;
+            }
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -55,12 +70,18 @@ namespace SuperRacing.UI
             }
 
             targetYaw -= eventData.delta.x * dragSensitivity;
-            target.localRotation = Quaternion.Euler(0f, targetYaw, 0f);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
             isDragging = false;
+        }
+
+        private void ResetRotationState()
+        {
+            currentYaw = target == null ? 0f : target.localEulerAngles.y;
+            targetYaw = currentYaw;
+            yawVelocity = 0f;
         }
     }
 }

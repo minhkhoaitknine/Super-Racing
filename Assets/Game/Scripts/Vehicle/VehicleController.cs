@@ -39,6 +39,7 @@ namespace SuperRacing.Vehicle
         [SerializeField, Min(0f)] private float normalLateralGripResponse = 8f;
         [SerializeField, Min(0f)] private float normalYawResponse = 6f;
         [SerializeField, Range(1f, 180f)] private float maxNormalYawRate = 70f;
+        [SerializeField, Range(0f, 1f)] private float lowSpeedSteeringAssist = 0.35f;
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
@@ -53,6 +54,17 @@ namespace SuperRacing.Vehicle
         [SerializeField, Range(0f, 1f)] private float flippedUpDotThreshold = 0.25f;
         [SerializeField] private float fallRespawnY = -10f;
 
+        [Header("Silent Stuck Recovery")]
+        [SerializeField, Min(0.1f)] private float safePoseSaveInterval = 0.5f;
+        [SerializeField, Min(0f)] private float safePoseMinimumSpeedKmh = 8f;
+        [SerializeField, Range(0f, 1f)] private float safePoseUpDotThreshold = 0.75f;
+        [SerializeField, Min(0f)] private float stuckSpeedThresholdKmh = 1.5f;
+        [SerializeField, Min(0f)] private float stuckMovementThreshold = 0.4f;
+        [SerializeField, Min(0.1f)] private float stuckDetectionWindow = 2f;
+        [SerializeField, Min(0f)] private float stuckRecoveryVerticalOffset = 0.75f;
+        [SerializeField, Min(0f)] private float stuckRecoveryCooldown = 1.25f;
+        [SerializeField, Min(0f)] private float minimumRecoveryDistance = 3f;
+
         [Header("Optional Shared Input Actions")]
         [SerializeField] private InputActionReference driveActionReference;
         [SerializeField] private InputActionReference brakeActionReference;
@@ -64,6 +76,8 @@ namespace SuperRacing.Vehicle
         public bool CanDrive { get; set; } = true;
         public bool IsDrifting { get; private set; }
         public VehicleAudioTelemetry AudioTelemetry => BuildAudioTelemetry();
+
+        private const int SafePoseCapacity = 8;
 
         private Rigidbody vehicleBody;
         private InputAction fallbackDriveAction;
@@ -82,6 +96,17 @@ namespace SuperRacing.Vehicle
         private WheelFrictionCurve frontRightSidewaysFriction;
         private WheelFrictionCurve rearLeftSidewaysFriction;
         private WheelFrictionCurve rearRightSidewaysFriction;
+        private readonly SafePose[] safePoseHistory = new SafePose[SafePoseCapacity];
+        private int safePoseCount;
+        private int nextSafePoseIndex;
+        private float safePoseTimer;
+        private Vector3 stuckWindowStartPosition;
+        private float stuckTimer;
+        private float recoveryCooldownTimer;
+        private bool hasStuckWindowStart;
+        private bool stuckForwardAttempted;
+        private bool stuckReverseAttempted;
+        private bool stuckSteeringAttempted;
 
         private void Awake()
         {
@@ -95,6 +120,8 @@ namespace SuperRacing.Vehicle
         {
             initialPosition = transform.position;
             initialRotation = transform.rotation;
+            StoreSafePose(initialPosition, initialRotation);
+            ResetStuckDetectionWindow();
         }
 
         private void OnEnable()
@@ -135,6 +162,11 @@ namespace SuperRacing.Vehicle
             }
 
             UpdateRespawnState();
+            if (UpdateStuckRecoveryState())
+            {
+                return;
+            }
+
             IsDrifting = driftEnabled && CanDrive && brakeInput && SpeedKmh >= minimumDriftSpeedKmh;
             UpdateGripForSpeed(IsDrifting);
 
@@ -175,6 +207,8 @@ namespace SuperRacing.Vehicle
             vehicleBody.angularVelocity = Vector3.zero;
             currentSteerInput = 0f;
             flippedTimer = 0f;
+            recoveryCooldownTimer = stuckRecoveryCooldown;
+            ResetStuckDetectionWindow();
         }
 
         public void ApplyStats(CarDefinition stats)
@@ -398,6 +432,157 @@ namespace SuperRacing.Vehicle
             }
         }
 
+        private bool UpdateStuckRecoveryState()
+        {
+            CaptureSafePoseIfStable();
+
+            if (recoveryCooldownTimer > 0f)
+            {
+                recoveryCooldownTimer = Mathf.Max(0f, recoveryCooldownTimer - Time.fixedDeltaTime);
+                ResetStuckDetectionWindow();
+                return false;
+            }
+
+            if (!CanDrive || brakeInput || CountGroundedWheels() < 2)
+            {
+                ResetStuckDetectionWindow();
+                return false;
+            }
+
+            bool hasForwardInput = driveInput.y > 0.5f;
+            bool hasReverseInput = driveInput.y < -0.5f;
+            bool hasSteeringInput = Mathf.Abs(driveInput.x) > 0.5f;
+            bool hasThrottleInput = hasForwardInput || hasReverseInput;
+
+            if (!hasThrottleInput)
+            {
+                ResetStuckDetectionWindow();
+                return false;
+            }
+
+            if (!hasStuckWindowStart)
+            {
+                stuckWindowStartPosition = transform.position;
+                hasStuckWindowStart = true;
+            }
+
+            stuckForwardAttempted |= hasForwardInput;
+            stuckReverseAttempted |= hasReverseInput;
+            stuckSteeringAttempted |= hasSteeringInput;
+
+            bool movedEnough = Vector3.Distance(transform.position, stuckWindowStartPosition) >= stuckMovementThreshold;
+            bool movingEnough = SpeedKmh > stuckSpeedThresholdKmh;
+            if (movedEnough || movingEnough)
+            {
+                ResetStuckDetectionWindow();
+                return false;
+            }
+
+            stuckTimer += Time.fixedDeltaTime;
+            bool hasTriedEscapeInputs = stuckForwardAttempted && stuckReverseAttempted && stuckSteeringAttempted;
+            if (stuckTimer < stuckDetectionWindow || !hasTriedEscapeInputs)
+            {
+                return false;
+            }
+
+            RecoverFromStuck();
+            return true;
+        }
+
+        private void CaptureSafePoseIfStable()
+        {
+            safePoseTimer += Time.fixedDeltaTime;
+            if (safePoseTimer < safePoseSaveInterval)
+            {
+                return;
+            }
+
+            safePoseTimer = 0f;
+            if (!CanDrive || brakeInput || CountGroundedWheels() < 2)
+            {
+                return;
+            }
+
+            bool movingSafely = SpeedKmh >= safePoseMinimumSpeedKmh;
+            bool upright = Vector3.Dot(transform.up, Vector3.up) >= safePoseUpDotThreshold;
+            if (!movingSafely || !upright)
+            {
+                return;
+            }
+
+            StoreSafePose(transform.position, transform.rotation);
+        }
+
+        private void RecoverFromStuck()
+        {
+            SafePose recoveryPose = FindRecoveryPose();
+            ResetVehicle(
+                recoveryPose.Position + Vector3.up * stuckRecoveryVerticalOffset,
+                recoveryPose.Rotation);
+        }
+
+        private SafePose FindRecoveryPose()
+        {
+            SafePose fallbackPose = safePoseCount > 0
+                ? safePoseHistory[(nextSafePoseIndex - 1 + SafePoseCapacity) % SafePoseCapacity]
+                : new SafePose(initialPosition, initialRotation);
+
+            for (int offset = 1; offset <= safePoseCount; offset++)
+            {
+                int index = (nextSafePoseIndex - offset + SafePoseCapacity) % SafePoseCapacity;
+                SafePose candidate = safePoseHistory[index];
+                if (Vector3.Distance(candidate.Position, transform.position) >= minimumRecoveryDistance)
+                {
+                    return candidate;
+                }
+            }
+
+            return fallbackPose;
+        }
+
+        private void StoreSafePose(Vector3 position, Quaternion rotation)
+        {
+            safePoseHistory[nextSafePoseIndex] = new SafePose(position, rotation);
+            nextSafePoseIndex = (nextSafePoseIndex + 1) % SafePoseCapacity;
+            safePoseCount = Mathf.Min(safePoseCount + 1, SafePoseCapacity);
+        }
+
+        private void ResetStuckDetectionWindow()
+        {
+            hasStuckWindowStart = false;
+            stuckWindowStartPosition = transform.position;
+            stuckTimer = 0f;
+            stuckForwardAttempted = false;
+            stuckReverseAttempted = false;
+            stuckSteeringAttempted = false;
+        }
+
+        private int CountGroundedWheels()
+        {
+            int groundedWheels = 0;
+            if (frontLeftWheel != null && frontLeftWheel.GetGroundHit(out _))
+            {
+                groundedWheels++;
+            }
+
+            if (frontRightWheel != null && frontRightWheel.GetGroundHit(out _))
+            {
+                groundedWheels++;
+            }
+
+            if (rearLeftWheel != null && rearLeftWheel.GetGroundHit(out _))
+            {
+                groundedWheels++;
+            }
+
+            if (rearRightWheel != null && rearRightWheel.GetGroundHit(out _))
+            {
+                groundedWheels++;
+            }
+
+            return groundedWheels;
+        }
+
         private void CacheWheelFriction()
         {
             if (!HasAllWheels())
@@ -454,8 +639,16 @@ namespace SuperRacing.Vehicle
             localPlanarVelocity.x *= lateralRetention;
             vehicleBody.linearVelocity = transform.TransformDirection(localPlanarVelocity) + verticalVelocity;
 
-            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(localPlanarVelocity.z) / 5f);
-            float targetYawRate = currentSteerInput * maxNormalYawRate * Mathf.Deg2Rad * steeringAtSpeed;
+            float forwardSpeed = localPlanarVelocity.z;
+            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(forwardSpeed) / 5f);
+            float steeringFromThrottle = Mathf.Abs(driveInput.y) > 0.1f
+                ? Mathf.Abs(driveInput.y) * lowSpeedSteeringAssist
+                : 0f;
+            float steeringAssist = Mathf.Max(steeringAtSpeed, steeringFromThrottle);
+            float movementDirection = Mathf.Abs(forwardSpeed) > 0.5f
+                ? Mathf.Sign(forwardSpeed)
+                : Mathf.Sign(Mathf.Approximately(driveInput.y, 0f) ? 1f : driveInput.y);
+            float targetYawRate = currentSteerInput * movementDirection * maxNormalYawRate * Mathf.Deg2Rad * steeringAssist;
             Vector3 angularVelocity = vehicleBody.angularVelocity;
             angularVelocity.y = Mathf.MoveTowards(
                 angularVelocity.y,
@@ -552,6 +745,18 @@ namespace SuperRacing.Vehicle
                 SidewaysSlip = sidewaysSlip,
                 CurrentSurface = surface
             };
+        }
+
+        private readonly struct SafePose
+        {
+            public SafePose(Vector3 position, Quaternion rotation)
+            {
+                Position = position;
+                Rotation = rotation;
+            }
+
+            public Vector3 Position { get; }
+            public Quaternion Rotation { get; }
         }
     }
 }
