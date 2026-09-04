@@ -39,6 +39,7 @@ namespace SuperRacing.Vehicle
         [SerializeField, Min(0f)] private float normalLateralGripResponse = 8f;
         [SerializeField, Min(0f)] private float normalYawResponse = 6f;
         [SerializeField, Range(1f, 180f)] private float maxNormalYawRate = 70f;
+        [SerializeField, Range(0f, 1f)] private float lowSpeedSteeringAssist = 0.35f;
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
@@ -638,8 +639,16 @@ namespace SuperRacing.Vehicle
             localPlanarVelocity.x *= lateralRetention;
             vehicleBody.linearVelocity = transform.TransformDirection(localPlanarVelocity) + verticalVelocity;
 
-            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(localPlanarVelocity.z) / 5f);
-            float targetYawRate = currentSteerInput * maxNormalYawRate * Mathf.Deg2Rad * steeringAtSpeed;
+            float forwardSpeed = localPlanarVelocity.z;
+            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(forwardSpeed) / 5f);
+            float steeringFromThrottle = Mathf.Abs(driveInput.y) > 0.1f
+                ? Mathf.Abs(driveInput.y) * lowSpeedSteeringAssist
+                : 0f;
+            float steeringAssist = Mathf.Max(steeringAtSpeed, steeringFromThrottle);
+            float movementDirection = Mathf.Abs(forwardSpeed) > 0.5f
+                ? Mathf.Sign(forwardSpeed)
+                : Mathf.Sign(Mathf.Approximately(driveInput.y, 0f) ? 1f : driveInput.y);
+            float targetYawRate = currentSteerInput * movementDirection * maxNormalYawRate * Mathf.Deg2Rad * steeringAssist;
             Vector3 angularVelocity = vehicleBody.angularVelocity;
             angularVelocity.y = Mathf.MoveTowards(
                 angularVelocity.y,
