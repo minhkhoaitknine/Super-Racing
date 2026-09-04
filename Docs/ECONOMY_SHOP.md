@@ -8,7 +8,8 @@
 - Clean drift segments lasting at least one second grant coins per second, capped per race.
 - The complete-race screen shows the reward breakdown and current wallet balance.
 - Garage sells cars: an unowned car shows `BUY`, while an owned car shows `SELECT`.
-- Owned cars expose a `CUSTOMIZE` menu with five performance upgrades and body paints.
+- Owned cars show upgrade buttons directly beside their stat bars and a paint strip above the select button.
+- Buying a car, upgrade, or new paint always requires confirmation before credits are deducted.
 - Every upgrade and paint purchase is stored separately for each car.
 - Performance upgrades have five levels and move the car's percentage toward 100%; they never exceed the controller defaults.
 - Paint index 0 is the factory paint and preserves the prefab's original material color.
