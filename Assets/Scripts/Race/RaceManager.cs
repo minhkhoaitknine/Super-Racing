@@ -154,6 +154,7 @@ namespace SuperRacing.Race
 
             GameObject selectedVehicle = Instantiate(car.VehiclePrefab, position, rotation);
             selectedVehicle.name = car.VehiclePrefab.name;
+            CarProgression.ApplyPaint(selectedVehicle, car);
 
             MonoBehaviour selectedController = null;
             foreach (MonoBehaviour component in selectedVehicle.GetComponentsInChildren<MonoBehaviour>(true))

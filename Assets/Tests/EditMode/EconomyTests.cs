@@ -8,12 +8,24 @@ namespace SuperRacing.Tests
     public sealed class EconomyTests
     {
         private const string BalanceKey = "super_racing_currency";
+        private const string OwnedCarKey = "super_racing_owned_car_car";
+        private const string SpeedUpgradeKey = "super_racing_upgrade_car_TopSpeed";
 
         [SetUp]
-        public void SetUp() => PlayerPrefs.DeleteKey(BalanceKey);
+        public void SetUp()
+        {
+            PlayerPrefs.DeleteKey(BalanceKey);
+            PlayerPrefs.DeleteKey(OwnedCarKey);
+            PlayerPrefs.DeleteKey(SpeedUpgradeKey);
+        }
 
         [TearDown]
-        public void TearDown() => PlayerPrefs.DeleteKey(BalanceKey);
+        public void TearDown()
+        {
+            PlayerPrefs.DeleteKey(BalanceKey);
+            PlayerPrefs.DeleteKey(OwnedCarKey);
+            PlayerPrefs.DeleteKey(SpeedUpgradeKey);
+        }
 
         [Test]
         public void WalletAddsAndRejectsUnaffordablePurchase()
@@ -37,6 +49,20 @@ namespace SuperRacing.Tests
             Assert.That(rewards.CleanDriftBonus, Is.EqualTo(500));
             Assert.That(rewards.Total, Is.EqualTo(1300));
             Object.DestroyImmediate(track);
+        }
+
+        [Test]
+        public void UpgradeIsStoredPerCarAndChargesItsPrice()
+        {
+            CarDefinition car = ScriptableObject.CreateInstance<CarDefinition>();
+            PlayerPrefs.SetInt(OwnedCarKey, 1);
+
+            Assert.That(CarProgression.TryUpgrade(car, CarUpgradeType.TopSpeed), Is.True);
+            Assert.That(CarProgression.GetUpgradeLevel(car, CarUpgradeType.TopSpeed), Is.EqualTo(1));
+            Assert.That(CurrencyWallet.Balance, Is.EqualTo(400));
+            Assert.That(CarProgression.TryUpgrade(car, CarUpgradeType.TopSpeed), Is.False);
+
+            Object.DestroyImmediate(car);
         }
     }
 }

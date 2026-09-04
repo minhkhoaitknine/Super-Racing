@@ -1,3 +1,4 @@
+using SuperRacing.Economy;
 using UnityEngine;
 
 namespace SuperRacing.Data
@@ -28,11 +29,11 @@ namespace SuperRacing.Data
         public Sprite PreviewSprite => previewSprite;
         public bool UnlockedByDefault => unlockedByDefault;
         public int PurchasePrice => purchasePrice;
-        public float MaxSpeedPercent => maxSpeedPercent;
-        public float AccelerationPercent => accelerationPercent;
-        public float BrakingPercent => brakingPercent;
-        public float SteeringPercent => steeringPercent;
-        public float GripPercent => gripPercent;
+        public float MaxSpeedPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.TopSpeed, maxSpeedPercent);
+        public float AccelerationPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Acceleration, accelerationPercent);
+        public float BrakingPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Braking, brakingPercent);
+        public float SteeringPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Steering, steeringPercent);
+        public float GripPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Grip, gripPercent);
 
         private void OnValidate()
         {

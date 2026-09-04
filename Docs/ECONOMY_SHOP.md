@@ -7,7 +7,11 @@
 - Setting a new record grants the track's record bonus.
 - Clean drift segments lasting at least one second grant coins per second, capped per race.
 - The complete-race screen shows the reward breakdown and current wallet balance.
-- Garage acts as the first shop: an unowned car shows `BUY`, while an owned car shows `SELECT`.
+- Garage sells cars: an unowned car shows `BUY`, while an owned car shows `SELECT`.
+- Owned cars expose a `CUSTOMIZE` menu with five performance upgrades and body paints.
+- Every upgrade and paint purchase is stored separately for each car.
+- Performance upgrades have five levels and move the car's percentage toward 100%; they never exceed the controller defaults.
+- Paint index 0 is the factory paint and preserves the prefab's original material color.
 
 ## Tuning in Unity
 
@@ -33,3 +37,9 @@ The MVP uses `PlayerPrefs`:
 - `super_racing_owned_car_<carId>`
 
 Keep all balance mutations behind `CurrencyWallet` so the persistence backend can be replaced later.
+
+Additional per-car keys:
+
+- `super_racing_upgrade_<carId>_<upgradeType>`
+- `super_racing_paint_owned_<carId>_<paintIndex>`
+- `super_racing_paint_equipped_<carId>`

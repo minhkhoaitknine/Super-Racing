@@ -1,4 +1,5 @@
 using SuperRacing.Data;
+using SuperRacing.Economy;
 using UnityEngine;
 
 namespace SuperRacing.UI
@@ -31,6 +32,7 @@ namespace SuperRacing.UI
             ClearPreview();
             GameObject vehicle = Instantiate(car.VehiclePrefab, transform, false);
             vehicle.name = car.DisplayName;
+            CarProgression.ApplyPaint(vehicle, car);
             DisableVehicleBehaviour(vehicle);
             SetLayerRecursively(vehicle, previewLayer);
             FitVehicle(vehicle);

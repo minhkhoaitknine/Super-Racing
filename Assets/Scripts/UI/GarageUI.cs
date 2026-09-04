@@ -45,6 +45,8 @@ namespace SuperRacing.UI
         private int previousTargetFrameRate;
         private Button continueButton;
         private Text continueButtonLabel;
+        private Button customizeButton;
+        private GameObject customizationOverlay;
 
         private void Awake()
         {
@@ -62,6 +64,7 @@ namespace SuperRacing.UI
 
             selectedIndex = FindSelectedCarIndex();
             ResolveShopControls();
+            CreateCustomizationButton();
             RefreshView();
             StartCoroutine(FreezeThumbnailCamerasAfterFirstFrame());
         }
@@ -223,6 +226,175 @@ namespace SuperRacing.UI
             {
                 continueButton.interactable = owned || CurrencyWallet.Balance >= car.PurchasePrice;
             }
+
+            if (customizeButton != null)
+            {
+                customizeButton.interactable = owned;
+            }
+        }
+
+        private void CreateCustomizationButton()
+        {
+            if (customizeButton != null) return;
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            customizeButton = CreateRuntimeButton("Customize Button", canvas.transform, "CUSTOMIZE", new Color(0.03f, 0.42f, 0.58f, 0.96f));
+            SetUiRect(customizeButton.GetComponent<RectTransform>(), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-240f, 170f), new Vector2(300f, 56f));
+            customizeButton.onClick.AddListener(OpenCustomization);
+        }
+
+        private void OpenCustomization()
+        {
+            CarDefinition car = catalog.Cars[selectedIndex];
+            if (!CarOwnership.IsOwned(car)) return;
+
+            if (customizationOverlay != null) Destroy(customizationOverlay);
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            customizationOverlay = CreateRuntimeObject("Customization Overlay", canvas.transform);
+            Stretch(customizationOverlay.GetComponent<RectTransform>());
+            Image dim = customizationOverlay.AddComponent<Image>();
+            dim.color = new Color(0.005f, 0.015f, 0.03f, 0.8f);
+
+            GameObject panel = CreateRuntimeObject("Customization Panel", customizationOverlay.transform);
+            SetUiRect(panel.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(650f, 690f));
+            Image panelImage = panel.AddComponent<Image>();
+            panelImage.color = new Color(0.025f, 0.075f, 0.13f, 0.99f);
+
+            Text title = CreateRuntimeText("Title", panel.transform, $"{car.DisplayName.ToUpperInvariant()}  /  CUSTOMIZE", 27, FontStyle.Bold);
+            title.color = new Color(0.2f, 0.9f, 1f, 1f);
+            SetUiRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(570f, 46f));
+
+            Text upgradeHeading = CreateRuntimeText("Upgrade Heading", panel.transform, "PERFORMANCE UPGRADES", 18, FontStyle.Bold);
+            SetUiRect(upgradeHeading.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -92f), new Vector2(570f, 32f));
+
+            CreateUpgradeRow(panel.transform, car, CarUpgradeType.TopSpeed, "TOP SPEED", -142f);
+            CreateUpgradeRow(panel.transform, car, CarUpgradeType.Acceleration, "ACCELERATION", -207f);
+            CreateUpgradeRow(panel.transform, car, CarUpgradeType.Braking, "BRAKING", -272f);
+            CreateUpgradeRow(panel.transform, car, CarUpgradeType.Steering, "STEERING", -337f);
+            CreateUpgradeRow(panel.transform, car, CarUpgradeType.Grip, "GRIP", -402f);
+
+            Text paintHeading = CreateRuntimeText("Paint Heading", panel.transform, "BODY PAINT", 18, FontStyle.Bold);
+            SetUiRect(paintHeading.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -462f), new Vector2(570f, 32f));
+
+            int equippedPaint = CarProgression.GetEquippedPaint(car);
+            for (int index = 0; index < CarProgression.PaintCount; index++)
+            {
+                int paintIndex = index;
+                bool owned = CarProgression.IsPaintOwned(car, index);
+                string caption = index == equippedPaint ? "✓" : owned ? "" : CarProgression.GetPaintPrice(index).ToString();
+                Button swatch = CreateRuntimeButton($"Paint {index}", panel.transform, caption, CarProgression.GetPaintColor(index));
+                SetUiRect(swatch.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-225f + index * 90f, -520f), new Vector2(66f, 58f));
+                swatch.interactable = owned || CurrencyWallet.Balance >= CarProgression.GetPaintPrice(index);
+                swatch.onClick.AddListener(() => BuyOrEquipPaint(paintIndex));
+            }
+
+            Button close = CreateRuntimeButton("Close Button", panel.transform, "CLOSE", new Color(0.2f, 0.26f, 0.33f, 1f));
+            SetUiRect(close.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -632f), new Vector2(210f, 48f));
+            close.onClick.AddListener(CloseCustomization);
+        }
+
+        private void CreateUpgradeRow(Transform parent, CarDefinition car, CarUpgradeType type, string title, float y)
+        {
+            int level = CarProgression.GetUpgradeLevel(car, type);
+            int price = CarProgression.GetUpgradePrice(car, type);
+            string priceText = level >= CarProgression.MaxUpgradeLevel ? "MAX" : $"UPGRADE  {price:N0} ◆";
+
+            Text label = CreateRuntimeText(type.ToString(), parent, $"{title}\nLV {level}/{CarProgression.MaxUpgradeLevel}  •  {GetEffectiveStat(car, type):0}%", 16, FontStyle.Bold);
+            label.alignment = TextAnchor.MiddleLeft;
+            SetUiRect(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-125f, y), new Vector2(300f, 56f));
+
+            Button upgrade = CreateRuntimeButton($"Upgrade {type}", parent, priceText, new Color(0.05f, 0.5f, 0.65f, 1f));
+            SetUiRect(upgrade.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(190f, y), new Vector2(205f, 48f));
+            upgrade.interactable = level < CarProgression.MaxUpgradeLevel && CurrencyWallet.Balance >= price;
+            upgrade.onClick.AddListener(() => BuyUpgrade(type));
+        }
+
+        private void BuyUpgrade(CarUpgradeType type)
+        {
+            CarDefinition car = catalog.Cars[selectedIndex];
+            if (!CarProgression.TryUpgrade(car, type)) return;
+            RefreshView();
+            OpenCustomization();
+        }
+
+        private void BuyOrEquipPaint(int paintIndex)
+        {
+            CarDefinition car = catalog.Cars[selectedIndex];
+            if (!CarProgression.TryBuyAndEquipPaint(car, paintIndex)) return;
+            RefreshView();
+            OpenCustomization();
+        }
+
+        private void CloseCustomization()
+        {
+            if (customizationOverlay != null) Destroy(customizationOverlay);
+            customizationOverlay = null;
+        }
+
+        private static float GetEffectiveStat(CarDefinition car, CarUpgradeType type)
+        {
+            return type switch
+            {
+                CarUpgradeType.TopSpeed => car.MaxSpeedPercent,
+                CarUpgradeType.Acceleration => car.AccelerationPercent,
+                CarUpgradeType.Braking => car.BrakingPercent,
+                CarUpgradeType.Steering => car.SteeringPercent,
+                _ => car.GripPercent
+            };
+        }
+
+        private static Button CreateRuntimeButton(string name, Transform parent, string caption, Color color)
+        {
+            GameObject buttonObject = CreateRuntimeObject(name, parent);
+            Image image = buttonObject.AddComponent<Image>();
+            image.color = color;
+            Button button = buttonObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            Text text = CreateRuntimeText("Text", buttonObject.transform, caption, 16, FontStyle.Bold);
+            text.color = Color.white;
+            return button;
+        }
+
+        private static Text CreateRuntimeText(string name, Transform parent, string caption, int fontSize, FontStyle style)
+        {
+            GameObject textObject = CreateRuntimeObject(name, parent);
+            Text text = textObject.AddComponent<Text>();
+            text.font = ResolveFont();
+            text.text = caption;
+            text.fontSize = fontSize;
+            text.fontStyle = style;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
+            Stretch(text.rectTransform);
+            return text;
+        }
+
+        private static GameObject CreateRuntimeObject(string name, Transform parent)
+        {
+            GameObject result = new(name, typeof(RectTransform));
+            result.layer = parent.gameObject.layer;
+            result.transform.SetParent(parent, false);
+            return result;
+        }
+
+        private static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+
+        private static void SetUiRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size)
+        {
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
         }
 
         private static void SetStat(Image fill, Text valueLabel, float normalizedValue)
@@ -255,6 +427,7 @@ namespace SuperRacing.UI
             previewVehicle = Instantiate(car.VehiclePrefab, vehiclePreviewRoot, false);
             previewVehicle.name = $"{car.DisplayName} Preview";
             previewVehicle.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            CarProgression.ApplyPaint(previewVehicle, car);
 
             SetLayerRecursively(previewVehicle, vehiclePreviewRoot.gameObject.layer);
             DisableVehicleBehaviour(previewVehicle);

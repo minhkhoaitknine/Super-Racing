@@ -3,6 +3,15 @@ using UnityEngine;
 
 namespace SuperRacing.Economy
 {
+    public enum CarUpgradeType
+    {
+        TopSpeed,
+        Acceleration,
+        Braking,
+        Steering,
+        Grip
+    }
+
     public static class CarOwnership
     {
         private const string Prefix = "super_racing_owned_car_";
@@ -20,5 +29,102 @@ namespace SuperRacing.Economy
             PlayerPrefs.Save();
             return true;
         }
+    }
+
+    public static class CarProgression
+    {
+        public const int MaxUpgradeLevel = 5;
+        private const string UpgradePrefix = "super_racing_upgrade_";
+        private const string PaintOwnedPrefix = "super_racing_paint_owned_";
+        private const string PaintEquippedPrefix = "super_racing_paint_equipped_";
+
+        private static readonly Color[] PaintColors =
+        {
+            Color.white,
+            new Color(0.05f, 0.35f, 0.95f),
+            new Color(0.9f, 0.06f, 0.04f),
+            new Color(0.05f, 0.05f, 0.06f),
+            new Color(0.95f, 0.65f, 0.04f),
+            new Color(0.18f, 0.8f, 0.35f)
+        };
+
+        public static int PaintCount => PaintColors.Length;
+
+        public static int GetUpgradeLevel(CarDefinition car, CarUpgradeType type)
+        {
+            return car == null ? 0 : Mathf.Clamp(PlayerPrefs.GetInt(UpgradeKey(car, type), 0), 0, MaxUpgradeLevel);
+        }
+
+        public static int GetUpgradePrice(CarDefinition car, CarUpgradeType type)
+        {
+            int level = GetUpgradeLevel(car, type);
+            return level >= MaxUpgradeLevel ? 0 : 600 * ((int)type + 1) * (level + 1);
+        }
+
+        public static bool TryUpgrade(CarDefinition car, CarUpgradeType type)
+        {
+            if (car == null || !CarOwnership.IsOwned(car)) return false;
+            int level = GetUpgradeLevel(car, type);
+            if (level >= MaxUpgradeLevel || !CurrencyWallet.TrySpend(GetUpgradePrice(car, type))) return false;
+            PlayerPrefs.SetInt(UpgradeKey(car, type), level + 1);
+            PlayerPrefs.Save();
+            return true;
+        }
+
+        public static float GetEffectivePercent(CarDefinition car, CarUpgradeType type, float basePercent)
+        {
+            float progress = GetUpgradeLevel(car, type) / (float)MaxUpgradeLevel;
+            return Mathf.Lerp(Mathf.Clamp(basePercent, 0f, 100f), 100f, progress);
+        }
+
+        public static Color GetPaintColor(int index) => PaintColors[Mathf.Clamp(index, 0, PaintColors.Length - 1)];
+
+        public static int GetPaintPrice(int index) => index <= 0 ? 0 : 900 + index * 550;
+
+        public static bool IsPaintOwned(CarDefinition car, int index)
+        {
+            return car != null && (index == 0 || PlayerPrefs.GetInt(PaintOwnedKey(car, index), 0) != 0);
+        }
+
+        public static int GetEquippedPaint(CarDefinition car)
+        {
+            return car == null ? 0 : Mathf.Clamp(PlayerPrefs.GetInt(PaintEquippedPrefix + car.CarId, 0), 0, PaintColors.Length - 1);
+        }
+
+        public static bool TryBuyAndEquipPaint(CarDefinition car, int index)
+        {
+            if (car == null || !CarOwnership.IsOwned(car) || index < 0 || index >= PaintColors.Length) return false;
+            if (!IsPaintOwned(car, index))
+            {
+                if (!CurrencyWallet.TrySpend(GetPaintPrice(index))) return false;
+                PlayerPrefs.SetInt(PaintOwnedKey(car, index), 1);
+            }
+
+            PlayerPrefs.SetInt(PaintEquippedPrefix + car.CarId, index);
+            PlayerPrefs.Save();
+            return true;
+        }
+
+        public static void ApplyPaint(GameObject vehicle, CarDefinition car)
+        {
+            if (vehicle == null || car == null) return;
+            int paintIndex = GetEquippedPaint(car);
+            if (paintIndex == 0) return;
+            Color color = GetPaintColor(paintIndex);
+            foreach (Renderer renderer in vehicle.GetComponentsInChildren<Renderer>(true))
+            {
+                Material[] materials = renderer.materials;
+                for (int index = 0; index < materials.Length; index++)
+                {
+                    Material material = materials[index];
+                    if (material == null || !material.name.ToLowerInvariant().Contains("body")) continue;
+                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+                    else if (material.HasProperty("_Color")) material.color = color;
+                }
+            }
+        }
+
+        private static string UpgradeKey(CarDefinition car, CarUpgradeType type) => $"{UpgradePrefix}{car.CarId}_{type}";
+        private static string PaintOwnedKey(CarDefinition car, int index) => $"{PaintOwnedPrefix}{car.CarId}_{index}";
     }
 }
