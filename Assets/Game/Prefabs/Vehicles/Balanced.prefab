@@ -379,7 +379,6 @@ MonoBehaviour:
   minSteerAngleAtTopSpeed: 10
   lowSpeedSidewaysGrip: 1.6
   highSpeedSidewaysGrip: 1.25
-  steeringAssistStrength: 0.35
   steeringInputResponse: 3.5
   steeringReturnResponse: 6
   driftEnabled: 1

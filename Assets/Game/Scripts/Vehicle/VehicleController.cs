@@ -34,7 +34,6 @@ namespace SuperRacing.Vehicle
         [SerializeField, Range(0f, 60f)] private float minSteerAngleAtTopSpeed = 10f;
         [SerializeField, Range(0.1f, 3f)] private float lowSpeedSidewaysGrip = 1.6f;
         [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 1.25f;
-        [SerializeField, Range(0f, 1f)] private float steeringAssistStrength = 0.35f;
         [SerializeField, Min(0.1f)] private float steeringInputResponse = 3.5f;
         [SerializeField, Min(0.1f)] private float steeringReturnResponse = 6f;
 
@@ -136,7 +135,7 @@ namespace SuperRacing.Vehicle
             UpdateGripForSpeed(IsDrifting);
 
             float speed01 = Mathf.Clamp01(SpeedKmh / Mathf.Max(1f, maxSpeedKmh));
-            float steerLimit = Mathf.Lerp(maxSteerAngle, minSteerAngleAtTopSpeed, speed01);
+            float steerLimit = Mathf.Lerp(maxSteerAngle, minSteerAngleAtTopSpeed, Mathf.Sqrt(speed01));
             float targetSteerInput = CanDrive ? driveInput.x : 0f;
             float inputResponse = Mathf.Abs(targetSteerInput) > Mathf.Abs(currentSteerInput)
                 ? steeringInputResponse
@@ -465,13 +464,6 @@ namespace SuperRacing.Vehicle
 
             vehicleBody.linearVelocity = assistedPlanarVelocity + Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
 
-            float speedForSteer = planarVelocity.magnitude;
-            float steerResponse = Mathf.Clamp01(speedForSteer / 8f);
-            float yawDegrees = currentSteerInput * maxSteerAngle * steerResponse * steeringAssistStrength * Time.fixedDeltaTime;
-            if (Mathf.Abs(yawDegrees) > 0.001f)
-            {
-                vehicleBody.MoveRotation(vehicleBody.rotation * Quaternion.Euler(0f, yawDegrees, 0f));
-            }
         }
 
         private void OnGUI()
