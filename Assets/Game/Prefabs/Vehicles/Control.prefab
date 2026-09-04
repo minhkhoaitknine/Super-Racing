@@ -297,6 +297,9 @@ MonoBehaviour:
   highSpeedSidewaysGrip: 1.25
   steeringInputResponse: 3.5
   steeringReturnResponse: 6
+  normalLateralGripResponse: 8
+  normalYawResponse: 6
+  maxNormalYawRate: 70
   driftEnabled: 1
   handbrakeTorque: 4000
   rearDriftSidewaysGrip: 0.5

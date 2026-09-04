@@ -36,6 +36,9 @@ namespace SuperRacing.Vehicle
         [SerializeField, Range(0.1f, 3f)] private float highSpeedSidewaysGrip = 1.25f;
         [SerializeField, Min(0.1f)] private float steeringInputResponse = 3.5f;
         [SerializeField, Min(0.1f)] private float steeringReturnResponse = 6f;
+        [SerializeField, Min(0f)] private float normalLateralGripResponse = 8f;
+        [SerializeField, Min(0f)] private float normalYawResponse = 6f;
+        [SerializeField, Range(1f, 180f)] private float maxNormalYawRate = 70f;
 
         [Header("Drift / Handbrake")]
         [SerializeField] private bool driftEnabled = true;
@@ -160,6 +163,7 @@ namespace SuperRacing.Vehicle
             rearRightWheel.brakeTorque = rearBrakeTorque;
 
             ApplyDriveAssist(appliedMotorTorque, overForwardSpeedLimit);
+            ApplyNormalHandlingAssist();
             ApplyDriftYawAssist();
         }
 
@@ -423,6 +427,30 @@ namespace SuperRacing.Vehicle
             }
 
             vehicleBody.AddTorque(Vector3.up * (currentSteerInput * driftYawAssist), ForceMode.Acceleration);
+        }
+
+        private void ApplyNormalHandlingAssist()
+        {
+            if (IsDrifting || vehicleBody == null || !CanDrive)
+            {
+                return;
+            }
+
+            Vector3 verticalVelocity = Vector3.Project(vehicleBody.linearVelocity, Vector3.up);
+            Vector3 localPlanarVelocity = transform.InverseTransformDirection(
+                Vector3.ProjectOnPlane(vehicleBody.linearVelocity, Vector3.up));
+            float lateralRetention = Mathf.Exp(-normalLateralGripResponse * Time.fixedDeltaTime);
+            localPlanarVelocity.x *= lateralRetention;
+            vehicleBody.linearVelocity = transform.TransformDirection(localPlanarVelocity) + verticalVelocity;
+
+            float steeringAtSpeed = Mathf.Clamp01(Mathf.Abs(localPlanarVelocity.z) / 5f);
+            float targetYawRate = currentSteerInput * maxNormalYawRate * Mathf.Deg2Rad * steeringAtSpeed;
+            Vector3 angularVelocity = vehicleBody.angularVelocity;
+            angularVelocity.y = Mathf.MoveTowards(
+                angularVelocity.y,
+                targetYawRate,
+                normalYawResponse * Time.fixedDeltaTime);
+            vehicleBody.angularVelocity = angularVelocity;
         }
 
         private void ApplyDriveAssist(float appliedMotorTorque, bool overForwardSpeedLimit)
