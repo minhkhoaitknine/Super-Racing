@@ -34,6 +34,7 @@ namespace SuperRacing.Economy
     public static class CarProgression
     {
         public const int MaxUpgradeLevel = 5;
+        public const float MaxHeadroomGain = 0.5f;
         private const string UpgradePrefix = "super_racing_upgrade_";
         private const string PaintOwnedPrefix = "super_racing_paint_owned_";
         private const string PaintEquippedPrefix = "super_racing_paint_equipped_";
@@ -58,14 +59,19 @@ namespace SuperRacing.Economy
         public static int GetUpgradePrice(CarDefinition car, CarUpgradeType type)
         {
             int level = GetUpgradeLevel(car, type);
-            return level >= MaxUpgradeLevel ? 0 : 600 * ((int)type + 1) * (level + 1);
+            return !CanUpgrade(car, type) ? 0 : 600 * ((int)type + 1) * (level + 1);
+        }
+
+        public static bool CanUpgrade(CarDefinition car, CarUpgradeType type)
+        {
+            return car != null && GetBasePercent(car, type) < 100f && GetUpgradeLevel(car, type) < MaxUpgradeLevel;
         }
 
         public static bool TryUpgrade(CarDefinition car, CarUpgradeType type)
         {
-            if (car == null || !CarOwnership.IsOwned(car)) return false;
+            if (car == null || !CarOwnership.IsOwned(car) || !CanUpgrade(car, type)) return false;
             int level = GetUpgradeLevel(car, type);
-            if (level >= MaxUpgradeLevel || !CurrencyWallet.TrySpend(GetUpgradePrice(car, type))) return false;
+            if (!CurrencyWallet.TrySpend(GetUpgradePrice(car, type))) return false;
             PlayerPrefs.SetInt(UpgradeKey(car, type), level + 1);
             PlayerPrefs.Save();
             return true;
@@ -73,8 +79,15 @@ namespace SuperRacing.Economy
 
         public static float GetEffectivePercent(CarDefinition car, CarUpgradeType type, float basePercent)
         {
-            float progress = GetUpgradeLevel(car, type) / (float)MaxUpgradeLevel;
-            return Mathf.Lerp(Mathf.Clamp(basePercent, 0f, 100f), 100f, progress);
+            return CalculateEffectivePercent(basePercent, GetUpgradeLevel(car, type));
+        }
+
+        public static float CalculateEffectivePercent(float basePercent, int upgradeLevel)
+        {
+            float baseValue = Mathf.Clamp(basePercent, 0f, 100f);
+            float levelProgress = Mathf.Clamp(upgradeLevel, 0, MaxUpgradeLevel) / (float)MaxUpgradeLevel;
+            float gainedHeadroom = (100f - baseValue) * MaxHeadroomGain * levelProgress;
+            return baseValue + gainedHeadroom;
         }
 
         public static Color GetPaintColor(int index) => PaintColors[Mathf.Clamp(index, 0, PaintColors.Length - 1)];
@@ -126,5 +139,17 @@ namespace SuperRacing.Economy
 
         private static string UpgradeKey(CarDefinition car, CarUpgradeType type) => $"{UpgradePrefix}{car.CarId}_{type}";
         private static string PaintOwnedKey(CarDefinition car, int index) => $"{PaintOwnedPrefix}{car.CarId}_{index}";
+
+        private static float GetBasePercent(CarDefinition car, CarUpgradeType type)
+        {
+            return type switch
+            {
+                CarUpgradeType.TopSpeed => car.BaseMaxSpeedPercent,
+                CarUpgradeType.Acceleration => car.BaseAccelerationPercent,
+                CarUpgradeType.Braking => car.BaseBrakingPercent,
+                CarUpgradeType.Steering => car.BaseSteeringPercent,
+                _ => car.BaseGripPercent
+            };
+        }
     }
 }

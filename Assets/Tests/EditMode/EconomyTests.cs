@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using SuperRacing.Data;
 using SuperRacing.Economy;
+using System.Reflection;
 using UnityEngine;
 
 namespace SuperRacing.Tests
@@ -55,6 +56,7 @@ namespace SuperRacing.Tests
         public void UpgradeIsStoredPerCarAndChargesItsPrice()
         {
             CarDefinition car = ScriptableObject.CreateInstance<CarDefinition>();
+            typeof(CarDefinition).GetField("maxSpeedPercent", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(car, 72f);
             PlayerPrefs.SetInt(OwnedCarKey, 1);
 
             Assert.That(CarProgression.TryUpgrade(car, CarUpgradeType.TopSpeed), Is.True);
@@ -63,6 +65,20 @@ namespace SuperRacing.Tests
             Assert.That(CarProgression.TryUpgrade(car, CarUpgradeType.TopSpeed), Is.False);
 
             Object.DestroyImmediate(car);
+        }
+
+        [Test]
+        public void MaxUpgradePreservesDifferenceBetweenCars()
+        {
+            float controlSpeed = CarProgression.CalculateEffectivePercent(72f, CarProgression.MaxUpgradeLevel);
+            float balancedSpeed = CarProgression.CalculateEffectivePercent(92f, CarProgression.MaxUpgradeLevel);
+            float speedsterSpeed = CarProgression.CalculateEffectivePercent(100f, CarProgression.MaxUpgradeLevel);
+
+            Assert.That(controlSpeed, Is.EqualTo(86f).Within(0.001f));
+            Assert.That(balancedSpeed, Is.EqualTo(96f).Within(0.001f));
+            Assert.That(speedsterSpeed, Is.EqualTo(100f).Within(0.001f));
+            Assert.That(controlSpeed, Is.LessThan(balancedSpeed));
+            Assert.That(balancedSpeed, Is.LessThan(speedsterSpeed));
         }
     }
 }

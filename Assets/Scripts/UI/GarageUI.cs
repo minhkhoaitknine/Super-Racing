@@ -276,11 +276,11 @@ namespace SuperRacing.UI
             {
                 Button button = upgradeButtons[index];
                 if (button == null) continue;
-                int level = CarProgression.GetUpgradeLevel(car, types[index]);
                 int price = CarProgression.GetUpgradePrice(car, types[index]);
-                button.interactable = ownedCar && level < CarProgression.MaxUpgradeLevel && CurrencyWallet.Balance >= price;
+                bool canUpgrade = CarProgression.CanUpgrade(car, types[index]);
+                button.interactable = ownedCar && canUpgrade && CurrencyWallet.Balance >= price;
                 Text text = button.GetComponentInChildren<Text>();
-                if (text != null) text.text = level >= CarProgression.MaxUpgradeLevel ? "MAX" : "+";
+                if (text != null) text.text = canUpgrade ? "+" : "MAX";
             }
 
             RebuildPaintStrip(car, ownedCar);

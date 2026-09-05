@@ -34,6 +34,11 @@ namespace SuperRacing.Data
         public float BrakingPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Braking, brakingPercent);
         public float SteeringPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Steering, steeringPercent);
         public float GripPercent => CarProgression.GetEffectivePercent(this, CarUpgradeType.Grip, gripPercent);
+        public float BaseMaxSpeedPercent => maxSpeedPercent;
+        public float BaseAccelerationPercent => accelerationPercent;
+        public float BaseBrakingPercent => brakingPercent;
+        public float BaseSteeringPercent => steeringPercent;
+        public float BaseGripPercent => gripPercent;
 
         private void OnValidate()
         {

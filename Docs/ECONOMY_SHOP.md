@@ -11,7 +11,8 @@
 - Owned cars show upgrade buttons directly beside their stat bars and a paint strip above the select button.
 - Buying a car, upgrade, or new paint always requires confirmation before credits are deducted.
 - Every upgrade and paint purchase is stored separately for each car.
-- Performance upgrades have five levels and move the car's percentage toward 100%; they never exceed the controller defaults.
+- Performance upgrades have five levels. Each level unlocks 10% of the gap between the car's base stat and 100%, so level 5 uses half of that available headroom.
+- This keeps each car below the controller defaults and preserves stat differences at maximum upgrade (for example, base speed `72 / 92 / 100` becomes `86 / 96 / 100`).
 - Paint index 0 is the factory paint and preserves the prefab's original material color.
 
 ## Tuning in Unity
