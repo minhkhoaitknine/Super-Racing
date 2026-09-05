@@ -154,6 +154,7 @@ namespace SuperRacing.Audio
                     semantic += " " + button.onClick.GetPersistentMethodName(i).ToLowerInvariant();
             }
             string normalized = semantic.Replace(" ", "").Replace("_", "").Replace("-", "");
+            if (normalized.Contains("playbutton")) return AudioCueId.UIStartRace;
             if (normalized.Contains("startrace") || normalized.Contains("beginrace")) return AudioCueId.UIStartRace;
             if (normalized.Contains("error") || normalized.Contains("invalid") || normalized.Contains("denied")) return AudioCueId.UIError;
             if (normalized.Contains("confirm") || normalized.Contains("apply") || normalized.Contains("save")) return AudioCueId.UIConfirm;
@@ -211,7 +212,7 @@ namespace SuperRacing.Audio
             }
 
             MapAudioProfile profile = Resources.Load<MapAudioProfile>(profileName);
-            manager.ApplyMapProfile(profile);
+            manager.ApplyMapProfile(profile, .35f, GameAudioManager.RaceAmbienceGain);
             if (profile != null) Debug.Log($"[Audio] Applied map ambience: {profile.displayName}");
         }
 

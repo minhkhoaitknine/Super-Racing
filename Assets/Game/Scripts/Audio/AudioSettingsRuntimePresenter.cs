@@ -13,6 +13,7 @@ namespace SuperRacing.Audio
     {
         private Button launcher;
         private Button runtimeSettingsButton;
+        private Button runtimePauseButton;
         private AudioSettingsPanel panel;
         private Canvas targetCanvas;
         private bool pausesGame;
@@ -52,6 +53,7 @@ namespace SuperRacing.Audio
             if (launcher != null) launcher.onClick.RemoveListener(OpenFromMenu);
             launcher = null;
             runtimeSettingsButton = null;
+            runtimePauseButton = null;
             panel = null;
             externalPauseSnapshot = false;
             string sceneName = scene.name.ToLowerInvariant();
@@ -133,6 +135,15 @@ namespace SuperRacing.Audio
             {
                 PolishPauseWindow(pauseWindow);
                 runtimeSettingsButton = CreateSettingsButton(pauseWindow, new Vector2(0f, -55f), new Vector2(280f, 58f));
+                runtimePauseButton = CreateActionButton(targetCanvas.transform, "Audio Pause Button", "PAUSE", new Vector2(0f, -24f), new Vector2(150f, 46f));
+                RectTransform pauseRect = runtimePauseButton.GetComponent<RectTransform>();
+                pauseRect.anchorMin = pauseRect.anchorMax = pauseRect.pivot = new Vector2(.5f, 1f);
+                Transform pauseMenuRoot = pauseWindow.parent != null ? pauseWindow.parent.parent : null;
+                runtimePauseButton.onClick.AddListener(() =>
+                {
+                    if (pauseMenuRoot != null)
+                        pauseMenuRoot.gameObject.SendMessage("SetPaused", true, SendMessageOptions.DontRequireReceiver);
+                });
             }
             else if (targetCanvas != null)
             {
@@ -168,8 +179,11 @@ namespace SuperRacing.Audio
         }
 
         private static Button CreateSettingsButton(Transform parent, Vector2 position, Vector2 size)
+            => CreateActionButton(parent, "Audio Settings Button", "AUDIO SETTINGS", position, size);
+
+        private static Button CreateActionButton(Transform parent, string objectName, string buttonLabel, Vector2 position, Vector2 size)
         {
-            GameObject go = new("Audio Settings Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(Outline));
+            GameObject go = new(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(Outline));
             go.transform.SetParent(parent, false);
             RectTransform rect = go.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
@@ -193,7 +207,7 @@ namespace SuperRacing.Audio
             labelRect.anchorMin = Vector2.zero; labelRect.anchorMax = Vector2.one;
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
             Text label = labelObject.GetComponent<Text>();
-            label.text = "AUDIO SETTINGS";
+            label.text = buttonLabel;
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.fontSize = 20;
             label.fontStyle = FontStyle.Bold;

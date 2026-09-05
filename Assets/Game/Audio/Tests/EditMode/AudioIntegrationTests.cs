@@ -37,6 +37,11 @@ namespace SuperRacing.Audio.Tests
         public void MasterVolumeHasSafeMaximum()
         {
             Assert.That(GameAudioManager.MaxMasterVolume, Is.EqualTo(.7f));
+            Assert.That(GameAudioManager.DefaultMusicVolume, Is.EqualTo(1f));
+            Assert.That(GameAudioManager.MenuMusicGain, Is.EqualTo(1f));
+            Assert.That(GameAudioManager.RaceMusicGain, Is.LessThan(GameAudioManager.MenuMusicGain));
+            Assert.That(GameAudioManager.ResultMusicGain, Is.LessThan(GameAudioManager.MenuMusicGain));
+            Assert.That(GameAudioManager.RaceAmbienceGain, Is.EqualTo(.45f));
             Assert.That(GameAudioManager.DefaultAmbienceVolume, Is.EqualTo(.7f));
             Assert.That(GameAudioManager.AmbienceHeadroomDb, Is.Zero);
         }
@@ -164,6 +169,7 @@ namespace SuperRacing.Audio.Tests
 
         [TestCase("Start Race", AudioCueId.UIStartRace)]
         [TestCase("start_race", AudioCueId.UIStartRace)]
+        [TestCase("Play Button", AudioCueId.UIStartRace)]
         [TestCase("Invalid Choice", AudioCueId.UIError)]
         [TestCase("Cancel", AudioCueId.UIBack)]
         [TestCase("Garage Button", AudioCueId.UIBack)]
@@ -188,15 +194,19 @@ namespace SuperRacing.Audio.Tests
 
             Transform card = prefab.transform.Find("Settings Card");
             Assert.That(card, Is.Not.Null);
-            Assert.That(((RectTransform)card).sizeDelta, Is.EqualTo(new Vector2(760f, 700f)));
+            Assert.That(((RectTransform)card).sizeDelta, Is.EqualTo(new Vector2(820f, 720f)));
             Assert.That(prefab.GetComponentsInChildren<Slider>(true), Has.Length.EqualTo(5));
             Assert.That(card.Find("AUDIO SETTINGS"), Is.Not.Null);
             Assert.That(card.Find("CUSTOMIZE YOUR RACE MIX"), Is.Not.Null);
             Assert.That(card.Find("Live Mix"), Is.Not.Null);
             Assert.That(card.Find("SAVED AUTOMATICALLY"), Is.Not.Null);
+            Assert.That(card.Find("Footer"), Is.Not.Null);
             Assert.That(prefab.GetComponentsInChildren<RoundedRectGraphic>(true).Length, Is.GreaterThanOrEqualTo(20));
-            Assert.That(card.Find("RESET"), Is.Not.Null);
-            Assert.That(card.Find("SAVE & CLOSE"), Is.Not.Null);
+            Assert.That(card.Find("Footer/RESET"), Is.Not.Null);
+            Assert.That(card.Find("Footer/SAVE & CLOSE"), Is.Not.Null);
+            foreach (Graphic graphic in prefab.GetComponentsInChildren<Graphic>(true))
+                Assert.That(graphic.canvasRenderer, Is.Not.Null,
+                    $"Audio Settings graphic '{graphic.name}' is missing its CanvasRenderer.");
         }
     }
 }

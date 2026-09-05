@@ -63,6 +63,17 @@ namespace SuperRacing.Audio.Tests
             yield return null;
             AudioSettingsPanel[] panels = Object.FindObjectsByType<AudioSettingsPanel>(FindObjectsSortMode.None);
             Assert.That(panels, Has.Length.EqualTo(1));
+            foreach (Graphic graphic in panels[0].GetComponentsInChildren<Graphic>(true))
+                Assert.That(graphic.canvasRenderer, Is.Not.Null,
+                    $"Audio Settings graphic '{graphic.name}' is missing its CanvasRenderer.");
+            foreach (Text text in panels[0].GetComponentsInChildren<Text>(true))
+            {
+                RectTransform textRect = text.rectTransform;
+                Assert.That(text.preferredWidth, Is.LessThanOrEqualTo(textRect.rect.width + 1f),
+                    $"Audio Settings text '{text.text}' overflows its allotted width.");
+                Assert.That(text.preferredHeight, Is.LessThanOrEqualTo(textRect.rect.height + 1f),
+                    $"Audio Settings text '{text.text}' overflows its allotted height.");
+            }
             panels[0].RequestClose();
             yield return SceneManager.LoadSceneAsync("MainMenu");
             yield return null;
@@ -79,6 +90,7 @@ namespace SuperRacing.Audio.Tests
             foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (button.name == "Audio Settings Button") { settings = button; break; }
             Assert.That(settings, Is.Not.Null, "Audio settings was not integrated into the teammate-owned pause menu.");
+            Assert.That(GameObject.Find("Audio Pause Button"), Is.Not.Null, "Race has no visible pause launcher.");
             Assert.That(GameObject.Find("Audio Pause"), Is.Null, "Audio must not create a second pause system beside RacePauseMenu.");
             Assert.That(settings.GetComponent<UIButtonAudio>(), Is.Not.Null, "Runtime pause/settings button has no UI cue binder.");
             float previousScale = Time.timeScale;
@@ -162,7 +174,9 @@ namespace SuperRacing.Audio.Tests
             yield return new WaitForSecondsRealtime(.25f);
             GarageUI garage = Object.FindFirstObjectByType<GarageUI>();
             Assert.That(garage, Is.Not.Null);
-            garage.SelectCar(1); // Balanced in the teammate-owned GameCatalog.
+            const string balancedOwnershipKey = "super_racing_owned_car_balanced";
+            PlayerPrefs.SetInt(balancedOwnershipKey, 1);
+            garage.SelectCar(1); // Balanced is intentionally unlocked only for this audio test.
             garage.ConfirmSelection();
             yield return new WaitForSecondsRealtime(.25f);
             TrackSelectionUI trackSelection = Object.FindFirstObjectByType<TrackSelectionUI>();
@@ -191,6 +205,7 @@ namespace SuperRacing.Audio.Tests
                 "The selected car became quieter than the direct Test_Vehicle setup at the same throttle and speed.");
 
             GameSelection.Clear();
+            PlayerPrefs.DeleteKey(balancedOwnershipKey);
             yield return SceneManager.LoadSceneAsync("MainMenu");
             yield return null;
             LogAssert.ignoreFailingMessages = false;

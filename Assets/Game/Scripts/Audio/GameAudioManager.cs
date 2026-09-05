@@ -9,10 +9,15 @@ namespace SuperRacing.Audio
     public sealed class GameAudioManager : MonoBehaviour
     {
         private const string Prefix = "audio.";
-        private const int SettingsVersion = 8;
+        private const int SettingsVersion = 9;
         public const float MaxMasterVolume = .7f;
+        public const float DefaultMusicVolume = 1f;
         public const float DefaultAmbienceVolume = .7f;
         public const float AmbienceHeadroomDb = 0f;
+        public const float MenuMusicGain = 1f;
+        public const float RaceMusicGain = .35f;
+        public const float ResultMusicGain = .65f;
+        public const float RaceAmbienceGain = .45f;
         [SerializeField] private AudioCatalog catalog;
         [SerializeField] private AudioMixer mixer;
         [SerializeField] private AudioMixerGroup musicGroup, sfxGroup, ambienceGroup, uiGroup, raceGroup, engineGroup, tiresGroup, collisionGroup;
@@ -24,6 +29,7 @@ namespace SuperRacing.Audio
         private readonly Dictionary<AudioCueId, int> cuePlayCounts = new();
         private float ambiencePrimaryBaseVolume = .35f;
         private float ambienceSecondaryBaseVolume = .15f;
+        private float currentMusicGain = MenuMusicGain;
         public static GameAudioManager Instance { get; private set; }
         public AudioCatalog Catalog => catalog;
         public string LastPlayedClipName { get; private set; } = "Nothing played yet";
@@ -45,7 +51,7 @@ namespace SuperRacing.Audio
             if (PlayerPrefs.GetInt(Prefix + "settingsVersion", 0) < SettingsVersion)
             {
                 PlayerPrefs.SetFloat(Prefix + "master", MaxMasterVolume);
-                PlayerPrefs.SetFloat(Prefix + "music", .1f);
+                PlayerPrefs.SetFloat(Prefix + "music", DefaultMusicVolume);
                 PlayerPrefs.SetFloat(Prefix + "sfx", 1f);
                 PlayerPrefs.SetFloat(Prefix + "ambience", DefaultAmbienceVolume);
                 PlayerPrefs.SetFloat(Prefix + "ui", 1f);
@@ -55,7 +61,7 @@ namespace SuperRacing.Audio
             }
             IsMuted = PlayerPrefs.GetInt(Prefix + "muted", 0) != 0;
             SetBusVolume(AudioBus.Master, PlayerPrefs.GetFloat(Prefix + "master", MaxMasterVolume));
-            SetBusVolume(AudioBus.Music, PlayerPrefs.GetFloat(Prefix + "music", .1f));
+            SetBusVolume(AudioBus.Music, PlayerPrefs.GetFloat(Prefix + "music", DefaultMusicVolume));
             SetBusVolume(AudioBus.Sfx, PlayerPrefs.GetFloat(Prefix + "sfx", 1f));
             SetBusVolume(AudioBus.Ambience, PlayerPrefs.GetFloat(Prefix + "ambience", DefaultAmbienceVolume));
             SetBusVolume(AudioBus.UI, PlayerPrefs.GetFloat(Prefix + "ui", 1f)); ApplyMuteState();
@@ -96,7 +102,7 @@ namespace SuperRacing.Audio
         public void SetMuted(bool muted) { IsMuted = muted; PlayerPrefs.SetInt(Prefix + "muted", muted ? 1 : 0); ApplyMuteState(); }
         public void ResetAudioSettings()
         {
-            SetMuted(false); SetBusVolume(AudioBus.Master, MaxMasterVolume); SetBusVolume(AudioBus.Music, .1f);
+            SetMuted(false); SetBusVolume(AudioBus.Master, MaxMasterVolume); SetBusVolume(AudioBus.Music, DefaultMusicVolume);
             SetBusVolume(AudioBus.Sfx, 1f); SetBusVolume(AudioBus.Ambience, DefaultAmbienceVolume); SetBusVolume(AudioBus.UI, 1f); PlayerPrefs.Save();
         }
         public void ApplySnapshot(AudioSnapshotId id, float transitionSeconds = .25f)
@@ -129,7 +135,8 @@ namespace SuperRacing.Audio
         {
             if (catalog == null) return;
             AudioClip clip = id switch { MusicId.Menu => catalog.menuMusic, MusicId.Result => catalog.resultMusic, _ => catalog.raceMusic };
-            StartCoroutine(CrossfadeMusic(clip, fadeSeconds));
+            float gain = id switch { MusicId.Menu => MenuMusicGain, MusicId.Result => ResultMusicGain, _ => RaceMusicGain };
+            StartCoroutine(CrossfadeMusic(clip, gain, fadeSeconds));
         }
         public void PlayMenuMusic() => PlayMusic(MusicId.Menu);
         public void PlayRaceMusic() => PlayMusic(MusicId.Race);
@@ -167,12 +174,12 @@ namespace SuperRacing.Audio
             source.spatialBlend = 1f; source.minDistance = 2f; source.maxDistance = 45f; source.outputAudioMixerGroup = sfxGroup;
             source.Play(); Destroy(emitter, clip.length + .1f); LastPlayedClipName = clip.name;
         }
-        public void ApplyMapProfile(MapAudioProfile profile, float transitionSeconds = .35f)
+        public void ApplyMapProfile(MapAudioProfile profile, float transitionSeconds = .35f, float outputGain = 1f)
         {
             if (profile == null) return;
             EnsureSources();
             if (ambienceTransition != null) StopCoroutine(ambienceTransition);
-            ambienceTransition = StartCoroutine(CrossfadeAmbience(profile, transitionSeconds));
+            ambienceTransition = StartCoroutine(CrossfadeAmbience(profile, transitionSeconds, Mathf.Clamp01(outputGain)));
         }
         public void SetMasterVolume(float value) => SetBusVolume(AudioBus.Master, value);
         public void SetMusicVolume(float value) => SetBusVolume(AudioBus.Music, value);
@@ -190,7 +197,7 @@ namespace SuperRacing.Audio
         private void EnsureSources()
         {
             ResolveMixerAssets(); if (sfxSource == null) sfxSource = CreateSource(false, 1f, sfxGroup); if (raceSource == null) raceSource = CreateSource(false, 1f, raceGroup); if (uiSource == null) uiSource = CreateSource(false, 1f, uiGroup);
-            if (musicSource == null) musicSource = CreateSource(true, mixer == null ? .1f : 1f, musicGroup); if (ambiencePrimary == null) ambiencePrimary = CreateSource(true, .35f, ambienceGroup); if (ambienceSecondary == null) ambienceSecondary = CreateSource(true, .15f, ambienceGroup);
+            if (musicSource == null) musicSource = CreateSource(true, mixer == null ? DefaultMusicVolume : 1f, musicGroup); if (ambiencePrimary == null) ambiencePrimary = CreateSource(true, .35f, ambienceGroup); if (ambienceSecondary == null) ambienceSecondary = CreateSource(true, .15f, ambienceGroup);
             RouteSources();
         }
         private void RouteSources()
@@ -207,18 +214,26 @@ namespace SuperRacing.Audio
         private void ApplyFallbackVolumes()
         {
             if (mixer != null) return; AudioListener.volume = IsMuted ? 0f : GetBusVolume(AudioBus.Master);
-            if (musicSource != null) musicSource.volume = GetBusVolume(AudioBus.Music); if (sfxSource != null) sfxSource.volume = GetBusVolume(AudioBus.Sfx); if (uiSource != null) uiSource.volume = GetBusVolume(AudioBus.UI);
+            if (musicSource != null) musicSource.volume = GetBusVolume(AudioBus.Music) * currentMusicGain; if (sfxSource != null) sfxSource.volume = GetBusVolume(AudioBus.Sfx); if (uiSource != null) uiSource.volume = GetBusVolume(AudioBus.UI);
             float a = GetBusVolume(AudioBus.Ambience); if (ambiencePrimary != null) ambiencePrimary.volume = ambiencePrimaryBaseVolume * a; if (ambienceSecondary != null) ambienceSecondary.volume = ambienceSecondaryBaseVolume * a;
         }
         private static string BusKey(AudioBus bus) => bus.ToString().ToLowerInvariant();
-        private static float DefaultVolume(AudioBus bus) => bus == AudioBus.Master ? MaxMasterVolume : bus == AudioBus.Music ? .1f : bus == AudioBus.Ambience ? DefaultAmbienceVolume : 1f;
+        private static float DefaultVolume(AudioBus bus) => bus == AudioBus.Master ? MaxMasterVolume : bus == AudioBus.Music ? DefaultMusicVolume : bus == AudioBus.Ambience ? DefaultAmbienceVolume : 1f;
         private static void PlayLoop(AudioSource source, AudioClip clip, float volume) { if (source == null || clip == null || source.clip == clip && source.isPlaying) return; source.Stop(); source.clip = clip; source.volume = volume; source.loop = true; source.Play(); }
-        private IEnumerator CrossfadeMusic(AudioClip clip, float seconds)
+        private IEnumerator CrossfadeMusic(AudioClip clip, float gain, float seconds)
         {
-            if (clip == null || musicSource == null || musicSource.clip == clip && musicSource.isPlaying) yield break; float start = musicSource.volume;
+            if (clip == null || musicSource == null) yield break;
+            gain = Mathf.Clamp01(gain);
+            if (musicSource.clip == clip && musicSource.isPlaying)
+            {
+                currentMusicGain = gain;
+                musicSource.volume = (mixer == null ? GetBusVolume(AudioBus.Music) : 1f) * currentMusicGain;
+                yield break;
+            }
+            float start = musicSource.volume;
             for (float t = 0; musicSource.isPlaying && t < seconds; t += Time.unscaledDeltaTime) { musicSource.volume = Mathf.Lerp(start, 0f, t / Mathf.Max(.01f, seconds)); yield return null; }
-            musicSource.Stop(); musicSource.clip = clip; musicSource.loop = true; musicSource.Play();
-            float target = mixer == null ? GetBusVolume(AudioBus.Music) : 1f;
+            musicSource.Stop(); musicSource.clip = clip; musicSource.loop = true; currentMusicGain = gain; musicSource.Play();
+            float target = (mixer == null ? GetBusVolume(AudioBus.Music) : 1f) * currentMusicGain;
             for (float t = 0; t < seconds; t += Time.unscaledDeltaTime) { musicSource.volume = Mathf.Lerp(0f, target, t / Mathf.Max(.01f, seconds)); yield return null; } musicSource.volume = target;
         }
 
@@ -228,15 +243,15 @@ namespace SuperRacing.Audio
             if (lowPassFilter == null) lowPassFilter = gameObject.AddComponent<AudioLowPassFilter>();
             lowPassFilter.cutoffFrequency = cutoff;
         }
-        private IEnumerator CrossfadeAmbience(MapAudioProfile profile, float seconds)
+        private IEnumerator CrossfadeAmbience(MapAudioProfile profile, float seconds, float outputGain)
         {
             float half = Mathf.Max(.01f, seconds * .5f);
             bool sameClips = ambiencePrimary.clip == profile.primaryAmbience && ambienceSecondary.clip == profile.secondaryAmbience;
             float primaryStart = ambiencePrimary.volume;
             float secondaryStart = ambienceSecondary.volume;
             float busScale = mixer == null ? GetBusVolume(AudioBus.Ambience) : 1f;
-            float primaryTarget = profile.primaryVolume * busScale;
-            float secondaryTarget = profile.secondaryVolume * busScale;
+            float primaryTarget = profile.primaryVolume * busScale * outputGain;
+            float secondaryTarget = profile.secondaryVolume * busScale * outputGain;
 
             if (!sameClips)
             {
@@ -262,8 +277,8 @@ namespace SuperRacing.Audio
                 secondaryStart = 0f;
             }
 
-            ambiencePrimaryBaseVolume = profile.primaryVolume;
-            ambienceSecondaryBaseVolume = profile.secondaryVolume;
+            ambiencePrimaryBaseVolume = profile.primaryVolume * outputGain;
+            ambienceSecondaryBaseVolume = profile.secondaryVolume * outputGain;
             for (float t = 0f; t < half; t += Time.unscaledDeltaTime)
             {
                 float a = t / half;
@@ -278,7 +293,7 @@ namespace SuperRacing.Audio
         }
         private IEnumerator ApplyRuntimeSnapshot(AudioSnapshotId id, float seconds)
         {
-            float musicTarget = GetBusVolume(AudioBus.Music), ambienceTarget = GetBusVolume(AudioBus.Ambience), sfxTarget = GetBusVolume(AudioBus.Sfx);
+            float musicTarget = (mixer == null ? GetBusVolume(AudioBus.Music) : 1f) * currentMusicGain, ambienceTarget = GetBusVolume(AudioBus.Ambience), sfxTarget = GetBusVolume(AudioBus.Sfx);
             if (id == AudioSnapshotId.Countdown) musicTarget *= .45f;
             else if (id == AudioSnapshotId.Paused) { musicTarget *= .25f; ambienceTarget *= .25f; sfxTarget *= .5f; }
             else if (id == AudioSnapshotId.Finish) ambienceTarget *= .2f;
