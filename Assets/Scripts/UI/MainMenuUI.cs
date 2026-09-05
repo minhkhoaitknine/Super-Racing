@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace SuperRacing.UI
 {
@@ -8,6 +9,34 @@ namespace SuperRacing.UI
     {
         [SerializeField] private string garageSceneName = "Garage";
         [SerializeField] private string trackSelectionSceneName = "TrackSelection";
+
+        private void Start()
+        {
+            CreateGameLogo();
+        }
+
+        private static void CreateGameLogo()
+        {
+            if (GameObject.Find("Super Racing Logo") != null) return;
+            Texture2D logoTexture = Resources.Load<Texture2D>("UI/SuperRacingLogo");
+            Canvas canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Include);
+            if (logoTexture == null || canvas == null) return;
+
+            GameObject logoObject = new("Super Racing Logo", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
+            logoObject.layer = canvas.gameObject.layer;
+            logoObject.transform.SetParent(canvas.transform, false);
+            RawImage logo = logoObject.GetComponent<RawImage>();
+            logo.texture = logoTexture;
+            logo.raycastTarget = false;
+            // Crop the small outer export margin and keep only the finished navy badge.
+            logo.uvRect = new Rect(0.009f, 0.069f, 0.982f, 0.872f);
+
+            RectTransform rect = logo.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -82f);
+            rect.sizeDelta = new Vector2(430f, 190f);
+        }
 
         public void PlayGame()
         {
