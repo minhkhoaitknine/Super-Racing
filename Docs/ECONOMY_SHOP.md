@@ -13,7 +13,8 @@
 - Every upgrade and paint purchase is stored separately for each car.
 - Performance upgrades have five levels. Each level unlocks 10% of the gap between the car's base stat and 100%, so level 5 uses half of that available headroom.
 - This keeps each car below the controller defaults and preserves stat differences at maximum upgrade (for example, base speed `72 / 92 / 100` becomes `86 / 96 / 100`).
-- Paint index 0 is the factory paint and preserves the prefab's original material color.
+- Paint index 0 is shown as `OEM` and preserves the prefab's original body texture/color.
+- Purchased paints replace the pre-coloured body albedo with a neutral albedo before applying the selected colour, preventing the original blue/yellow/red texture from distorting it.
 
 ## Tuning in Unity
 

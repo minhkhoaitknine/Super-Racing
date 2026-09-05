@@ -303,10 +303,18 @@ namespace SuperRacing.UI
             {
                 int paintIndex = index;
                 bool paintOwned = CarProgression.IsPaintOwned(car, index);
-                string caption = index == equipped ? "✓" : paintOwned ? "" : "◆";
+                string caption = index == 0 ? (index == equipped ? "OEM ✓" : "OEM") : index == equipped ? "✓" : paintOwned ? "" : "◆";
                 Button swatch = CreateRuntimeButton($"Paint {index}", paintStrip.transform, caption, CarProgression.GetPaintColor(index));
                 SetUiRect(swatch.GetComponent<RectTransform>(), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(100f + index * 51f, 0f), new Vector2(40f, 40f));
                 swatch.interactable = ownedCar && (paintOwned || CurrencyWallet.Balance >= CarProgression.GetPaintPrice(index));
+                Text swatchText = swatch.GetComponentInChildren<Text>();
+                if (swatchText != null)
+                {
+                    swatchText.fontSize = index == 0 ? 10 : 16;
+                    Color swatchColor = CarProgression.GetPaintColor(index);
+                    float luminance = swatchColor.r * 0.299f + swatchColor.g * 0.587f + swatchColor.b * 0.114f;
+                    swatchText.color = luminance > 0.62f ? new Color(0.03f, 0.05f, 0.08f, 1f) : Color.white;
+                }
                 swatch.onClick.AddListener(() => RequestPaint(paintIndex));
             }
         }
