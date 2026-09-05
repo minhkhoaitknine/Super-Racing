@@ -16,6 +16,8 @@ MonoBehaviour:
   displayName: Balanced
   vehiclePrefab: {fileID: 1462781222606649854, guid: 4cb66468e29f3f04696e63381cd86128, type: 3}
   previewSprite: {fileID: 0}
+  unlockedByDefault: 0
+  purchasePrice: 4000
   maxSpeedPercent: 92
   accelerationPercent: 90
   brakingPercent: 93
