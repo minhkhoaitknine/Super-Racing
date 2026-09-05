@@ -256,14 +256,14 @@ namespace SuperRacing.UI
         {
             if (valueLabel == null || valueLabel.transform.parent == null) return;
             RectTransform valueRect = valueLabel.rectTransform;
-            valueRect.anchoredPosition += new Vector2(-42f, 0f);
+            valueRect.anchoredPosition += new Vector2(-54f, 0f);
 
             Button button = CreateRuntimeButton($"Upgrade {type}", valueLabel.transform.parent, "+", new Color(0.04f, 0.62f, 0.76f, 1f));
             RectTransform rect = button.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(1f, 1f);
             rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(34f, 28f);
+            rect.sizeDelta = new Vector2(48f, 28f);
             button.onClick.AddListener(() => RequestUpgrade(type));
             upgradeButtons[slot] = button;
         }
@@ -280,7 +280,11 @@ namespace SuperRacing.UI
                 bool canUpgrade = CarProgression.CanUpgrade(car, types[index]);
                 button.interactable = ownedCar && canUpgrade && CurrencyWallet.Balance >= price;
                 Text text = button.GetComponentInChildren<Text>();
-                if (text != null) text.text = canUpgrade ? "+" : "MAX";
+                if (text != null)
+                {
+                    text.text = canUpgrade ? "+" : "MAX";
+                    text.fontSize = canUpgrade ? 18 : 11;
+                }
             }
 
             RebuildPaintStrip(car, ownedCar);
