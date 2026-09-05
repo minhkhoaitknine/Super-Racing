@@ -36,11 +36,12 @@ namespace SuperRacing.Vehicle
                 return;
             }
 
-            Vector3 desiredPosition = target.TransformPoint(localOffset);
+            Quaternion flatRotation = GetFlatTargetRotation();
+            Vector3 desiredPosition = target.position + flatRotation * localOffset;
             float positionT = 1f - Mathf.Exp(-positionDamping * Time.deltaTime);
             transform.position = Vector3.Lerp(transform.position, desiredPosition, positionT);
 
-            Vector3 lookPoint = target.position + target.forward * lookAheadDistance;
+            Vector3 lookPoint = target.position + flatRotation * Vector3.forward * lookAheadDistance;
             Quaternion desiredRotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
             float rotationT = 1f - Mathf.Exp(-rotationDamping * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, rotationT);
@@ -59,9 +60,21 @@ namespace SuperRacing.Vehicle
                 return;
             }
 
-            transform.position = target.TransformPoint(localOffset);
-            Vector3 lookPoint = target.position + target.forward * lookAheadDistance;
+            Quaternion flatRotation = GetFlatTargetRotation();
+            transform.position = target.position + flatRotation * localOffset;
+            Vector3 lookPoint = target.position + flatRotation * Vector3.forward * lookAheadDistance;
             transform.rotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
+        }
+
+        private Quaternion GetFlatTargetRotation()
+        {
+            Vector3 flatForward = Vector3.ProjectOnPlane(target.forward, Vector3.up);
+            if (flatForward.sqrMagnitude < 0.001f)
+            {
+                flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
+            }
+
+            return Quaternion.LookRotation(flatForward.normalized, Vector3.up);
         }
     }
 }

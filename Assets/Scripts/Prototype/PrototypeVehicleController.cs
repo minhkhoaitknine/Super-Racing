@@ -16,6 +16,7 @@ namespace SuperRacing.Prototype
         private Rigidbody body;
 
         public float SpeedKmh => body == null ? 0f : body.linearVelocity.magnitude * 3.6f;
+        public bool IsDrifting => false;
         public bool CanDrive { get; set; }
 
         private void Awake()

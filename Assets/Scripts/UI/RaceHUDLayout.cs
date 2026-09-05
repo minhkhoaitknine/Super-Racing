@@ -7,13 +7,20 @@ namespace SuperRacing.UI
     [RequireComponent(typeof(RaceHUD))]
     public sealed class RaceHUDLayout : MonoBehaviour
     {
-        private static readonly Color PanelColor = new(0.015f, 0.055f, 0.085f, 0.88f);
-        private static readonly Color Cyan = new(0f, 0.9f, 1f, 1f);
-        private static readonly Color Orange = new(1f, 0.48f, 0.08f, 1f);
+        private static readonly Color PanelColor = new(0.035f, 0.035f, 0.03f, 0.94f);
+        private static readonly Color Ivory = new(0.92f, 0.86f, 0.7f, 1f);
+        private static readonly Color Amber = new(0.95f, 0.55f, 0.12f, 1f);
+        private static readonly Color NeedleRed = new(0.82f, 0.08f, 0.035f, 1f);
         private static Sprite circleSprite;
+        private static Sprite gaugeArcSprite;
+        private static Sprite triangleSprite;
+        private static Sprite timingSprite;
+        private static Sprite minimapSprite;
 
         private void Awake()
         {
+            LoadHudAssets();
+
             Canvas canvas = GetComponent<Canvas>();
             if (canvas != null)
             {
@@ -24,57 +31,59 @@ namespace SuperRacing.UI
             Text lap = FindText("LapLabel");
             Text time = FindText("TimeLabel");
 
-            RectTransform timePanel = CreatePanel("Timing Panel", transform, new Vector2(330f, 132f));
+            RectTransform timePanel = CreatePanel("Timing Panel", transform, new Vector2(350f, 176f), timingSprite);
             Anchor(timePanel, new Vector2(0f, 1f), new Vector2(28f, -28f));
-            AddAccent(timePanel, new Vector2(7f, 112f), Cyan, new Vector2(11f, -10f));
-            AddCaption(timePanel, "RACE TIME", new Vector2(28f, -16f), 18, Cyan);
-            ConfigureText(time, timePanel, new Vector2(28f, -42f), new Vector2(275f, 48f), 34, TextAnchor.MiddleLeft);
-            ConfigureText(lap, timePanel, new Vector2(28f, -88f), new Vector2(275f, 30f), 20, TextAnchor.MiddleLeft);
+            AddCaption(timePanel, "RACE TIME", new Vector2(64f, -20f), 15, Amber);
+            ConfigureText(time, timePanel, new Vector2(64f, -42f), new Vector2(255f, 40f), 30, TextAnchor.MiddleLeft);
+            AddCaption(timePanel, "CURRENT LAP", new Vector2(64f, -98f), 14, Ivory);
+            ConfigureText(lap, timePanel, new Vector2(64f, -119f), new Vector2(255f, 32f), 20, TextAnchor.MiddleLeft);
 
-            RectTransform speedPanel = CreatePanel("Speedometer", transform, new Vector2(255f, 255f));
+            Image speedPanelImage = CreateImage("Speedometer", transform, new Vector2(270f, 240f), Color.clear);
+            speedPanelImage.rectTransform.SetAsFirstSibling();
+            RectTransform speedPanel = speedPanelImage.rectTransform;
             Anchor(speedPanel, new Vector2(1f, 0f), new Vector2(-30f, 30f));
-            Image outerRing = CreateImage("Outer Ring", speedPanel, new Vector2(218f, 218f), new Color(0.05f, 0.2f, 0.25f, 0.9f));
-            Center(outerRing.rectTransform);
-            outerRing.sprite = GetCircleSprite();
-            outerRing.type = Image.Type.Filled;
-            outerRing.fillMethod = Image.FillMethod.Radial360;
-            outerRing.fillAmount = 0.82f;
-            outerRing.fillOrigin = 2;
-
-            Image speedFill = CreateImage("Speed Fill", speedPanel, new Vector2(218f, 218f), Orange);
-            Center(speedFill.rectTransform);
-            speedFill.sprite = GetCircleSprite();
-            speedFill.type = Image.Type.Filled;
-            speedFill.fillMethod = Image.FillMethod.Radial360;
-            speedFill.fillOrigin = 2;
-            speedFill.fillClockwise = true;
-            speedFill.fillAmount = 0f;
-            GetComponent<RaceHUD>().SetSpeedFill(speedFill);
-
-            Image inner = CreateImage("Dial Face", speedPanel, new Vector2(174f, 174f), new Color(0.01f, 0.025f, 0.04f, 0.96f));
-            Center(inner.rectTransform);
-            inner.sprite = GetCircleSprite();
+            Image gaugeArc = CreateImage("Open Gauge Arc", speedPanel, new Vector2(226f, 226f), new Color(0.72f, 0.72f, 0.66f, 0.92f));
+            Center(gaugeArc.rectTransform);
+            gaugeArc.rectTransform.anchoredPosition = new Vector2(0f, 3f);
+            gaugeArc.sprite = GetGaugeArcSprite();
+            AddGaugeTicks(speedPanel);
             if (speed != null)
             {
                 speed.gameObject.SetActive(false);
             }
-            Text speedValue = CreateLabel("Speed Value", speedPanel, "0\n<size=22>KM/H</size>", 48, Color.white, TextAnchor.MiddleCenter);
+            Text speedValue = CreateLabel("Speed Value", speedPanel, "0\n<size=18>KM/H</size>", 42, Ivory, TextAnchor.MiddleCenter);
             RectTransform speedRect = speedValue.rectTransform;
             speedRect.anchorMin = speedRect.anchorMax = speedRect.pivot = new Vector2(0.5f, 0.5f);
-            speedRect.anchoredPosition = new Vector2(0f, -4f);
-            speedRect.sizeDelta = new Vector2(180f, 112f);
+            speedRect.anchoredPosition = new Vector2(0f, 22f);
+            speedRect.sizeDelta = new Vector2(150f, 86f);
             GetComponent<RaceHUD>().SetSpeedLabel(speedValue);
-            AddCaption(speedPanel, "SPEED", new Vector2(0f, -48f), 16, Cyan, TextAnchor.MiddleCenter, new Vector2(150f, 24f));
 
-            RectTransform mapPanel = CreatePanel("Minimap Panel", transform, new Vector2(236f, 236f));
+            Image needle = CreateImage("Speed Needle", speedPanel, new Vector2(8f, 86f), NeedleRed);
+            RectTransform needleRect = needle.rectTransform;
+            needleRect.anchorMin = needleRect.anchorMax = new Vector2(0.5f, 0.5f);
+            needleRect.pivot = new Vector2(0.5f, 0.08f);
+            needleRect.anchoredPosition = new Vector2(0f, -5f);
+            needleRect.localEulerAngles = new Vector3(0f, 0f, 135f);
+            GetComponent<RaceHUD>().SetSpeedNeedle(needleRect);
+            Image hub = CreateImage("Needle Hub", speedPanel, new Vector2(20f, 20f), new Color(0.72f, 0.72f, 0.67f, 1f));
+            Center(hub.rectTransform);
+            hub.rectTransform.anchoredPosition = new Vector2(0f, -5f);
+            hub.sprite = GetCircleSprite();
+
+            RectTransform mapPanel = CreatePanel("Minimap Panel", transform, new Vector2(320f, 220f), minimapSprite);
             Anchor(mapPanel, new Vector2(1f, 1f), new Vector2(-28f, -28f));
-            AddAccent(mapPanel, new Vector2(216f, 5f), Cyan, new Vector2(10f, -10f));
-            AddCaption(mapPanel, "TRACK MAP", new Vector2(16f, -16f), 16, Cyan);
-            RawImage map = CreateRawImage("Minimap", mapPanel, new Vector2(204f, 178f));
-            map.rectTransform.anchorMin = map.rectTransform.anchorMax = new Vector2(0.5f, 0f);
-            map.rectTransform.pivot = new Vector2(0.5f, 0f);
-            map.rectTransform.anchoredPosition = new Vector2(0f, 15f);
+            RawImage map = CreateRawImage("Minimap", mapPanel, new Vector2(272f, 158f));
+            Center(map.rectTransform);
+            map.rectTransform.anchoredPosition = new Vector2(0f, -3f);
             map.gameObject.AddComponent<RaceMinimap>();
+
+            Image playerMarker = CreateImage("Player Marker", mapPanel, new Vector2(26f, 34f), new Color(1f, 0.18f, 0.05f, 1f));
+            Center(playerMarker.rectTransform);
+            playerMarker.rectTransform.anchoredPosition = new Vector2(0f, -3f);
+            playerMarker.sprite = GetTriangleSprite();
+            Outline markerOutline = playerMarker.gameObject.AddComponent<Outline>();
+            markerOutline.effectColor = new Color(0f, 0f, 0f, 0.95f);
+            markerOutline.effectDistance = new Vector2(2f, -2f);
         }
 
         private Text FindText(string objectName)
@@ -83,14 +92,48 @@ namespace SuperRacing.UI
             return child != null ? child.GetComponent<Text>() : null;
         }
 
-        private static RectTransform CreatePanel(string name, Transform parent, Vector2 size)
+        private static RectTransform CreatePanel(string name, Transform parent, Vector2 size, Sprite sprite = null)
         {
             Image image = CreateImage(name, parent, size, PanelColor);
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+                image.color = Color.white;
+            }
             image.rectTransform.SetAsFirstSibling();
-            Outline outline = image.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0.75f, 0.9f, 0.65f);
-            outline.effectDistance = new Vector2(1.5f, -1.5f);
             return image.rectTransform;
+        }
+
+        private static void LoadHudAssets()
+        {
+            timingSprite ??= LoadSprite("HUD/race-info-classic");
+            minimapSprite ??= LoadSprite("HUD/minimap-frame-classic");
+        }
+
+        private static void AddGaugeTicks(Transform parent)
+        {
+            const int tickCount = 25;
+            for (int index = 0; index < tickCount; index++)
+            {
+                float t = index / (tickCount - 1f);
+                float rotation = Mathf.Lerp(135f, -135f, t);
+                float radians = (rotation + 90f) * Mathf.Deg2Rad;
+                bool major = index % 4 == 0;
+                Color color = t > 0.78f ? NeedleRed : Ivory;
+                Image tick = CreateImage($"Tick {index:00}", parent, new Vector2(major ? 5f : 3f, major ? 19f : 11f), color);
+                RectTransform rect = tick.rectTransform;
+                rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * 94f + new Vector2(0f, 3f);
+                rect.localEulerAngles = new Vector3(0f, 0f, rotation);
+            }
+        }
+
+        private static Sprite LoadSprite(string resourcePath)
+        {
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            return texture == null
+                ? null
+                : Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
         }
 
         private static Image CreateImage(string name, Transform parent, Vector2 size, Color color)
@@ -182,6 +225,71 @@ namespace SuperRacing.UI
             circleSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
             circleSprite.name = "HUD Circle";
             return circleSprite;
+        }
+
+        private static Sprite GetGaugeArcSprite()
+        {
+            if (gaugeArcSprite != null)
+            {
+                return gaugeArcSprite;
+            }
+
+            const int size = 256;
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "Open Gauge Arc",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            Color32[] pixels = new Color32[size * size];
+            Vector2 center = new((size - 1) * 0.5f, (size - 1) * 0.5f);
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 offset = new Vector2(x, y) - center;
+                    float radius = offset.magnitude;
+                    float angle = Mathf.Atan2(offset.y, offset.x) * Mathf.Rad2Deg;
+                    bool inBottomGap = angle > -135f && angle < -45f;
+                    float edgeAlpha = Mathf.Min(Mathf.Clamp01(radius - 105f), Mathf.Clamp01(124f - radius));
+                    byte alpha = inBottomGap ? (byte)0 : (byte)Mathf.RoundToInt(edgeAlpha * 255f);
+                    pixels[y * size + x] = new Color32(255, 255, 255, alpha);
+                }
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            gaugeArcSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
+            return gaugeArcSprite;
+        }
+
+        private static Sprite GetTriangleSprite()
+        {
+            if (triangleSprite != null)
+            {
+                return triangleSprite;
+            }
+
+            const int size = 64;
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "Player Arrow",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            Color32[] pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                float halfWidth = (size - 1 - y) * 0.48f;
+                for (int x = 0; x < size; x++)
+                {
+                    bool inside = Mathf.Abs(x - (size - 1) * 0.5f) <= halfWidth;
+                    pixels[y * size + x] = inside ? new Color32(255, 255, 255, 255) : new Color32(255, 255, 255, 0);
+                }
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            triangleSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
+            return triangleSprite;
         }
 
         private static void ConfigureText(Text text, Transform parent, Vector2 position, Vector2 size, int fontSize, TextAnchor alignment)

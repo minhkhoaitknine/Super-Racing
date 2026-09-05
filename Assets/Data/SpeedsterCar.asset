@@ -16,6 +16,8 @@ MonoBehaviour:
   displayName: Speedster
   vehiclePrefab: {fileID: 5710546935665691335, guid: 764f0efda9b507540a06bfa9a1aa2115, type: 3}
   previewSprite: {fileID: 0}
+  unlockedByDefault: 0
+  purchasePrice: 8000
   maxSpeedPercent: 100
   accelerationPercent: 100
   brakingPercent: 90

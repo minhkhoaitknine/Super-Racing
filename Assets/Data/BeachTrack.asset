@@ -19,3 +19,7 @@ MonoBehaviour:
   previewPrefab: {fileID: 1153548653493973608, guid: 2eccace7bb8920742ab477b25d55216a, type: 3}
   lapCount: 1
   requireOrderedCheckpoints: 0
+  completionReward: 600
+  newRecordBonus: 200
+  driftCoinsPerSecond: 20
+  maximumDriftReward: 500

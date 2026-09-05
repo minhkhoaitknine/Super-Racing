@@ -1,4 +1,5 @@
 using SuperRacing.Race;
+using SuperRacing.Economy;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -53,6 +54,16 @@ namespace SuperRacing.UI
             string record = RaceCompletionState.SetNewRecord ? "NEW RECORD" : $"{RaceCompletionState.TrackName}  /  {RaceCompletionState.CarName}";
             details.text = record;
             SetRect(details.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -430f), new Vector2(760f, 54f));
+
+            RaceRewardSummary rewards = RaceCompletionState.Rewards;
+            Text rewardDetails = CreateLabel("Rewards", canvas.transform, font, 24, TextAnchor.MiddleCenter);
+            rewardDetails.text =
+                $"FINISH  +{rewards.CompletionReward:N0} ◆\n" +
+                $"NEW RECORD  +{rewards.NewRecordBonus:N0} ◆\n" +
+                $"CLEAN DRIFT  +{rewards.CleanDriftBonus:N0} ◆\n" +
+                $"TOTAL  +{rewards.Total:N0} ◆     BALANCE  {RaceCompletionState.WalletBalance:N0} ◆";
+            rewardDetails.color = new Color(1f, 0.84f, 0.2f);
+            SetRect(rewardDetails.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -560f), new Vector2(880f, 150f));
 
             Button garageButton = CreateButton("Garage Button", canvas.transform, font, "GARAGE");
             SetRect(garageButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 220f), new Vector2(320f, 72f));

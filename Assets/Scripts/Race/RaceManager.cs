@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using SuperRacing.Contracts;
 using SuperRacing.Data;
+using SuperRacing.Economy;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -54,6 +55,7 @@ namespace SuperRacing.Race
         private Checkpoint finishLineCheckpoint;
         private Collider finishLineTrigger;
         private bool hasLeftFinishLine;
+        private DriftRewardTracker driftRewardTracker;
 
         public RaceState State { get; private set; } = RaceState.Ready;
         public float FinalTimeSeconds { get; private set; }
@@ -152,6 +154,7 @@ namespace SuperRacing.Race
 
             GameObject selectedVehicle = Instantiate(car.VehiclePrefab, position, rotation);
             selectedVehicle.name = car.VehiclePrefab.name;
+            CarProgression.ApplyPaint(selectedVehicle, car);
 
             MonoBehaviour selectedController = null;
             foreach (MonoBehaviour component in selectedVehicle.GetComponentsInChildren<MonoBehaviour>(true))
@@ -177,6 +180,15 @@ namespace SuperRacing.Race
             }
 
             vehicleController = selectedController;
+            if (selectedController is IVehicleController selectedVehicleController)
+            {
+                driftRewardTracker = selectedController.gameObject.GetComponent<DriftRewardTracker>();
+                if (driftRewardTracker == null)
+                {
+                    driftRewardTracker = selectedController.gameObject.AddComponent<DriftRewardTracker>();
+                }
+                driftRewardTracker.Configure(selectedVehicleController);
+            }
             SetLapTracker(selectedLapTracker);
             RetargetFollowCamera(selectedVehicle.transform);
 
@@ -425,6 +437,7 @@ namespace SuperRacing.Race
             vehicle.CanDrive = false;
             lapTracker.CanAcceptCheckpoints = false;
             raceTimer.ResetTimer();
+            driftRewardTracker?.ResetProgress();
 
             WaitForSecondsRealtime wait = new(countdownStepSeconds);
             for (int value = countdownFrom; value > 0; value--)
@@ -510,7 +523,13 @@ namespace SuperRacing.Race
             raceTimer.StopTimer();
             FinalTimeSeconds = raceTimer.ElapsedSeconds;
             SetNewRecord = RecordManager.TrySaveBestTime(track, car, FinalTimeSeconds);
-            RaceCompletionState.Save(FinalTimeSeconds, SetNewRecord, track, car);
+            driftRewardTracker?.CompleteCurrentDrift();
+            RaceRewardSummary rewards = RaceRewardCalculator.Calculate(
+                track,
+                SetNewRecord,
+                driftRewardTracker != null ? driftRewardTracker.CleanDriftSeconds : 0f);
+            CurrencyWallet.Add(rewards.Total);
+            RaceCompletionState.Save(FinalTimeSeconds, SetNewRecord, track, car, rewards, CurrencyWallet.Balance);
             RaceFinished?.Invoke(FinalTimeSeconds, SetNewRecord);
             onRaceFinished.Invoke(FinalTimeSeconds, SetNewRecord);
         }
