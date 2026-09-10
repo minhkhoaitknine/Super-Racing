@@ -567,7 +567,7 @@ namespace SuperRacing.EditorTools
             playerBadge.sprite = glassPanelBg;
             playerBadge.type = Image.Type.Sliced;
             SetRect(playerBadge.rectTransform, new Vector2(0f, 1f), new Vector2(275f, -38f), new Vector2(160f, 48f), new Vector2(0.5f, 0.5f));
-            Text playerName = CreateText("Player Name", playerBadge.transform, "●  PLAYER", 19, TextAnchor.MiddleCenter, Color.white);
+            Text playerName = CreateText("Player Name", playerBadge.transform, "PLAYER", 19, TextAnchor.MiddleCenter, Color.white);
             playerName.fontStyle = FontStyle.Bold;
             Stretch(playerName.rectTransform);
 

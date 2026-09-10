@@ -2,6 +2,10 @@
   "name": "SuperRacing",
   "rootNamespace": "SuperRacing",
   "references": [
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.Services.Core",
+    "Unity.Services.Core.Environments",
+    "Unity.Services.Authentication",
+    "Unity.Services.Leaderboards"
   ]
 }

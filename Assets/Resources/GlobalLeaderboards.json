@@ -1,0 +1,8 @@
+{
+  "environment": "production",
+  "maps": [
+    { "trackId": "beach", "leaderboardId": "map1" },
+    { "trackId": "desert", "leaderboardId": "map2" },
+    { "trackId": "town_square", "leaderboardId": "map3" }
+  ]
+}

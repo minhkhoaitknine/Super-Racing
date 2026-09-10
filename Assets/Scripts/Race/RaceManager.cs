@@ -530,6 +530,7 @@ namespace SuperRacing.Race
                 driftRewardTracker != null ? driftRewardTracker.CleanDriftSeconds : 0f);
             CurrencyWallet.Add(rewards.Total);
             RaceCompletionState.Save(FinalTimeSeconds, SetNewRecord, track, car, rewards, CurrencyWallet.Balance);
+            GlobalLeaderboardService.Instance?.SubmitRace(track.TrackId, FinalTimeSeconds);
             RaceFinished?.Invoke(FinalTimeSeconds, SetNewRecord);
             onRaceFinished.Invoke(FinalTimeSeconds, SetNewRecord);
         }

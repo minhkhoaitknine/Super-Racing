@@ -8,6 +8,7 @@ namespace SuperRacing.Race
         public static float FinalTimeSeconds { get; private set; }
         public static bool SetNewRecord { get; private set; }
         public static string TrackName { get; private set; } = "Track";
+        public static TrackDefinition Track { get; private set; }
         public static string CarName { get; private set; } = "Car";
         public static RaceRewardSummary Rewards { get; private set; }
         public static int WalletBalance { get; private set; }
@@ -16,6 +17,7 @@ namespace SuperRacing.Race
             RaceRewardSummary rewards, int walletBalance)
         {
             FinalTimeSeconds = finalTimeSeconds;
+            Track = track;
             SetNewRecord = setNewRecord;
             TrackName = track != null ? track.DisplayName : "Track";
             CarName = car != null ? car.DisplayName : "Car";

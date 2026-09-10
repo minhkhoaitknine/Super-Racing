@@ -67,6 +67,7 @@ namespace SuperRacing.UI
             ResolveShopControls();
             CreateInlineShopControls();
             RefreshView();
+            GarageUsernameUI.Install(ResolveCanvas());
             StartCoroutine(FreezeThumbnailCamerasAfterFirstFrame());
         }
 

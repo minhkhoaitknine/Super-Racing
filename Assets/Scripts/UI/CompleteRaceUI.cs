@@ -10,6 +10,13 @@ namespace SuperRacing.UI
     public sealed class CompleteRaceUI : MonoBehaviour
     {
         [SerializeField] private string garageSceneName = "Garage";
+        private Text globalStatus;
+
+        private void Update()
+        {
+            if (globalStatus != null && GlobalLeaderboardService.Instance != null)
+                globalStatus.text = GlobalLeaderboardService.Instance.Status;
+        }
 
         private void Awake()
         {
@@ -68,6 +75,12 @@ namespace SuperRacing.UI
             Button garageButton = CreateButton("Garage Button", canvas.transform, font, "GARAGE");
             SetRect(garageButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 220f), new Vector2(320f, 72f));
             garageButton.onClick.AddListener(ReturnToGarage);
+            globalStatus = CreateLabel("Global Sync Status", canvas.transform, font, 22, TextAnchor.MiddleCenter);
+            globalStatus.color = new Color(0f, 0.8f, 0.92f);
+            SetRect(globalStatus.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -710f), new Vector2(1000f, 64f));
+            GlobalLeaderboardPanel.AddButton(canvas.transform, () => RaceCompletionState.Track,
+                new Vector2(0.5f, 0f), new Vector2(0f, 130f));
         }
 
         private static Text CreateLabel(string name, Transform parent, Font font, int size, TextAnchor alignment)

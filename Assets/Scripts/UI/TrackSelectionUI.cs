@@ -59,6 +59,10 @@ namespace SuperRacing.UI
 
             selectedIndex = FindSelectedTrackIndex();
             RefreshView();
+            Canvas canvas = trackNameLabel.GetComponentInParent<Canvas>();
+            if (canvas != null)
+                GlobalLeaderboardPanel.AddButton(canvas.transform, () => catalog.Tracks[selectedIndex],
+                    new Vector2(0.5f, 0f), new Vector2(0f, 85f));
         }
 
         public void SelectPrevious()

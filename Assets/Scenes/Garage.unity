@@ -5850,7 +5850,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u25CF  PLAYER"
+  m_Text: PLAYER
 --- !u!222 &1867480123
 CanvasRenderer:
   m_ObjectHideFlags: 0
