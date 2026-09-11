@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 namespace SuperRacing.UI
 {
@@ -30,6 +31,12 @@ namespace SuperRacing.UI
             minimapCamera.depth = -20f;
             minimapCamera.allowHDR = false;
             minimapCamera.allowMSAA = false;
+            // This small overhead view does not need a second set of shadow maps.
+            UniversalAdditionalCameraData cameraData = minimapCamera.GetUniversalAdditionalCameraData();
+            cameraData.renderShadows = false;
+            cameraData.renderPostProcessing = false;
+            cameraData.requiresDepthOption = CameraOverrideOption.Off;
+            cameraData.requiresColorOption = CameraOverrideOption.Off;
             minimapCamera.useOcclusionCulling = false;
             minimapCamera.nearClipPlane = 0.1f;
             minimapCamera.farClipPlane = 180f;

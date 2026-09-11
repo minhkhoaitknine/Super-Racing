@@ -3,6 +3,8 @@
   "rootNamespace": "SuperRacing",
   "references": [
     "Unity.InputSystem",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
     "Unity.Services.Core",
     "Unity.Services.Core.Environments",
     "Unity.Services.Authentication",

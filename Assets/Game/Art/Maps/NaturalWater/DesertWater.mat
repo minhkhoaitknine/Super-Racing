@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Coastal Water
+  m_Name: DesertWater
   m_Shader: {fileID: 4800000, guid: 947c02aac34399947b334fd62894da45, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0

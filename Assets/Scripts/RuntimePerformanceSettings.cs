@@ -10,8 +10,8 @@ namespace SuperRacing
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Apply()
         {
-            QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = TargetFrameRate;
+            QualitySettings.vSyncCount = Application.isMobilePlatform ? 0 : 1;
+            Application.targetFrameRate = Application.isMobilePlatform ? TargetFrameRate : -1;
             Time.maximumDeltaTime = MaximumDeltaTime;
         }
     }

@@ -12,6 +12,37 @@ namespace SuperRacing.Editor
         private const string Folder = "Assets/Game/Art/Maps/Beach/Realistic";
         private const string PrefabPath = "Assets/Game/Prefabs/Maps/BeachMap.prefab";
 
+        [MenuItem("Super Racing/Update Beach Water")]
+        public static void UpdateWater()
+        {
+            if (Application.isPlaying) throw new System.InvalidOperationException("Stop Play mode first.");
+            var water = SaveMaterial(new Material(Shader.Find("SuperRacing/Coastal Water")), "Coastal Water");
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                var source = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Art/Maps/Beach/Imported/Beach_RaceGameBeach_Source.fbx");
+                Mesh original = null;
+                foreach (var filter in source.GetComponentsInChildren<MeshFilter>(true))
+                    if (filter.sharedMesh.name == "Plane.069") original = filter.sharedMesh;
+                if (original == null) throw new System.InvalidOperationException("Water source mesh missing.");
+                foreach (var filter in root.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if (filter.name != "Plane.069") continue;
+                    Mesh generated = ProjectMesh(original, filter.transform, false, false, true, null);
+                    Mesh asset = AssetDatabase.LoadAssetAtPath<Mesh>(Folder + "/Plane.069.asset");
+                    EditorUtility.CopySerialized(generated, asset);
+                    Object.DestroyImmediate(generated);
+                    filter.sharedMesh = asset;
+                    var renderer = filter.GetComponent<MeshRenderer>();
+                    renderer.sharedMaterial = water;
+                    renderer.shadowCastingMode = ShadowCastingMode.Off;
+                }
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+            AssetDatabase.SaveAssets();
+        }
+
         [MenuItem("Super Racing/Upgrade Beach Visuals")]
         public static void Build()
         {
@@ -121,6 +152,9 @@ namespace SuperRacing.Editor
                 Vector3 b = transform.TransformPoint(positions[triangles[i + 1]]);
                 Vector3 c = transform.TransformPoint(positions[triangles[i + 2]]);
                 Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
+                // Flatten only the visible surface. Folding the underside and walls
+                // onto it creates overlapping triangles and flickering patches.
+                if (water && normal.y < 0.25f) continue;
                 bool marking = false;
                 if (road)
                 {

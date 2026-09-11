@@ -2,8 +2,8 @@ Shader "SuperRacing/Coastal Water"
 {
     Properties
     {
-        _BaseColor ("Deep water", Color) = (0.035,0.22,0.25,1)
-        _ShallowColor ("Wave tint", Color) = (0.09,0.42,0.40,1)
+        _BaseColor ("Deep water", Color) = (0.025,0.19,0.23,1)
+        _ShallowColor ("Wave tint", Color) = (0.07,0.35,0.34,1)
         _Smoothness ("Smoothness", Range(0,1)) = 0.88
     }
     SubShader
@@ -11,7 +11,7 @@ Shader "SuperRacing/Coastal Water"
         Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" }
         Pass
         {
-            Tags { "LightMode"="UniversalForward" }
+            Tags { "LightMode"="UniversalForwardOnly" }
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
@@ -35,30 +35,45 @@ Shader "SuperRacing/Coastal Water"
                 output.fog=ComputeFogFactor(p.positionCS.z);
                 return output;
             }
+            float Hash(float2 p)
+            {
+                float3 p3=frac(float3(p.xyx)*0.1031);
+                p3+=dot(p3,p3.yzx+33.33);
+                return frac((p3.x+p3.y)*p3.z);
+            }
+            float Noise(float2 p)
+            {
+                float2 cell=floor(p), f=frac(p);
+                f=f*f*(3-2*f);
+                return lerp(lerp(Hash(cell),Hash(cell+float2(1,0)),f.x),
+                            lerp(Hash(cell+float2(0,1)),Hash(cell+1),f.x),f.y);
+            }
+            float Ripples(float2 p,float t)
+            {
+                return Noise(p*0.8+float2(t*0.07,t*0.03))
+                    +0.3*Noise(p*2.3+float2(-t*0.09,t*0.11));
+            }
             half4 Frag(Varyings input):SV_Target
             {
                 float2 p=input.positionWS.xz;
                 float t=_Time.y;
                 float a=dot(p,float2(1.3,0.7))+t*0.8;
                 float b=dot(p,float2(-2.1,1.8))-t*1.1;
-                float c=dot(p,float2(4.2,3.1))+t*1.5;
-                float2 slope=float2(1.3,0.7)*cos(a)*0.04+float2(-2.1,1.8)*cos(b)*0.018+float2(4.2,3.1)*cos(c)*0.008;
+                float height=Ripples(p,t);
+                float2 slope=float2(Ripples(p+float2(0.08,0),t)-height,
+                                    Ripples(p+float2(0,0.08),t)-height)*2.2;
+                slope+=float2(1.3,0.7)*cos(a)*0.009;
                 half3 normal=normalize(float3(-slope.x,1,-slope.y));
-                InputData data=(InputData)0;
-                data.positionWS=input.positionWS;
-                data.normalWS=normal;
-                data.viewDirectionWS=GetWorldSpaceNormalizeViewDir(input.positionWS);
-                data.shadowCoord=TransformWorldToShadowCoord(input.positionWS);
-                data.bakedGI=SampleSH(normal);
-                data.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(input.positionCS);
-                data.shadowMask=half4(1,1,1,1);
-                SurfaceData surface=(SurfaceData)0;
-                surface.albedo=lerp(_BaseColor.rgb,_ShallowColor.rgb,0.45+0.12*sin(a)*sin(b));
-                surface.alpha=1;
-                surface.smoothness=_Smoothness;
-                surface.occlusion=1;
-                surface.normalTS=half3(0,0,1);
-                half4 color=UniversalFragmentPBR(data,surface);
+                half3 view=GetWorldSpaceNormalizeViewDir(input.positionWS);
+                Light sun=GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+                half fresnel=0.02+0.98*pow(1-saturate(dot(normal,view)),5);
+                half3 reflected=reflect(-view,normal);
+                half3 sky=lerp(half3(0.48,0.62,0.68),half3(0.17,0.34,0.48),saturate(reflected.y));
+                half3 base=lerp(_BaseColor.rgb,_ShallowColor.rgb,0.45+0.08*sin(a)*sin(b));
+                half lighting=0.6+0.4*saturate(dot(normal,sun.direction))*sun.shadowAttenuation;
+                half3 halfVector=SafeNormalize(view+sun.direction);
+                half sparkle=pow(saturate(dot(normal,halfVector)),lerp(64,256,_Smoothness));
+                half4 color=half4(lerp(base*lighting,sky,fresnel)+sun.color*sparkle*sun.shadowAttenuation*0.45,1);
                 color.rgb=MixFog(color.rgb,input.fog);
                 return color;
             }
