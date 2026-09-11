@@ -5,6 +5,11 @@ namespace SuperRacing.Race
 {
     public sealed class BeachAtmosphere : MonoBehaviour
     {
+        [SerializeField] private Color hazeColor = new Color(0.64f, 0.73f, 0.76f);
+        [SerializeField] private float hazeStart = 65f, hazeEnd = 240f;
+        [SerializeField] private Color sunlightColor = new Color(1f, 0.94f, 0.83f);
+        [SerializeField] private float sunlightIntensity = 1.3f;
+        [SerializeField] private Vector3 sunlightAngles = new Vector3(42f, -35f, 0f);
         private bool applied;
         private bool fog;
         private Color fogColor;
@@ -29,9 +34,9 @@ namespace SuperRacing.Race
             previousSky = RenderSettings.skybox;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = new Color(0.64f, 0.73f, 0.76f);
-            RenderSettings.fogStartDistance = 65f;
-            RenderSettings.fogEndDistance = 240f;
+            RenderSettings.fogColor = hazeColor;
+            RenderSettings.fogStartDistance = hazeStart;
+            RenderSettings.fogEndDistance = hazeEnd;
             if (previousSky != null)
             {
                 sky = new Material(previousSky);
@@ -51,9 +56,9 @@ namespace SuperRacing.Race
                 sunColor = sun.color;
                 sunIntensity = sun.intensity;
                 sunRotation = sun.transform.rotation;
-                sun.color = new Color(1f, 0.94f, 0.83f);
-                sun.intensity = 1.3f;
-                sun.transform.rotation = Quaternion.Euler(42f, -35f, 0f);
+                sun.color = sunlightColor;
+                sun.intensity = sunlightIntensity;
+                sun.transform.rotation = Quaternion.Euler(sunlightAngles);
             }
         }
 
