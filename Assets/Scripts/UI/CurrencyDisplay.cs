@@ -10,6 +10,7 @@ namespace SuperRacing.UI
     {
         private Text label;
         private GameObject topUpOverlay;
+        private Text balanceLabel;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void InstallSceneHook()
@@ -50,6 +51,7 @@ namespace SuperRacing.UI
         private void Refresh(int balance)
         {
             if (label != null) label.text = $"◆  {balance:N0}";
+            if (balanceLabel != null) balanceLabel.text = $"CURRENT BALANCE   {balance:N0} CREDITS";
         }
 
         private void CreateTopUpButton()
@@ -88,45 +90,42 @@ namespace SuperRacing.UI
 
             topUpOverlay = CreateUiObject("Top Up Overlay", canvas.transform);
             Stretch(topUpOverlay.GetComponent<RectTransform>());
-            Image dim = topUpOverlay.AddComponent<Image>();
-            dim.color = new Color(0.01f, 0.025f, 0.05f, 0.78f);
-
-            Button dismiss = topUpOverlay.AddComponent<Button>();
-            dismiss.targetGraphic = dim;
-            dismiss.onClick.AddListener(CloseTopUpPanel);
-
-            GameObject panel = CreateUiObject("Top Up Panel", topUpOverlay.transform);
-            RectTransform panelRect = panel.GetComponent<RectTransform>();
-            panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(460f, 430f);
-            Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = new Color(0.025f, 0.07f, 0.12f, 0.98f);
-
-            Text title = CreateText("Title", panel.transform, "NẠP TIỀN", 30, FontStyle.Bold);
-            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -45f), new Vector2(380f, 48f));
-
-            Text note = CreateText("Note", panel.transform, "Chọn gói để nhận tiền ngay", 17, FontStyle.Normal);
-            note.color = new Color(0.65f, 0.78f, 0.88f, 1f);
-            SetRect(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -88f), new Vector2(380f, 34f));
-
-            CreatePackageButton(panel.transform, 1000, -155f);
-            CreatePackageButton(panel.transform, 5000, -235f);
-            CreatePackageButton(panel.transform, 20000, -315f);
-
-            Button close = CreateButton("Close Button", panel.transform, "ĐÓNG", new Color(0.18f, 0.23f, 0.29f, 1f));
-            SetRect(close.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -382f), new Vector2(150f, 42f));
-            close.onClick.AddListener(CloseTopUpPanel);
+            RectTransform panel = RacingUIStyle.Modal(topUpOverlay.transform, "ADD CREDITS",
+                "Choose a credit pack for your next garage upgrade.",
+                new Vector2(920f, 550f), CloseTopUpPanel);
+            Text balance = RacingUIStyle.Label(panel, $"CURRENT BALANCE   {CurrencyWallet.Balance:N0} CREDITS", 20, RacingUIStyle.Accent);
+            balanceLabel = balance;
+            RacingUIStyle.Place(balance.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -140), new Vector2(-64, 40));
+            CreatePackageButton(panel, 1000, -286f, "STARTER");
+            CreatePackageButton(panel, 5000, 0f, "BOOST");
+            CreatePackageButton(panel, 20000, 286f, "PRO");
+            Text note = RacingUIStyle.Label(panel, "Credits are added instantly. No payment required.", 18, RacingUIStyle.Muted);
+            note.alignment = TextAnchor.MiddleCenter;
+            RacingUIStyle.Place(note.rectTransform, Vector2.zero, new Vector2(1, 0), new Vector2(0, 82), new Vector2(-64, 36));
+            Button close = RacingUIStyle.Button(panel, "BACK TO GARAGE", CloseTopUpPanel);
+            RacingUIStyle.Place(close.GetComponent<RectTransform>(), new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 37), new Vector2(260, 44));
         }
 
-        private void CreatePackageButton(Transform parent, int amount, float y)
+        private void CreatePackageButton(Transform parent, int amount, float x, string title)
         {
-            Button button = CreateButton($"Top Up {amount}", parent, $"◆  {amount:N0}", new Color(0.04f, 0.45f, 0.62f, 1f));
-            SetRect(button.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(340f, 60f));
-            button.onClick.AddListener(() =>
+            Image card = RacingUIStyle.Box(parent, title + " Pack", new Color(.055f, .105f, .15f));
+            RacingUIStyle.Place(card.rectTransform, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(x, -286), new Vector2(264, 226));
+            Text heading = RacingUIStyle.Label(card.transform, title, 17, RacingUIStyle.Muted);
+            heading.alignment = TextAnchor.MiddleCenter;
+            RacingUIStyle.Place(heading.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -29), new Vector2(0, 30));
+            Text value = RacingUIStyle.Label(card.transform, amount.ToString("N0"), 38);
+            value.fontStyle = FontStyle.Bold; value.alignment = TextAnchor.MiddleCenter;
+            RacingUIStyle.Place(value.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -82), new Vector2(0, 50));
+            Text unit = RacingUIStyle.Label(card.transform, "CREDITS", 17, RacingUIStyle.Accent);
+            unit.alignment = TextAnchor.MiddleCenter;
+            RacingUIStyle.Place(unit.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -123), new Vector2(0, 30));
+            Button button = RacingUIStyle.Button(card.transform, "ADD CREDITS", () =>
             {
                 CurrencyWallet.Add(amount);
                 CloseTopUpPanel();
-            });
+            }, true);
+            button.name = $"Top Up {amount}";
+            RacingUIStyle.Place(button.GetComponent<RectTransform>(), new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 40), new Vector2(224, 48));
         }
 
         private void CloseTopUpPanel()

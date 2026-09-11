@@ -75,6 +75,39 @@ namespace SuperRacing.Tests
             Assert.That(RecordManager.TrySaveBestTime(Beach, Speedster, -1f), Is.False);
         }
 
+        [Test]
+        public void PersonalBestUsesFastestCarOnSelectedMap()
+        {
+            var track = UnityEngine.ScriptableObject.CreateInstance<SuperRacing.Data.TrackDefinition>();
+            var first = UnityEngine.ScriptableObject.CreateInstance<SuperRacing.Data.CarDefinition>();
+            var second = UnityEngine.ScriptableObject.CreateInstance<SuperRacing.Data.CarDefinition>();
+            try
+            {
+                var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                typeof(SuperRacing.Data.TrackDefinition).GetField("trackId", flags).SetValue(track, Beach);
+                typeof(SuperRacing.Data.CarDefinition).GetField("carId", flags).SetValue(first, Speedster);
+                typeof(SuperRacing.Data.CarDefinition).GetField("carId", flags).SetValue(second, Balanced);
+                RecordManager.TrySaveBestTime(Beach, Speedster, 70f);
+                RecordManager.TrySaveBestTime(Beach, Balanced, 60f);
+                RecordManager.TrySaveBestTime(Desert, Speedster, 40f);
+                Assert.That(RecordManager.TryGetTrackBestTime(track, new[] { first, second }, out float best), Is.True);
+                Assert.That(best, Is.EqualTo(60f));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(track);
+                UnityEngine.Object.DestroyImmediate(first);
+                UnityEngine.Object.DestroyImmediate(second);
+            }
+        }
+
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        public void NonFiniteRecordsAreRejected(float value)
+        {
+            Assert.That(RecordManager.TrySaveBestTime(Beach, Speedster, value), Is.False);
+        }
+
         private static void DeleteTestRecords()
         {
             RecordManager.DeleteBestTime(Beach, Speedster);

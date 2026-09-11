@@ -22,7 +22,16 @@ namespace SuperRacing.Race
             }
 
             bestTime = PlayerPrefs.GetFloat(key);
-            return bestTime > 0f;
+            return bestTime > 0f && !float.IsInfinity(bestTime) && !float.IsNaN(bestTime);
+        }
+
+        public static bool TryGetTrackBestTime(TrackDefinition track, System.Collections.Generic.IEnumerable<CarDefinition> cars, out float bestTime)
+        {
+            bestTime = float.PositiveInfinity;
+            if (track == null || cars == null) return false;
+            foreach (var car in cars)
+                if (TryGetBestTime(track, car, out float time)) bestTime = Mathf.Min(bestTime, time);
+            return !float.IsInfinity(bestTime);
         }
 
         public static bool TryGetBestTime(TrackDefinition track, CarDefinition car, out float bestTime)
@@ -49,7 +58,7 @@ namespace SuperRacing.Race
 
         public static bool TrySaveBestTime(string trackId, string carId, float elapsedSeconds)
         {
-            if (string.IsNullOrWhiteSpace(trackId) || string.IsNullOrWhiteSpace(carId) || elapsedSeconds <= 0f)
+            if (string.IsNullOrWhiteSpace(trackId) || string.IsNullOrWhiteSpace(carId) || elapsedSeconds <= 0f || float.IsNaN(elapsedSeconds) || float.IsInfinity(elapsedSeconds))
             {
                 return false;
             }

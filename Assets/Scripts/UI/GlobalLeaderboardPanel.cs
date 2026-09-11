@@ -30,7 +30,10 @@ namespace SuperRacing.UI
 
         public static Button AddButton(Transform parent, Func<TrackDefinition> selectedTrack, Vector2 anchor, Vector2 position)
         {
-            Button button = MakeButton(parent, "GLOBAL RANKING", () => Open(selectedTrack()));
+            Button button = MakeButton(parent, "RANKING", () => Open(selectedTrack()));
+            RacingUIStyle.RankingIcon(button.transform, new Vector2(34, -1));
+            Text caption = button.GetComponentInChildren<Text>();
+            caption.rectTransform.offsetMin = new Vector2(44, 0);
             Place(button.GetComponent<RectTransform>(), anchor, anchor, position, new Vector2(300, 60));
             return button;
         }
@@ -43,24 +46,24 @@ namespace SuperRacing.UI
             CanvasScaler scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = .5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
-            Image backdrop = Box(transform, "Background", new Color(0.015f, 0.03f, 0.055f, 1f));
-            Place(backdrop.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            Text title = Label(transform, track.DisplayName.ToUpperInvariant() + " / GLOBAL", 42);
-            Place(title.rectTransform, new Vector2(0.08f, 0.86f), new Vector2(0.8f, 0.97f), Vector2.zero, Vector2.zero);
-            Text subtitle = Label(transform, "BEST RACE TIME   /   ALL CARS   /   TOP 100", 22);
-            subtitle.color = Accent;
-            Place(subtitle.rectTransform, new Vector2(0.08f, 0.81f), new Vector2(0.85f, 0.87f), Vector2.zero, Vector2.zero);
+            RectTransform dialog = RacingUIStyle.Modal(transform, "GLOBAL RANKING",
+                track.DisplayName.ToUpperInvariant() + "   /   BEST RACE TIME   /   ALL CARS",
+                new Vector2(1040, 780), () => Destroy(gameObject));
+            status = Label(dialog, "Loading global ranking...", 19);
+            status.color = RacingUIStyle.Muted;
+            Place(status.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -132), new Vector2(-64, 36));
 
-            Button close = MakeButton(transform, "CLOSE", () => Destroy(gameObject));
-            Place(close.GetComponent<RectTransform>(), new Vector2(0.89f, 0.92f), new Vector2(0.89f, 0.92f), Vector2.zero, new Vector2(180, 56));
-            status = Label(transform, "Loading...", 22);
-            Place(status.rectTransform, new Vector2(0.08f, 0.75f), new Vector2(0.92f, 0.81f), Vector2.zero, Vector2.zero);
+            Image header = Box(dialog, "Table Header", new Color(.065f, .13f, .18f));
+            Place(header.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -182), new Vector2(-64, 42));
+            Column(header.transform, "RANK", .02f, .15f, 17, TextAnchor.MiddleLeft);
+            Column(header.transform, "DRIVER", .17f, .73f, 17, TextAnchor.MiddleLeft);
+            Column(header.transform, "RACE TIME", .75f, .97f, 17, TextAnchor.MiddleRight);
 
-            Image viewport = Box(transform, "Scores", new Color(0.04f, 0.07f, 0.1f));
-            Place(viewport.rectTransform, new Vector2(0.08f, 0.23f), new Vector2(0.92f, 0.74f), Vector2.zero, Vector2.zero);
+            Image viewport = Box(dialog, "Scores", new Color(.022f, .043f, .066f));
+            Place(viewport.rectTransform, new Vector2(0, 0), Vector2.one, new Vector2(0, -26), new Vector2(-64, -360));
             viewport.gameObject.AddComponent<RectMask2D>();
             ScrollRect scroll = viewport.gameObject.AddComponent<ScrollRect>();
             scroll.horizontal = false;
@@ -70,17 +73,28 @@ namespace SuperRacing.UI
             content.SetParent(viewport.transform, false);
             content.anchorMin = new Vector2(0, 1);
             content.anchorMax = Vector2.one;
-            content.pivot = new Vector2(0.5f, 1);
+            content.pivot = new Vector2(.5f, 1);
             scroll.viewport = viewport.rectTransform;
             scroll.content = content;
 
-            ownScore = Label(transform, "YOU / Loading...", 26);
+            Image personal = Box(dialog, "Your Record", new Color(.035f, .17f, .21f));
+            Place(personal.rectTransform, Vector2.zero, new Vector2(1, 0), new Vector2(0, 109), new Vector2(-64, 56));
+            ownScore = Label(personal.transform, "YOU / Loading...", 21);
             ownScore.color = Accent;
-            Place(ownScore.rectTransform, new Vector2(0.08f, 0.14f), new Vector2(0.92f, 0.22f), Vector2.zero, Vector2.zero);
-            refresh = MakeButton(transform, "REFRESH", Refresh);
-            Place(refresh.GetComponent<RectTransform>(), new Vector2(0.82f, 0.08f), new Vector2(0.82f, 0.08f), Vector2.zero, new Vector2(240, 58));
-            Text note = Label(transform, "Guest profile saved on this device", 20);
-            Place(note.rectTransform, new Vector2(0.08f, 0.04f), new Vector2(0.65f, 0.12f), Vector2.zero, Vector2.zero);
+            Place(ownScore.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-28, 0));
+            refresh = MakeButton(dialog, "REFRESH", Refresh);
+            Place(refresh.GetComponent<RectTransform>(), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-137, 42), new Vector2(210, 46));
+            Text note = Label(dialog, "TOP 100  /  Scroll to explore", 17);
+            note.color = RacingUIStyle.Muted;
+            Place(note.rectTransform, Vector2.zero, Vector2.zero, new Vector2(280, 42), new Vector2(496, 40));
+        }
+
+        private static Text Column(Transform parent, string text, float left, float right, int size, TextAnchor alignment)
+        {
+            Text label = Label(parent, text, size);
+            label.alignment = alignment;
+            Place(label.rectTransform, new Vector2(left, 0), new Vector2(right, 1), Vector2.zero, Vector2.zero);
+            return label;
         }
 
         private async void Refresh()
@@ -108,6 +122,7 @@ namespace SuperRacing.UI
                         (i % 2 == 0 ? new Color(0.06f, 0.1f, 0.14f) : new Color(0.04f, 0.07f, 0.1f)));
                     Place(row.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -i * 58 - 28), new Vector2(0, 56));
                     Text rank = Label(row.transform, "#" + (entry.Rank + 1), 26);
+                    rank.color = entry.Rank == 0 ? new Color(1f, .79f, .32f) : entry.Rank == 1 ? new Color(.78f, .86f, .92f) : entry.Rank == 2 ? new Color(.82f, .57f, .38f) : RacingUIStyle.Muted;
                     Place(rank.rectTransform, new Vector2(0.02f, 0), new Vector2(0.13f, 1), Vector2.zero, Vector2.zero);
                     Text name = Label(row.transform, GlobalLeaderboardService.DisplayName(entry) + (own ? " (YOU)" : ""), 25);
                     Place(name.rectTransform, new Vector2(0.15f, 0), new Vector2(0.74f, 1), Vector2.zero, Vector2.zero);
@@ -169,15 +184,7 @@ namespace SuperRacing.UI
 
         private static Button MakeButton(Transform parent, string title, UnityEngine.Events.UnityAction action)
         {
-            Image image = Box(parent, title, Accent);
-            Button button = image.gameObject.AddComponent<Button>();
-            button.targetGraphic = image;
-            button.onClick.AddListener(action);
-            Text text = Label(image.transform, title, 23);
-            text.color = new Color(0.01f, 0.04f, 0.07f);
-            text.alignment = TextAnchor.MiddleCenter;
-            Place(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            return button;
+            return RacingUIStyle.Button(parent, title, action);
         }
 
         private static void Place(RectTransform rect, Vector2 min, Vector2 max, Vector2 position, Vector2 size)

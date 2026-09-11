@@ -27,6 +27,7 @@ namespace SuperRacing.UI
         private TrackPreviewRotator previewRotator;
         private int previousVSyncCount;
         private bool ownsVSync;
+        private int recordRequest;
 
         private void OnEnable()
         {
@@ -42,6 +43,7 @@ namespace SuperRacing.UI
 
         private void OnDisable()
         {
+            recordRequest++;
             if (ownsVSync)
             {
                 QualitySettings.vSyncCount = previousVSyncCount;
@@ -81,12 +83,15 @@ namespace SuperRacing.UI
                 return;
             }
 
+            GameSelection.RestoreFromCatalog(catalog);
             selectedIndex = FindSelectedTrackIndex();
             RefreshView();
-            Canvas canvas = trackNameLabel.GetComponentInParent<Canvas>();
-            if (canvas != null)
-                GlobalLeaderboardPanel.AddButton(canvas.transform, () => catalog.Tracks[selectedIndex],
-                    new Vector2(0.5f, 0f), new Vector2(0f, 85f));
+            Transform dataPanel = trackNameLabel.transform.parent;
+            Transform hint = dataPanel.Find("Rotate Hint");
+            if (hint != null) hint.gameObject.SetActive(false);
+            Button ranking = GlobalLeaderboardPanel.AddButton(dataPanel, () => catalog.Tracks[selectedIndex],
+                new Vector2(0.5f, 0f), new Vector2(0f, 170f));
+            ranking.GetComponent<RectTransform>().sizeDelta = new Vector2(280f, 64f);
         }
 
         public void SelectPrevious()
@@ -155,14 +160,7 @@ namespace SuperRacing.UI
             trackNameLabel.text = track.DisplayName;
             lapCountLabel.text = track.LapCount == 1 ? "1 Lap" : $"{track.LapCount} Laps";
 
-            if (GameSelection.HasCar && RecordManager.TryGetBestTime(track, GameSelection.SelectedCar, out float bestTime))
-            {
-                recordLabel.text = $"Best  {RaceHUD.FormatTime(bestTime)}";
-            }
-            else
-            {
-                recordLabel.text = "No Record";
-            }
+            RefreshPersonalBest(track);
 
             if (previewImage != null)
             {
@@ -181,6 +179,12 @@ namespace SuperRacing.UI
                 if (trackCards[index] != null)
                 {
                     trackCards[index].sprite = index == selectedIndex ? selectedCardSprite : normalCardSprite;
+                    Text laps = trackCards[index].transform.Find("Laps")?.GetComponent<Text>();
+                    if (laps != null && index < catalog.Tracks.Count)
+                    {
+                        int count = catalog.Tracks[index].LapCount;
+                        laps.text = count == 1 ? "1 LAP" : $"{count} LAPS";
+                    }
                 }
             }
         }
@@ -235,6 +239,26 @@ namespace SuperRacing.UI
             // Bounds and translation share the rotation pivot's coordinate system.
             Vector3 anchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             target.transform.localPosition = (target.transform.localPosition - anchor) * scale;
+        }
+
+        private async void RefreshPersonalBest(TrackDefinition track)
+        {
+            int version = ++recordRequest;
+            bool hasLocal = RecordManager.TryGetTrackBestTime(track, catalog.Cars, out float local);
+            recordLabel.text = hasLocal ? RaceHUD.FormatTime(local) : "--:--.---";
+            var service = GlobalLeaderboardService.Instance;
+            if (service == null) return;
+            try
+            {
+                var own = await service.GetOwnAsync(track.TrackId);
+                if (this == null || !isActiveAndEnabled || version != recordRequest) return;
+                if (own != null && own.Score > 0 && own.Score <= 86400000 && !double.IsNaN(own.Score))
+                {
+                    double best = hasLocal ? System.Math.Min(local * 1000d, own.Score) : own.Score;
+                    recordLabel.text = GlobalLeaderboardPanel.FormatScore(best);
+                }
+            }
+            catch (System.Exception) { /* Keep the local record usable while offline. */ }
         }
 
         private bool TryGetPreviewBounds(GameObject target, out Bounds bounds)

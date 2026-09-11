@@ -218,7 +218,7 @@ namespace SuperRacing.EditorTools
                 Text name = CreateText("Name", card.transform, track.DisplayName.ToUpperInvariant(), 22, TextAnchor.MiddleLeft, Color.white);
                 name.fontStyle = FontStyle.Bold;
                 SetRect(name.rectTransform, new Vector2(0f, 0.5f), new Vector2(16f, -5f), new Vector2(250f, 38f), new Vector2(0f, 0.5f));
-                Text laps = CreateText("Laps", card.transform, $"{track.LapCount} LAPS", 13, TextAnchor.LowerLeft, new Color(0.75f, 0.85f, 0.95f));
+                Text laps = CreateText("Laps", card.transform, track.LapCount == 1 ? "1 LAP" : $"{track.LapCount} LAPS", 13, TextAnchor.LowerLeft, new Color(0.75f, 0.85f, 0.95f));
                 SetRect(laps.rectTransform, new Vector2(0f, 0f), new Vector2(16f, 10f), new Vector2(220f, 24f), new Vector2(0f, 0f));
                 trackButtons.Add(button);
             }
@@ -233,8 +233,6 @@ namespace SuperRacing.EditorTools
             SetRect(trackName.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -115f), new Vector2(280f, 54f), new Vector2(0.5f, 0.5f));
             Text lapCount = CreateInfoRow(infoPanel.transform, "LAPS", catalog.Tracks[0].LapCount.ToString(), -205f);
             Text record = CreateInfoRow(infoPanel.transform, "PERSONAL BEST", "--:--.---", -300f);
-            Text hint = CreateText("Rotate Hint", infoPanel.transform, "DRAG MAP TO ROTATE 360°", 13, TextAnchor.MiddleCenter, new Color(0.6f, 0.8f, 0.9f));
-            SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 150f), new Vector2(280f, 32f), new Vector2(0.5f, 0.5f));
             Button start = CreateButton("Start Race", "START RACE  ▶", infoPanel.transform, new Vector2(0.5f, 0f), new Vector2(0f, 70f), new Vector2(280f, 70f), true);
 
             var controllerObject = new GameObject("Track Selection Controller");
