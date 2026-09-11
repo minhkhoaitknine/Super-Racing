@@ -131,13 +131,19 @@ namespace SuperRacing.Economy
                 {
                     Material material = materials[index];
                     if (material == null || !material.name.ToLowerInvariant().Contains("body")) continue;
-                    // The factory body textures are already blue/yellow/red. Multiplying a new
-                    // tint with those pixels produces the wrong paint colour, so custom paint
-                    // uses a neutral albedo and lets lighting provide the surface shading.
-                    if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", Texture2D.whiteTexture);
-                    if (material.HasProperty("_MainTex")) material.SetTexture("_MainTex", Texture2D.whiteTexture);
-                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-                    if (material.HasProperty("_Color")) material.SetColor("_Color", color);
+                    Texture source = material.HasProperty("_BaseMap") ? material.GetTexture("_BaseMap") : material.mainTexture;
+                    Color tint = color;
+                    if (source != null)
+                    {
+                        CarPaintTextures paint = vehicle.GetComponent<CarPaintTextures>();
+                        if (paint == null) paint = vehicle.AddComponent<CarPaintTextures>();
+                        Texture recolored = paint.Recolor(source, color);
+                        if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", recolored);
+                        if (material.HasProperty("_MainTex")) material.SetTexture("_MainTex", recolored);
+                        tint = Color.white;
+                    }
+                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", tint);
+                    if (material.HasProperty("_Color")) material.SetColor("_Color", tint);
                 }
             }
         }

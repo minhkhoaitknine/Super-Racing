@@ -24,6 +24,30 @@ namespace SuperRacing.UI
 
         private int selectedIndex;
         private GameObject previewTrack;
+        private TrackPreviewRotator previewRotator;
+        private int previousVSyncCount;
+        private bool ownsVSync;
+
+        private void OnEnable()
+        {
+            // Desktop software frame limiting can deliver uneven presentation intervals.
+            // Match the monitor while this rotating preview is visible.
+            if (!Application.isMobilePlatform)
+            {
+                previousVSyncCount = QualitySettings.vSyncCount;
+                QualitySettings.vSyncCount = 1;
+                ownsVSync = true;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (ownsVSync)
+            {
+                QualitySettings.vSyncCount = previousVSyncCount;
+                ownsVSync = false;
+            }
+        }
 
         public void Configure(
             GameCatalog gameCatalog,
@@ -181,35 +205,89 @@ namespace SuperRacing.UI
             DisablePreviewBehaviour(previewTrack);
             SetLayerRecursively(previewTrack, trackPreviewRoot.gameObject.layer);
             FitPreview(previewTrack);
+            if (previewRotator == null && trackNameLabel != null)
+            {
+                Canvas canvas = trackNameLabel.GetComponentInParent<Canvas>();
+                if (canvas != null)
+                {
+                    foreach (TrackPreviewRotator rotator in canvas.GetComponentsInChildren<TrackPreviewRotator>(true))
+                        if (rotator.Target == trackPreviewRoot) { previewRotator = rotator; break; }
+                }
+            }
+            previewRotator?.SyncRotation();
         }
 
         private void FitPreview(GameObject target)
         {
-            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
-            if (renderers.Length == 0)
+            if (!TryGetPreviewBounds(target, out Bounds bounds))
             {
                 return;
             }
 
-            Bounds bounds = renderers[0].bounds;
-            for (int index = 1; index < renderers.Length; index++)
-            {
-                bounds.Encapsulate(renderers[index].bounds);
-            }
-
             float horizontalSize = Mathf.Max(bounds.size.x, bounds.size.z);
+            float scale = 1f;
             if (horizontalSize > 0.001f)
             {
-                target.transform.localScale *= previewTargetSize / horizontalSize;
+                scale = previewTargetSize / horizontalSize;
+                target.transform.localScale *= scale;
             }
 
-            bounds = renderers[0].bounds;
-            for (int index = 1; index < renderers.Length; index++)
+            // Bounds and translation share the rotation pivot's coordinate system.
+            Vector3 anchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+            target.transform.localPosition = (target.transform.localPosition - anchor) * scale;
+        }
+
+        private bool TryGetPreviewBounds(GameObject target, out Bounds bounds)
+        {
+            bounds = default;
+            bool hasPoint = false;
+            var vertices = new List<Vector3>();
+            foreach (Renderer renderer in target.GetComponentsInChildren<Renderer>())
             {
-                bounds.Encapsulate(renderers[index].bounds);
-            }
+                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                    continue;
 
-            target.transform.position += new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z);
+                Matrix4x4 toPivot = trackPreviewRoot.worldToLocalMatrix * renderer.transform.localToWorldMatrix;
+                MeshFilter filter = renderer.GetComponent<MeshFilter>();
+                Mesh mesh = filter != null ? filter.sharedMesh : null;
+                if (mesh != null && mesh.vertexCount == 0)
+                    continue;
+
+                // Transform actual vertices: rotating a mesh's bounding box includes
+                // empty corners and can shift the apparent center of the whole map.
+                if (mesh != null && mesh.isReadable)
+                {
+                    mesh.GetVertices(vertices);
+                    foreach (Vector3 vertex in vertices)
+                        IncludePreviewPoint(ref bounds, ref hasPoint, toPivot.MultiplyPoint3x4(vertex));
+                }
+                else
+                {
+                    Bounds local = renderer.localBounds;
+                    if (local.size.sqrMagnitude < 0.000001f)
+                        continue;
+                    for (int corner = 0; corner < 8; corner++)
+                    {
+                        Vector3 point = local.center + Vector3.Scale(local.extents, new Vector3(
+                            (corner & 1) == 0 ? -1f : 1f,
+                            (corner & 2) == 0 ? -1f : 1f,
+                            (corner & 4) == 0 ? -1f : 1f));
+                        IncludePreviewPoint(ref bounds, ref hasPoint, toPivot.MultiplyPoint3x4(point));
+                    }
+                }
+            }
+            return hasPoint;
+        }
+
+        private static void IncludePreviewPoint(ref Bounds bounds, ref bool hasPoint, Vector3 point)
+        {
+            if (hasPoint)
+                bounds.Encapsulate(point);
+            else
+            {
+                bounds = new Bounds(point, Vector3.zero);
+                hasPoint = true;
+            }
         }
 
         private static void DisablePreviewBehaviour(GameObject target)
