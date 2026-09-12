@@ -137,23 +137,9 @@ namespace SuperRacing.UI
         private void ShowFinish(float finalTimeSeconds, bool setNewRecord)
         {
             countdownPanel.SetActive(false);
-            finishPanel.SetActive(true);
-            finalTimeLabel.text = "COMPLETE";
-            recordLabel.text = $"TIME  {RaceHUD.FormatTime(finalTimeSeconds)}";
-            continuePromptLabel.text = "Press any key or tap anywhere to continue";
-            ResetFinishBlink();
-
-            if (restartButton != null)
-            {
-                restartButton.gameObject.SetActive(false);
-            }
-
-            if (mainMenuButton != null)
-            {
-                mainMenuButton.gameObject.SetActive(false);
-            }
-
-            waitingForFinishDismiss = true;
+            finishPanel.SetActive(false);
+            waitingForFinishDismiss = false;
+            CompleteRaceUI.Show();
         }
 
         private void ReturnToMainMenu()

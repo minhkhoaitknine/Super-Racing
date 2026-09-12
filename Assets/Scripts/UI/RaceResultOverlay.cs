@@ -138,11 +138,9 @@ namespace SuperRacing.UI
 
         private void ShowFinish(float finalTimeSeconds, bool setNewRecord)
         {
-            titleLabel.text = "COMPLETE";
-            timeLabel.text = $"TIME  {RaceHUD.FormatTime(finalTimeSeconds)}";
-            ResetBlink();
-            panel.SetActive(true);
-            waitingForDismiss = true;
+            panel.SetActive(false);
+            waitingForDismiss = false;
+            CompleteRaceUI.Show();
         }
 
         private void UpdateBlink()

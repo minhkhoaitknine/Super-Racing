@@ -75,6 +75,7 @@ namespace SuperRacing.UI
 
         private void SetPaused(bool paused)
         {
+            if (paused && raceManager != null && raceManager.State == RaceManager.RaceState.Finished) return;
             isPaused = paused;
             Time.timeScale = paused ? 0f : 1f;
             if (panel != null)
@@ -117,7 +118,7 @@ namespace SuperRacing.UI
             panel = new GameObject("Pause Panel");
             panel.transform.SetParent(transform, false);
             Image backdrop = panel.AddComponent<Image>();
-            backdrop.color = new Color(0f, 0f, 0f, 0.58f);
+            backdrop.color = new Color(.012f, .025f, .045f, .85f);
 
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             panelRect.anchorMin = Vector2.zero;
@@ -128,7 +129,7 @@ namespace SuperRacing.UI
             GameObject card = new("Pause Window");
             card.transform.SetParent(panel.transform, false);
             Image cardImage = card.AddComponent<Image>();
-            cardImage.color = new Color(0.02f, 0.10f, 0.14f, 0.94f);
+            cardImage.color = new Color(.025f, .055f, .085f, .38f);
             RectTransform cardRect = card.GetComponent<RectTransform>();
             cardRect.anchorMin = new Vector2(0.5f, 0.5f);
             cardRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -179,6 +180,7 @@ namespace SuperRacing.UI
             text.text = label;
             text.color = new Color(0.01f, 0.05f, 0.08f, 1f);
             SetRect(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            RacingUIStyle.StyleButton(button, label == "CONTINUE");
             return button;
         }
 

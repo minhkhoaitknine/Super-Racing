@@ -161,11 +161,17 @@ namespace SuperRacing.Audio
             RectTransform card = pauseWindow as RectTransform;
             if (card != null) card.sizeDelta = new Vector2(500f, 390f);
             Image background = pauseWindow.GetComponent<Image>();
-            if (background != null) background.color = new Color(.012f, .055f, .085f, .97f);
+            if (background != null) background.color = new Color(.025f, .055f, .085f, .38f);
             Outline outline = pauseWindow.GetComponent<Outline>();
-            if (outline == null) outline = pauseWindow.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, .78f, .92f, .55f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            // Outline duplicates the entire translucent quad and tints its interior.
+            // Separate edge geometry keeps the window itself dark and transparent.
+            if (outline != null) outline.enabled = false;
+            if (pauseWindow.Find("Pause Top Border") == null)
+            {
+                var edge = SuperRacing.UI.RacingUIStyle.Box(pauseWindow, "Pause Top Border", SuperRacing.UI.RacingUIStyle.Accent);
+                edge.raycastTarget = false;
+                SuperRacing.UI.RacingUIStyle.Place(edge.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -1), new Vector2(0, 2));
+            }
 
             MoveChild(pauseWindow, "Title", new Vector2(0f, -62f));
             MoveChild(pauseWindow, "Continue Button", new Vector2(0f, 20f));
@@ -213,6 +219,18 @@ namespace SuperRacing.Audio
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = new Color(.75f, .98f, 1f, 1f);
+            SuperRacing.UI.RacingUIStyle.StyleButton(button);
+            if (buttonLabel == "PAUSE")
+            {
+                rect.sizeDelta = new Vector2(182f, 54f);
+                labelRect.offsetMin = new Vector2(28f, 0f);
+                for (int i = 0; i < 2; i++)
+                {
+                    var bar = SuperRacing.UI.RacingUIStyle.Box(go.transform, "Pause Icon", SuperRacing.UI.RacingUIStyle.Accent);
+                    bar.raycastTarget = false;
+                    SuperRacing.UI.RacingUIStyle.Place(bar.rectTransform, new Vector2(0, .5f), new Vector2(0, .5f), new Vector2(25 + i * 10, 0), new Vector2(5, 20));
+                }
+            }
             UIButtonAudio audio = go.AddComponent<UIButtonAudio>();
             audio.EnableAutomaticClick(AudioCueId.UIClick);
             return button;

@@ -1,5 +1,4 @@
 using SuperRacing.Race;
-using SuperRacing.Economy;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,117 +11,88 @@ namespace SuperRacing.UI
         [SerializeField] private string garageSceneName = "Garage";
         private Text globalStatus;
 
+        public static void Show()
+        {
+            if (FindFirstObjectByType<CompleteRaceUI>() == null)
+                new GameObject("Race Complete Overlay").AddComponent<CompleteRaceUI>();
+        }
+
+        private void Awake() => BuildUi();
+
         private void Update()
         {
             if (globalStatus != null && GlobalLeaderboardService.Instance != null)
                 globalStatus.text = GlobalLeaderboardService.Instance.Status;
         }
 
-        private void Awake()
+        public void ReturnToGarage() => Navigate(garageSceneName);
+        private void RestartRace() => Navigate(RaceCompletionState.Track != null ? RaceCompletionState.Track.SceneName : "Race");
+
+        private void Navigate(string scene)
         {
             Time.timeScale = 1f;
-            BuildUi();
-        }
-
-        public void ReturnToGarage()
-        {
-            SceneManager.LoadScene(garageSceneName);
+            SceneManager.LoadScene(scene);
         }
 
         private void BuildUi()
         {
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            Canvas canvas = new GameObject("Complete Race Canvas").AddComponent<Canvas>();
+            var canvas = new GameObject("Complete Race Canvas", typeof(RectTransform)).AddComponent<Canvas>();
+            canvas.transform.SetParent(transform, false);
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler scaler = canvas.gameObject.AddComponent<CanvasScaler>();
+            canvas.sortingOrder = 150;
+            var scaler = canvas.gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = .5f;
             canvas.gameObject.AddComponent<GraphicRaycaster>();
 
-            Image background = new GameObject("Placeholder Background").AddComponent<Image>();
-            background.transform.SetParent(canvas.transform, false);
-            background.color = new Color(0.02f, 0.08f, 0.12f, 1f);
-            RectTransform backgroundRect = background.rectTransform;
-            backgroundRect.anchorMin = Vector2.zero;
-            backgroundRect.anchorMax = Vector2.one;
-            backgroundRect.offsetMin = Vector2.zero;
-            backgroundRect.offsetMax = Vector2.zero;
+            var dim = RacingUIStyle.Box(canvas.transform, "Translucent Race Backdrop", new Color(.012f, .025f, .045f, .85f));
+            RacingUIStyle.Place(dim.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var sheet = RacingUIStyle.Box(canvas.transform, "Results Card", new Color(.025f, .055f, .085f, .38f));
+            RacingUIStyle.Place(sheet.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(1080, 840));
+            var stripe = RacingUIStyle.Box(sheet.transform, "Accent", RacingUIStyle.Accent);
+            RacingUIStyle.Place(stripe.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, -2), new Vector2(0, 4));
+            Label(sheet.transform, "RACE COMPLETE", 44, -64, Color.white, FontStyle.Bold, 72);
+            Label(sheet.transform, RaceCompletionState.TrackName.ToUpperInvariant() + "   /   " + RaceCompletionState.CarName.ToUpperInvariant(), 22, -115, RacingUIStyle.Muted);
+            Label(sheet.transform, RaceCompletionState.SetNewRecord ? "NEW PERSONAL BEST" : "FINAL RACE TIME", 18, -177,
+                RaceCompletionState.SetNewRecord ? new Color(1f, .8f, .35f) : RacingUIStyle.Accent);
+            Label(sheet.transform, RaceHUD.FormatTime(RaceCompletionState.FinalTimeSeconds), 80, -239, Color.white, FontStyle.Bold, 100);
 
-            Text title = CreateLabel("Title", canvas.transform, font, 72, TextAnchor.MiddleCenter);
-            title.text = "RACE COMPLETE";
-            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -230f), new Vector2(900f, 110f));
+            var rewards = RaceCompletionState.Rewards;
+            Reward(sheet.transform, "RACE FINISH", rewards.CompletionReward, -330);
+            Reward(sheet.transform, "RECORD BONUS", rewards.NewRecordBonus, -385);
+            Reward(sheet.transform, "CLEAN DRIFT", rewards.CleanDriftBonus, -440);
+            Reward(sheet.transform, "TOTAL EARNED", rewards.Total, -510, true);
+            Label(sheet.transform, $"WALLET BALANCE   {RaceCompletionState.WalletBalance:N0} CREDITS", 19, -578, RacingUIStyle.Muted);
+            globalStatus = Label(sheet.transform, "", 18, -628, RacingUIStyle.Accent);
 
-            Text time = CreateLabel("Final Time", canvas.transform, font, 42, TextAnchor.MiddleCenter);
-            time.text = $"TIME  {RaceHUD.FormatTime(RaceCompletionState.FinalTimeSeconds)}";
-            SetRect(time.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -350f), new Vector2(700f, 78f));
-
-            Text details = CreateLabel("Details", canvas.transform, font, 26, TextAnchor.MiddleCenter);
-            string record = RaceCompletionState.SetNewRecord ? "NEW RECORD" : $"{RaceCompletionState.TrackName}  /  {RaceCompletionState.CarName}";
-            details.text = record;
-            SetRect(details.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -430f), new Vector2(760f, 54f));
-
-            RaceRewardSummary rewards = RaceCompletionState.Rewards;
-            Text rewardDetails = CreateLabel("Rewards", canvas.transform, font, 24, TextAnchor.MiddleCenter);
-            rewardDetails.text =
-                $"FINISH  +{rewards.CompletionReward:N0} ◆\n" +
-                $"NEW RECORD  +{rewards.NewRecordBonus:N0} ◆\n" +
-                $"CLEAN DRIFT  +{rewards.CleanDriftBonus:N0} ◆\n" +
-                $"TOTAL  +{rewards.Total:N0} ◆     BALANCE  {RaceCompletionState.WalletBalance:N0} ◆";
-            rewardDetails.color = new Color(1f, 0.84f, 0.2f);
-            SetRect(rewardDetails.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -560f), new Vector2(880f, 150f));
-
-            Button garageButton = CreateButton("Garage Button", canvas.transform, font, "GARAGE");
-            SetRect(garageButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 220f), new Vector2(320f, 72f));
-            garageButton.onClick.AddListener(ReturnToGarage);
-            globalStatus = CreateLabel("Global Sync Status", canvas.transform, font, 22, TextAnchor.MiddleCenter);
-            globalStatus.color = new Color(0f, 0.8f, 0.92f);
-            SetRect(globalStatus.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -710f), new Vector2(1000f, 64f));
-            GlobalLeaderboardPanel.AddButton(canvas.transform, () => RaceCompletionState.Track,
-                new Vector2(0.5f, 0f), new Vector2(0f, 130f));
+            var retry = RacingUIStyle.Button(sheet.transform, "RACE AGAIN", RestartRace, true);
+            var garage = RacingUIStyle.Button(sheet.transform, "GARAGE", ReturnToGarage);
+            var ranking = GlobalLeaderboardPanel.AddButton(sheet.transform, () => RaceCompletionState.Track,
+                new Vector2(.5f, 0), new Vector2(305, 100));
+            RacingUIStyle.Place(retry.GetComponent<RectTransform>(), new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(-305, 100), new Vector2(270, 64));
+            RacingUIStyle.Place(garage.GetComponent<RectTransform>(), new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 100), new Vector2(270, 64));
+            ranking.GetComponent<RectTransform>().sizeDelta = new Vector2(270, 64);
         }
 
-        private static Text CreateLabel(string name, Transform parent, Font font, int size, TextAnchor alignment)
+        private static Text Label(Transform parent, string value, int size, float y, Color color, FontStyle style = FontStyle.Normal, float height = 46)
         {
-            GameObject labelObject = new(name);
-            labelObject.transform.SetParent(parent, false);
-            Text label = labelObject.AddComponent<Text>();
-            label.font = font;
-            label.fontSize = size;
-            label.alignment = alignment;
-            label.color = Color.white;
-            label.raycastTarget = false;
+            var label = RacingUIStyle.Label(parent, value, size, color);
+            label.alignment = TextAnchor.MiddleCenter;
+            label.fontStyle = style;
+            RacingUIStyle.Place(label.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(0, y), new Vector2(-80, height));
             return label;
         }
 
-        private static Button CreateButton(string name, Transform parent, Font font, string label)
+        private static void Reward(Transform parent, string title, int value, float y, bool total = false)
         {
-            GameObject buttonObject = new(name);
-            buttonObject.transform.SetParent(parent, false);
-            Image image = buttonObject.AddComponent<Image>();
-            image.color = new Color(0.0f, 0.78f, 0.92f, 1f);
-
-            Button button = buttonObject.AddComponent<Button>();
-            ColorBlock colors = button.colors;
-            colors.highlightedColor = new Color(0.18f, 0.9f, 1f, 1f);
-            colors.pressedColor = new Color(0.0f, 0.55f, 0.7f, 1f);
-            button.colors = colors;
-
-            Text text = CreateLabel("Label", buttonObject.transform, font, 24, TextAnchor.MiddleCenter);
-            text.text = label;
-            text.color = new Color(0.01f, 0.05f, 0.08f, 1f);
-            SetRect(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            return button;
-        }
-
-        private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta)
-        {
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = anchoredPosition;
-            rect.sizeDelta = sizeDelta;
+            var row = RacingUIStyle.Box(parent, title, total ? new Color(.04f, .23f, .27f, .7f) : new Color(.065f, .11f, .16f, .5f));
+            RacingUIStyle.Place(row.rectTransform, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, y), new Vector2(880, total ? 74 : 48));
+            var label = RacingUIStyle.Label(row.transform, title, total ? 22 : 20, total ? RacingUIStyle.Accent : RacingUIStyle.Muted);
+            RacingUIStyle.Place(label.rectTransform, Vector2.zero, Vector2.one, new Vector2(-170, 0), new Vector2(-400, 0));
+            var amount = RacingUIStyle.Label(row.transform, total ? $"+{value:N0} CREDITS" : $"+{value:N0}", total ? 30 : 24);
+            amount.alignment = TextAnchor.MiddleRight;
+            RacingUIStyle.Place(amount.rectTransform, Vector2.zero, Vector2.one, new Vector2(170, 0), new Vector2(-400, 0));
         }
     }
 }

@@ -57,6 +57,31 @@ namespace SuperRacing.UI
             return button;
         }
 
+        public static void StyleButton(Button button, bool primary = false)
+        {
+            var image = button.GetComponent<Image>();
+            if (image == null) return;
+            image.sprite = null;
+            image.color = primary ? Accent : new Color(.045f, .11f, .16f, .96f);
+            button.targetGraphic = image;
+            button.transition = Selectable.Transition.ColorTint;
+            var outline = button.GetComponent<Outline>() ?? button.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(.18f, .72f, .83f, .7f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
+            var colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(.75f, 1f, 1f);
+            colors.pressedColor = new Color(.5f, .8f, .85f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.fadeDuration = .1f; button.colors = colors;
+            foreach (var label in button.GetComponentsInChildren<Text>(true))
+            {
+                label.color = primary ? Panel : Color.white;
+                label.fontStyle = FontStyle.Bold;
+                label.raycastTarget = false;
+            }
+        }
+
         public static RectTransform Modal(Transform root, string title, string subtitle, Vector2 size, UnityAction close)
         {
             var dim = Box(root, "Dim", new Color(.005f, .012f, .024f, .72f));
